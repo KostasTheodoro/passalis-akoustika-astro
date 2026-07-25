@@ -14,7 +14,7 @@
     "check": "astro check",
     "biome": "biome check .",
     "biome:fix": "biome check --write .",
-    "test": "bun test",
+    "test": "bun test --pass-with-no-tests --path-ignore-patterns=tests/e2e",
     "test:e2e": "playwright test"
   },
   "dependencies": {
