@@ -1,0 +1,25 @@
+# build output
+dist/
+.astro/
+.vercel/
+
+# dependencies
+node_modules/
+
+# env
+.env
+.env.*
+!.env.example
+
+# testing
+playwright-report/
+test-results/
+
+# logs
+*.log
+
+# editor/OS
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
