@@ -1,0 +1,10 @@
+name: Signia Insio Charge&Go
+type: rechargeable
+description: >-
+  Επαναφορτιζόμενο CIC/IIC με βάση φόρτισης Charge&Go, έως 20 ώρες αυτονομία, Bluetooth
+  και HD streaming από την πλατφόρμα Signia NX.
+imageAlt: Signia Insio Charge&Go
+imageSources:
+  - https://static.wixstatic.com/media/6e811e_420d8eb47b494d5eb72fd55eac8429c5~mv2.jpg
+  - https://cdn.signia.net/-/media/signia/global/images/products/signia-ax/insio-chargego-ax/insio-ax_black_double_1000x1000.jpg?rev=f3d0df96f0594402930ba6e739588ccc&hash=9E03A1D2E0001A311A47DA9E7FA02CF5
+order: 2

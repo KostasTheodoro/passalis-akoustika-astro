@@ -1,0 +1,10 @@
+name: Signia Intuis 3 RIC
+type: ric
+description: >-
+  RIC ακουστικό με λεπτό καλώδιο και μικρό ηχείο μέσα στο κανάλι. Προηγμένα μικρόφωνα,
+  μείωση θορύβου, επεξεργασία 6 καναλιών, συμβατό με Signia App και TeleCare.
+imageAlt: Signia Intuis 3 RIC
+imageSources:
+  - https://i.ebayimg.com/images/g/2zoAAOSwvFxgybsq/s-l1200.jpg
+order: 1
+featured: true

@@ -1,0 +1,22 @@
+title: Ενδοκαναλικά – CIC (Completely in Canal)
+shortTitle: Ενδοκαναλικά
+latinAbbreviation: CIC
+description: >-
+  Τα ακουστικά CIC εφαρμόζουν βαθιά στον ακουστικό πόρο και είναι σχεδόν αόρατα,
+  προσφέροντας διακριτική ενίσχυση ακοής με φυσικό ήχο.
+seo:
+  title: Ενδοκαναλικά (CIC) Ακουστικά Βαρηκοΐας – Διακριτική λύση
+  description: >-
+    Σχεδόν αόρατα ακουστικά που εφαρμόζουν βαθιά στο κανάλι. Ιδανικά για διακριτική
+    εμφάνιση με φυσικό ήχο.
+  keywords:
+    - ακουστικά βαρηκοΐας
+    - Ενδοκαναλικά
+    - CIC
+    - Μαρούσι
+imageAlt: Ενδοκαναλικά – CIC (Completely in Canal)
+# The only non-HTTPS image source on the site. It causes a mixed-content failure on the live
+# site and must be localized in STEP-03. `tests/unit/content-integrity.test.ts` asserts this
+# is the only `http://` source, so it cannot be forgotten.
+imageSource: http://hearshearingandhearables.com/wp-content/uploads/2024/03/Insio-IX_CIC_black_pair_1000x1000.jpg
+order: 1

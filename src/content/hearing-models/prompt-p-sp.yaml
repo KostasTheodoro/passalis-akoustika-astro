@@ -1,0 +1,9 @@
+name: Signia Prompt P/SP BTE
+type: bte
+description: >-
+  BTE με υψηλή ισχύ, αντοχή σε υγρασία και σκόνη, TeleCare και στιβαρή σχεδίαση για
+  κάθε χρήση.
+imageAlt: Signia Prompt P/SP BTE
+imageSources:
+  - https://слышувижу.рф/wp-content/uploads/2023/10/sluhovoj-apparat-siemens-xtm-p-p4.jpg
+order: 2
