@@ -43,6 +43,7 @@ bunx playwright install chromium
 | --- | --- |
 | `bun run dev` | Start the dev server on `http://localhost:4321` |
 | `bun run build` | Build the production site into `dist/` |
+| `bun run preview` | Serve the built site from `dist/` on `http://localhost:4321` |
 | `bun run check` | Type-check `.astro` and TypeScript files |
 | `bun run biome` | Check formatting and lint rules |
 | `bun run biome:fix` | Apply safe formatting and lint fixes |

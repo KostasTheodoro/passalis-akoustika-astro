@@ -19,12 +19,14 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  // Tests run against the real build output, served from a single Bun process.
-  // `astro dev` is unsuitable: it starts its server in a child process and lets the
-  // parent exit, so Playwright either loses track of the server or hangs on teardown
-  // with the port still held. `astro preview` is not supported by the Vercel adapter.
+  // Tests run against the real build output via `astro preview`, not `astro dev`.
+  // For a static build with an adapter that has no preview entrypoint, Astro serves
+  // `dist/` from its own static preview server, and the CLI stays in the foreground.
+  // `astro dev` is deliberately avoided: Astro detects AI-agent environments and runs
+  // the dev server as a detached background process, which leaves the port held and
+  // the test runner watching a process that has already exited.
   webServer: {
-    command: `bun run build && bun tests/serve-dist.ts`,
+    command: `bun run build && bun run preview --port ${PORT}`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
