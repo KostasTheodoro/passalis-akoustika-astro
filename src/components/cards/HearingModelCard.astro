@@ -4,40 +4,94 @@ import type { CollectionEntry } from 'astro:content';
 import Card from '@/components/ui/Card.astro';
 
 /**
- * One hearing-aid model.
+ * One hearing-aid model, in one of two shapes.
+ *
+ * `tile` is the home page's card: a square photo above the model name, four across. `row` is the
+ * category page's, and it is the live site's own layout — a contained photo beside the name and the
+ * model's description, stacking to photo-over-text on a phone. The two share this file rather than
+ * being two components because everything below the layout is identical: the same entry, the same
+ * photo treatment, the same title colour, the same alt text.
  *
  * The photo sits in a fixed square box and is contained rather than cropped: the thirteen product
  * photos arrive from thirteen different sources at several aspect ratios, and `object-cover`
- * would cut through the product on some of them. Contained on white, the row lines up and
- * nothing is amputated.
+ * would cut through the product on some of them. Contained, the row lines up and nothing is
+ * amputated.
  *
  * `href` is optional because the two places this card is used want different things. On the home
  * page it links to the model's category, which is what the live site does — there are no
- * model-detail pages and none are planned. On a category page (STEP-06) the reader is already
- * there, so the card is not a link at all and takes no `href`.
+ * model-detail pages and none are planned. On a category page the reader is already there, so the
+ * card is not a link at all and takes no `href`.
  *
  * `eyebrow` names the category. On the home page that is not decoration: the card is titled with a
  * model but lands on a category, and the eyebrow is what stops that being a surprise.
  */
 interface Props {
   model: CollectionEntry<'hearing-models'>;
+  /** `tile` is the home page's four-across card; `row` is the category page's stacked row. */
+  variant?: 'tile' | 'row';
   eyebrow?: string;
   href?: string;
   /** Required whenever `href` is set — it becomes the overlay link's accessible name. */
   linkLabel?: string;
+  /**
+   * The name's heading level, decided by the page rather than by this component. The home page
+   * puts these under a section `h2`, so they are `h3` there. A category page puts them directly
+   * under the page `h1`, so they are `h2` there — the live site uses `h3` in both places, which
+   * skips a level on every category page.
+   */
+  headingLevel?: 'h2' | 'h3';
+  /** The first card on a page is the LCP candidate and must not be lazy. */
+  eager?: boolean;
   /** Passed to the image's `sizes`; the caller knows the grid, this component does not. */
   sizes?: string;
 }
 
 const {
   model,
+  variant = 'tile',
   eyebrow,
   href,
   linkLabel,
-  sizes = '(min-width: 1024px) 20rem, (min-width: 640px) 45vw, 90vw',
+  headingLevel = 'h3',
+  eager = false,
+  sizes,
 }: Props = Astro.props;
 
-const { name, image, imageAlt } = model.data;
+const { name, description, image, imageAlt } = model.data;
+
+const isRow = variant === 'row';
+const Heading = headingLevel;
+
+/**
+ * The tile is sized by the grid it sits in, so its `sizes` is viewport-relative. The row's box is
+ * a fixed 13rem, so its `sizes` is a fixed length and the browser stops guessing.
+ */
+const imageSizes =
+  sizes ?? (isRow ? '13rem' : '(min-width: 1024px) 20rem, (min-width: 640px) 45vw, 90vw');
+const imageWidths = isRow ? [208, 416] : [320, 480, 640];
+
+/*
+ * `layout="none"` opts this image out of the project-wide `constrained` layout set in
+ * `astro.config.mjs`. That layout emits `object-fit: cover` and `height: auto` through attribute
+ * selectors that outrank the utility classes, which crops straight through the taller products
+ * and lets each photo's own aspect ratio decide the box height. The box is fixed here on purpose,
+ * so the image is told to fill it and contain itself, and the cards line up.
+ *
+ * `min-h-0` is load-bearing in the tile. A flex item's automatic minimum size is its content's, so
+ * without it the photo's own aspect ratio wins over the box's and the four cards stop lining up —
+ * the one 500×444 photo among twelve square ones made its card 26px shorter than the rest.
+ *
+ * The box is square because the photographs mostly are; a 4:3 box would letterbox nine of the
+ * thirteen for the sake of the other four.
+ */
+const photoFrame = [
+  'flex aspect-square min-h-0 items-center justify-center overflow-hidden',
+  isRow
+    ? // A light frame, as the live site's model card has, so the product has a defined area
+      // inside the white card rather than floating on it.
+      'w-44 shrink-0 rounded-card bg-page sm:w-52'
+    : 'rounded-t-card bg-surface p-4',
+];
 ---
 
 {/*
@@ -46,48 +100,61 @@ const { name, image, imageAlt } = model.data;
   control you cannot see yourself land on. The photo frame does its own clipping instead.
 */}
 <Card as="li" href={href} linkLabel={linkLabel} padding="none">
-  {/*
-    `layout="none"` opts this image out of the project-wide `constrained` layout set in
-    `astro.config.mjs`. That layout emits `object-fit: cover` and `height: auto` through attribute
-    selectors that outrank the utility classes, which crops straight through the taller products
-    and lets each photo's own aspect ratio decide the box height. The box is fixed here on purpose,
-    so the image is told to fill it and contain itself, and the four cards line up.
-  */}
-  {/*
-    `min-h-0` is load-bearing. A flex item's automatic minimum size is its content's, so without it
-    the photo's own aspect ratio wins over the box's and the four cards stop lining up — the one
-    500×444 photo among twelve square ones made its card 26px shorter than the rest.
+  {
+    isRow ? (
+      <div class="flex flex-col items-center gap-6 p-card text-center md:flex-row md:items-center md:gap-8 md:p-card-lg md:text-start">
+        <div class:list={photoFrame}>
+          <Image
+            src={image}
+            alt={imageAlt}
+            layout="none"
+            widths={imageWidths}
+            sizes={imageSizes}
+            loading={eager ? 'eager' : 'lazy'}
+            fetchpriority={eager ? 'high' : undefined}
+            decoding="async"
+            class="size-full object-contain"
+          />
+        </div>
 
-    The box is square because the photographs mostly are; a 4:3 box would letterbox nine of the
-    thirteen for the sake of the other four.
-  */}
-  <div
-    class="flex aspect-square min-h-0 items-center justify-center overflow-hidden rounded-t-card bg-surface p-4"
-  >
-    <Image
-      src={image}
-      alt={imageAlt}
-      layout="none"
-      widths={[320, 480, 640]}
-      sizes={sizes}
-      loading="lazy"
-      decoding="async"
-      class="size-full object-contain"
-    />
-  </div>
+        <div class="flex flex-col gap-2">
+          {eyebrow && <p class="text-eyebrow">{eyebrow}</p>}
+          {/* See the tile's note below on why every card title is `brand-deep`. */}
+          <Heading class="text-card font-bold text-brand-deep text-balance">{name}</Heading>
+          <p class="text-body-lg text-ink-muted text-pretty">{description}</p>
+        </div>
+      </div>
+    ) : (
+      <>
+        <div class:list={photoFrame}>
+          <Image
+            src={image}
+            alt={imageAlt}
+            layout="none"
+            widths={imageWidths}
+            sizes={imageSizes}
+            loading={eager ? 'eager' : 'lazy'}
+            fetchpriority={eager ? 'high' : undefined}
+            decoding="async"
+            class="size-full object-contain"
+          />
+        </div>
 
-  <div class="flex flex-col gap-1 border-t border-border p-card text-center">
-    {eyebrow && <p class="text-eyebrow">{eyebrow}</p>}
-    {/*
-      `brand-deep` rather than `brand-strong`, and every card title on the site follows it.
+        <div class="flex flex-col gap-1 border-t border-border p-card text-center">
+          {eyebrow && <p class="text-eyebrow">{eyebrow}</p>}
+          {/*
+            `brand-deep` rather than `brand-strong`, and every card title on the site follows it.
 
-      `text-card` tops out at 20px bold, under the 24px that would let the 3:1 large-text
-      threshold apply, so these need the full 4.5:1. `brand-strong` gives 4.74:1 on white but only
-      4.41:1 on the page ground — which is exactly how the four service cards failed Lighthouse
-      once they were rendered. One step further down the same ramp clears 5.8:1 on every ground the
-      site has, so a card title is safe wherever a card is put. `tests/unit/tokens.test.ts` now
-      checks all three grounds rather than white alone.
-    */}
-    <h3 class="text-card font-bold text-brand-deep text-balance">{name}</h3>
-  </div>
+            `text-card` tops out at 20px bold, under the 24px that would let the 3:1 large-text
+            threshold apply, so these need the full 4.5:1. `brand-strong` gives 4.74:1 on white but
+            only 4.41:1 on the page ground — which is exactly how the four service cards failed
+            Lighthouse once they were rendered. One step further down the same ramp clears 5.8:1 on
+            every ground the site has, so a card title is safe wherever a card is put.
+            `tests/unit/tokens.test.ts` now checks all three grounds rather than white alone.
+          */}
+          <Heading class="text-card font-bold text-brand-deep text-balance">{name}</Heading>
+        </div>
+      </>
+    )
+  }
 </Card>
