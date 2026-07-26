@@ -195,6 +195,68 @@ describe('references between collections', () => {
     );
   });
 
+  /**
+   * The catalogue rows exist to carry these descriptions. Each one was expanded from a single
+   * migrated sentence to the model's actual specifications during the STEP-06 review corrections,
+   * and the shortest of the thirteen is 227 characters. A floor of 200 catches a regression to one
+   * sentence without pinning any particular wording.
+   */
+  test('every model description carries more than one sentence of detail', () => {
+    for (const model of hearingModels) {
+      const description = (model.data.description as string).replace(/\s+/g, ' ').trim();
+
+      expect(
+        description.length,
+        `${model.file} is back to a single sentence (${description.length} characters)`,
+      ).toBeGreaterThanOrEqual(200);
+    }
+  });
+
+  /**
+   * Two platform claims were wrong before the corrections round: Silk Charge&Go IX was described as
+   * Augmented Xperience when it is Integrated Xperience, and Insio Charge&Go as Signia NX when it is
+   * Augmented Xperience. Both are easy to reintroduce by copying a neighbouring entry, so the two
+   * names are pinned to the entries that may hold them.
+   */
+  test('no model names a platform it is not built on', () => {
+    /** Models Signia publishes as Augmented Xperience. Everything else may not claim it. */
+    const augmented = new Set(['insio-charge-go', 'pure-312']);
+
+    for (const model of hearingModels) {
+      const description = model.data.description as string;
+
+      expect(description, `${model.file} names the retired Signia NX platform`).not.toMatch(
+        /Signia NX/,
+      );
+
+      if (!augmented.has(model.id)) {
+        expect(
+          description,
+          `${model.file} claims Augmented Xperience; only ${[...augmented].join(' and ')} are`,
+        ).not.toMatch(/Augmented Xperience/);
+      }
+    }
+  });
+
+  /**
+   * Signia states that Silk Charge&Go IX and Insio IX have no Bluetooth connectivity, and publishes
+   * nothing about it for the Orion essentials line. All three said otherwise before the corrections
+   * round; none may say so again.
+   */
+  test('no model without Bluetooth claims to stream audio', () => {
+    const cannotStream = ['silk-charge-go', 'insio-cic-mayro', 'orion-charge-go'];
+
+    for (const id of cannotStream) {
+      const model = hearingModels.find((entry) => entry.id === id);
+      expect(model, `${id} is missing from the collection`).toBeDefined();
+
+      expect(
+        model?.data.description as string,
+        `${id} claims streaming or Bluetooth, which no source supports for it`,
+      ).not.toMatch(/streaming|Bluetooth/i);
+    }
+  });
+
   test('every hearing type has a matching route', () => {
     const knownRoutes = new Set<string>(Object.values(ROUTES));
 

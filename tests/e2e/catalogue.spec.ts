@@ -376,6 +376,32 @@ test.describe('the contact band', () => {
     await expect(band.locator('a[href^="tel:"]')).toHaveCount(0);
     await expect(band.locator('a[href^="mailto:"]')).toHaveCount(0);
   });
+
+  /**
+   * It shipped white, directly above a white footer, and the two read as one block — the maintainer
+   * raised it on first inspection. The band is grey now, with its content in a white card. This
+   * asserts the separation rather than the colours, so either may be retuned.
+   */
+  test('does not disappear into the footer', async ({ page }) => {
+    await page.goto(ROUTES.hearingAids);
+
+    const grounds = await page.evaluate(() => {
+      const band = document.querySelector('section[aria-labelledby="catalogue-cta-heading"]');
+      const footer = document.querySelector('footer');
+      if (!band || !footer) return null;
+
+      return {
+        band: getComputedStyle(band).backgroundColor,
+        footer: getComputedStyle(footer).backgroundColor,
+      };
+    });
+
+    expect(grounds, 'the band or the footer was not found').not.toBeNull();
+    expect(
+      grounds?.band,
+      `the band and the footer are both ${grounds?.band}, so they read as one block`,
+    ).not.toBe(grounds?.footer);
+  });
 });
 
 test.describe('the shell knows where you are', () => {
@@ -484,6 +510,44 @@ test.describe('metadata', () => {
         'content',
         category.seo.description,
       );
+    }
+  });
+});
+
+/**
+ * The cards ran to the site-wide 1200px container when the catalogue first shipped, which left a
+ * 690px text column and a two-line description beside a tall photo — the card read as mostly air.
+ * The maintainer's fix was "less width and more height". 1024px is the width they chose.
+ */
+test.describe('the cards keep their measure', () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  for (const path of [ROUTES.hearingAids, ROUTES.hearingAidsCic]) {
+    test(`${path} caps its card list at 1024px`, async ({ page }) => {
+      await page.goto(path);
+
+      const width = await page
+        .locator('main ul')
+        .first()
+        .evaluate((list) => list.getBoundingClientRect().width);
+
+      expect(width, `the card list is ${Math.round(width)}px wide`).toBeLessThanOrEqual(1024);
+      // Guards the other direction too: a list that collapsed to nothing would also pass above.
+      expect(width).toBeGreaterThan(800);
+    });
+  }
+
+  test('a model row is taller than it is short, now the copy has grown', async ({ page }) => {
+    await page.goto(ROUTES.hearingAidsCic);
+
+    const heights = await page
+      .locator('main ul > li')
+      .evaluateAll((cards) => cards.map((card) => Math.round(card.getBoundingClientRect().height)));
+
+    expect(heights.length).toBeGreaterThan(0);
+    for (const height of heights) {
+      // The photo alone is 240px; anything under 280 means the box shrank back.
+      expect(height, `a model card is only ${height}px tall`).toBeGreaterThanOrEqual(280);
     }
   });
 });
