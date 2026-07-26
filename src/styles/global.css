@@ -270,7 +270,8 @@ body {
   margin-top: 2rem;
 }
 
-.prose :where(h2, h3) + * {
+/* Named rather than `*`: a bare universal here sorts below the reduced-motion reset's own `*`. */
+.prose :where(h2, h3) + :where(p, ul, ol) {
   margin-top: 0.75rem;
 }
 

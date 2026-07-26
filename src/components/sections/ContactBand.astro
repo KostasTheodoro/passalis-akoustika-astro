@@ -1,0 +1,48 @@
+---
+import Button from '@/components/ui/Button.astro';
+import Card from '@/components/ui/Card.astro';
+import Section from '@/components/ui/Section.astro';
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import type { RoutePath } from '@/data/routes';
+
+/**
+ * The band that closes a content route: a question, a sentence and one button.
+ *
+ * The live site's catalogue and informational pages have no route to contact at all. You finish
+ * reading and the page simply stops. `information-architecture.md` asks category, EOPYY and
+ * provider pages to link clearly to contact, so this is the smallest thing that does it.
+ *
+ * **Grey ground, white card.** It first shipped as a white section and disappeared into the footer,
+ * which is also white, so the two read as one block. Grey separates it from the footer below and
+ * the card separates it from whatever sits above, which makes the band an object rather than a
+ * seam. It is also the arrangement `ContactCta.astro` uses on the home page, so the site has one
+ * closing-band pattern instead of two.
+ *
+ * Deliberately not the home band's *content*. That one carries the opening hours, telephone, email
+ * and address, and STEP-05 removed exactly those from the footer so the shop's details stop
+ * repeating under every page. Repeating them on nine more routes would put the problem straight
+ * back.
+ *
+ * Only one of these renders per page, so the heading id needs no counter. It is a prop purely so
+ * the catalogue can keep the `catalogue-cta-heading` it already ships and the five accepted routes
+ * come out of this refactor byte-identical.
+ */
+interface Props {
+  heading: string;
+  description: string;
+  cta: { label: string; href: RoutePath };
+  headingId?: string;
+}
+
+const { heading, description, cta, headingId = 'contact-band-heading' }: Props = Astro.props;
+---
+
+<Section tone="page" spacing="tight" width="medium" labelledby={headingId}>
+  <Card padding="lg" class="shadow-md">
+    <SectionHeading id={headingId} title={heading} description={description} />
+
+    <div class="mt-8 flex justify-center">
+      <Button href={cta.href} size="lg" icon="mail">{cta.label}</Button>
+    </div>
+  </Card>
+</Section>
