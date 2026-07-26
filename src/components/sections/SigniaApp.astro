@@ -1,0 +1,78 @@
+---
+import { Image } from 'astro:assets';
+import Section from '@/components/ui/Section.astro';
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import { EXTERNAL_LINKS } from '@/data/external-links';
+import { HOME } from '@/data/home';
+
+/**
+ * `Κατεβάστε το Signia App`, and the last thing on the page — where the maintainer wants it.
+ *
+ * Two columns from `md` up: the copy on the left, the logo and the two store badges on the right.
+ * The live site stacks everything on the left and leaves half the desktop width empty.
+ *
+ * The badges are the official artwork, shipped as supplied. Their alt text is the link's
+ * accessible name, so it says what the link does rather than describing the picture, and each one
+ * carries a screen-reader-only note that it opens a new tab.
+ */
+const { signiaApp } = HOME;
+
+const stores = [
+  { ...signiaApp.badges.appStore, href: EXTERNAL_LINKS.signiaApp.appStore },
+  { ...signiaApp.badges.googlePlay, href: EXTERNAL_LINKS.signiaApp.googlePlay },
+];
+---
+
+{/* `page` rather than `surface`: the footer is white, and two white blocks in a row would read as
+    one. The section grounds across the page alternate deliberately. */}
+<Section tone="page" labelledby="signia-heading">
+  <div class="grid items-center gap-10 md:grid-cols-2 md:gap-14">
+    <div class="flex flex-col gap-4">
+      <SectionHeading id="signia-heading" title={signiaApp.heading} align="start" />
+
+      {signiaApp.body.map((paragraph) => <p class="text-body-lg text-ink-muted text-pretty measure">{paragraph}</p>)}
+
+      <p class="text-small text-ink-muted italic">{signiaApp.note}</p>
+    </div>
+
+    <div class="flex flex-col items-center gap-8">
+      <Image
+        src={signiaApp.logo}
+        alt={signiaApp.logoAlt}
+        layout="none"
+        widths={[180, 360]}
+        sizes="180px"
+        loading="lazy"
+        decoding="async"
+        class="h-auto w-45"
+      />
+
+      <ul class="flex list-none flex-wrap items-center justify-center gap-4">
+        {
+          stores.map((store) => (
+            <li>
+              <a
+                href={store.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex rounded-control transition-opacity duration-(--duration-fast) hover:opacity-80"
+              >
+                <Image
+                  src={store.image}
+                  alt={store.alt}
+                  layout="none"
+                  widths={[160, 320]}
+                  sizes="160px"
+                  loading="lazy"
+                  decoding="async"
+                  class="h-12 w-auto"
+                />
+                <span class="sr-only"> — ανοίγει σε νέα καρτέλα</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+</Section>

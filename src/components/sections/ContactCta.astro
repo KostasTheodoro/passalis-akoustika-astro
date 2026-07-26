@@ -1,0 +1,34 @@
+---
+import Button from '@/components/ui/Button.astro';
+import Section from '@/components/ui/Section.astro';
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import { BUSINESS } from '@/data/business';
+import { HOME } from '@/data/home';
+
+/**
+ * The closing call to action. The one section on this page with no counterpart on the live site,
+ * added in STEP-05 on the maintainer's instruction.
+ *
+ * It sits here because this is the end of the browse sequence: the reader has seen why, what the
+ * fund pays, and what is available, and the next thing to do is get in touch. The telephone is a
+ * second button rather than a line of text because on a phone it is one tap to the shop, and the
+ * number comes from `BUSINESS` like every other rendering of it.
+ */
+const { contact } = HOME;
+---
+
+<Section tone="brand" spacing="tight" labelledby="contact-heading">
+  <SectionHeading
+    id="contact-heading"
+    title={contact.heading}
+    description={contact.description}
+  />
+
+  <div class="mt-8 flex flex-wrap justify-center gap-4">
+    <Button href={contact.cta.href} size="lg" icon="mail">{contact.cta.label}</Button>
+
+    <Button href={BUSINESS.telephone.href} variant="secondary" size="lg" icon="phone">
+      {BUSINESS.telephone.display}
+    </Button>
+  </div>
+</Section>

@@ -1,20 +1,23 @@
 ---
+import ContactCta from '@/components/sections/ContactCta.astro';
 import EopyyPromo from '@/components/sections/EopyyPromo.astro';
 import FeaturedModels from '@/components/sections/FeaturedModels.astro';
 import HomeHero from '@/components/sections/HomeHero.astro';
 import HomeServices from '@/components/sections/HomeServices.astro';
+import SigniaApp from '@/components/sections/SigniaApp.astro';
 import { HOME } from '@/data/home';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
 /**
  * The home page.
  *
- * This file owns one thing: which sections there are and in what order. Every section holds its
- * own markup and reads its own copy from `src/data/home.ts` or a content collection, so changing
- * the order here changes the page and nothing else.
+ * This file owns one thing: which sections there are and in what order. Each section holds its own
+ * markup and reads its own copy from `src/data/home.ts` or a content collection, so changing the
+ * order here changes the page and nothing else.
  *
  * The order is the live site's, deliberately — hero, why us, EOPYY, the aids, then the app. The
- * closing contact band is the one addition.
+ * closing contact band is the one addition, and it goes above the app section because the app
+ * section stays at the bottom.
  */
 ---
 
@@ -23,4 +26,6 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
   <HomeServices />
   <EopyyPromo />
   <FeaturedModels />
+  <ContactCta />
+  <SigniaApp />
 </BaseLayout>
