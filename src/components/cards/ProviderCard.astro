@@ -49,11 +49,21 @@ const { name, description, features, logo, logoAlt, website } = provider.data;
     tall Signia lockup to a wide Siemens wordmark, and `object-contain` in a common box is what
     stops each card's footer being a different height.
   */}
+  {/*
+    `brand-strong` into `brand-deep` with an underline, which is exactly what `Button`'s ghost
+    variant does. Every link on this site hovers *into* teal: the footer, the breadcrumbs, the
+    contact list and the navigation all go to `brand-strong`. An earlier version of this one went
+    the other way, from teal to `ink`, and was the only thing anywhere that hovered out of the
+    brand colour into grey. That is why it read as a browser default rather than a decision.
+
+    `brand-strong` is a white-ground colour (4.74:1 there, 4.41:1 on `--color-page`) and this link
+    lives inside a `Card`, which is `bg-surface`. See the colour block in `global.css`.
+  */}
   <a
     href={website}
     target="_blank"
     rel="noopener noreferrer"
-    class="mt-10 flex flex-col items-center gap-3 self-center rounded-card px-4 py-2 text-body font-bold text-brand-deep transition-[color,transform] duration-(--duration-fast) ease-out hover:text-ink motion-safe:hover:scale-105"
+    class="group/provider mt-10 flex flex-col items-center gap-3 self-center rounded-card px-4 py-2 text-body font-bold text-brand-strong transition-[color,transform] duration-(--duration-fast) ease-out hover:text-brand-deep focus-visible:text-brand-deep motion-safe:hover:scale-105"
   >
     <Image
       src={logo}
@@ -66,7 +76,10 @@ const { name, description, features, logo, logoAlt, website } = provider.data;
       class="h-24 w-55 object-contain"
     />
 
-    <span class="inline-flex items-center gap-2">
+    {/* The underline sits on the label, not the anchor, so it does not run under the logo. */}
+    <span
+      class="inline-flex items-center gap-2 underline-offset-4 group-hover/provider:underline group-focus-visible/provider:underline"
+    >
       {websiteLabel}&nbsp;{name}
       <Icon name={ICONS.external} class="size-4 shrink-0" aria-hidden="true" />
     </span>
