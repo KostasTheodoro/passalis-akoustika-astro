@@ -13,15 +13,15 @@ seo:
 # deliberately weak — STEP-03 replaces it with descriptive Greek alt text once the images
 # have been localized and can actually be looked at.
 images:
-  - source: sxetika-me-mas-1.png
+  - image: ../../assets/images/about/sxetika-me-mas-1.jpg
     alt: Ακουστικά 1
-  - source: sxetika-me-mas-2.png
+  - image: ../../assets/images/about/sxetika-me-mas-2.jpg
     alt: Ακουστικά 2
-  - source: sxetika-me-mas-3.png
+  - image: ../../assets/images/about/sxetika-me-mas-3.jpg
     alt: Ακουστικά 3
-  - source: sxetika-me-mas-4.png
+  - image: ../../assets/images/about/sxetika-me-mas-4.jpg
     alt: Ακουστικά 4
-  - source: sxetika-me-mas-5.png
+  - image: ../../assets/images/about/sxetika-me-mas-5.jpg
     alt: Χαρούμενοι πελάτες
     wide: true
 ---

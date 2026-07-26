@@ -3,6 +3,7 @@ type: rechargeable
 description: >-
   Επαναφορτιζόμενο CIC/IIC με βάση φόρτισης Charge&Go, έως 20 ώρες αυτονομία, Bluetooth
   και HD streaming από την πλατφόρμα Signia NX.
+image: ../../assets/images/hearing/insio-charge-go.jpg
 imageAlt: Signia Insio Charge&Go
 imageSources:
   - https://static.wixstatic.com/media/6e811e_420d8eb47b494d5eb72fd55eac8429c5~mv2.jpg

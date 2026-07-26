@@ -1,13 +1,21 @@
+import appStoreBadge from '@/assets/images/badges/appstore.svg';
+import googlePlayBadge from '@/assets/images/badges/googleplay.png';
+import heroDesktop from '@/assets/images/hero/hero-desktop.jpg';
+import heroMobile from '@/assets/images/hero/hero-mobile.jpg';
+import eopyyLogo from '@/assets/images/partners/eopyy.png';
+import signiaLogo from '@/assets/images/partners/signia.png';
 import { ROUTES, type RoutePath } from '@/data/routes';
 
 /**
  * Home page copy, gathered from the five legacy components that each held their own strings
  * (`Hero`, `ServicesSection`, `Eoppy`, `Favorites`, `SigniaApp`).
  *
- * Structure and wording only. Layout, icons and imagery are the templates' business in
- * STEP-05; `icon` here is a key the template maps to a component, not a component itself.
- * The EOPYY amount is deliberately absent — it comes from the `eopyy` page entry, which is
- * the single source for that figure.
+ * Structure and wording only. Layout is the templates' business in STEP-05; `icon` here is a key
+ * the template maps to a component, not a component itself. The EOPYY amount is deliberately
+ * absent — it comes from the `eopyy` page entry, which is the single source for that figure.
+ *
+ * Images are imported rather than named by path, so each one arrives as `ImageMetadata` with its
+ * dimensions attached and a build fails loudly if a file is renamed or removed.
  */
 
 export interface ServiceCard {
@@ -34,8 +42,16 @@ export const HOME = {
     subheading:
       'Είμαστε εδώ για να σας βοηθήσουμε με όλες τις απορίες σας για τα ακουστικά βαρηκοΐας',
     cta: { label: 'Συχνές Ερωτήσεις', href: ROUTES.faq } satisfies CallToAction,
-    /** Legacy sources. STEP-03 replaces these with optimized responsive derivatives. */
-    imageSources: { desktop: '/hero.png', mobile: '/hero-mobile.jpg' },
+    /**
+     * Two separate photographs, not one image at two sizes: the desktop frame is a wide
+     * landscape and the mobile one is square, so STEP-05 needs a `<picture>` with a media
+     * condition rather than a plain srcset.
+     *
+     * The hero carries no information the heading does not already state, so it is decorative
+     * and takes an empty alt.
+     */
+    image: { desktop: heroDesktop, mobile: heroMobile },
+    imageAlt: '',
   },
 
   services: {
@@ -72,8 +88,8 @@ export const HOME = {
   eopyyCard: {
     headline: 'Επιδότηση από το ταμείο σας!',
     note: 'Καταβάλλετε μόνο τη συμμετοχή σας',
-    logoSource: '/eopyy.png',
-    logoAlt: 'ΕΟΠΥΥ',
+    logo: eopyyLogo,
+    logoAlt: 'Λογότυπο ΕΟΠΥΥ',
     href: ROUTES.eopyy,
   },
 
@@ -90,7 +106,12 @@ export const HOME = {
       'Το Signia App σας παρέχει έλεγχο, οδηγίες, υποστήριξη και πολλές ακόμα δυνατότητες, εύκολα και γρήγορα.',
     ],
     note: 'Διαθέσιμο για iOS και Android.',
-    logoSource: '/signia-logo.png',
-    logoAlt: 'Signia logo',
+    logo: signiaLogo,
+    logoAlt: 'Λογότυπο Signia',
+    /** Official store artwork, shipped exactly as supplied. Only the alt text is localized. */
+    badges: {
+      appStore: { image: appStoreBadge, alt: 'Κατεβάστε το από το App Store' },
+      googlePlay: { image: googlePlayBadge, alt: 'Διαθέσιμο στο Google Play' },
+    },
   },
 } as const;

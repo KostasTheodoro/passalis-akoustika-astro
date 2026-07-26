@@ -13,7 +13,7 @@ seo:
     - επιδότηση ακουστικών
     - 450€
 images:
-  - source: eoppy-blend.png
+  - image: ../../assets/images/partners/eopyy-banner.webp
     alt: ΕΟΠΥΥ
     wide: true
 cta:

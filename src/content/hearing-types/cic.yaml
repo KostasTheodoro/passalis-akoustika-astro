@@ -14,6 +14,7 @@ seo:
     - Ενδοκαναλικά
     - CIC
     - Μαρούσι
+image: ../../assets/images/hearing/insio-cic-mayro.jpg
 imageAlt: Ενδοκαναλικά – CIC (Completely in Canal)
 # The only non-HTTPS image source on the site. It causes a mixed-content failure on the live
 # site and must be localized in STEP-03. `tests/unit/content-integrity.test.ts` asserts this
