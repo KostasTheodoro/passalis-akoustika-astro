@@ -1,0 +1,76 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import Card from '@/components/ui/Card.astro';
+
+/**
+ * One hearing-aid model.
+ *
+ * The photo sits in a fixed square box and is contained rather than cropped: the thirteen product
+ * photos arrive from thirteen different sources at several aspect ratios, and `object-cover`
+ * would cut through the product on some of them. Contained on white, the row lines up and
+ * nothing is amputated.
+ *
+ * `href` is optional because the two places this card is used want different things. On the home
+ * page it links to the model's category, which is what the live site does — there are no
+ * model-detail pages and none are planned. On a category page (STEP-06) the reader is already
+ * there, so the card is not a link at all and takes no `href`.
+ *
+ * `eyebrow` names the category. On the home page that is not decoration: the card is titled with a
+ * model but lands on a category, and the eyebrow is what stops that being a surprise.
+ */
+interface Props {
+  model: CollectionEntry<'hearing-models'>;
+  eyebrow?: string;
+  href?: string;
+  /** Required whenever `href` is set — it becomes the overlay link's accessible name. */
+  linkLabel?: string;
+  /** Passed to the image's `sizes`; the caller knows the grid, this component does not. */
+  sizes?: string;
+}
+
+const {
+  model,
+  eyebrow,
+  href,
+  linkLabel,
+  sizes = '(min-width: 1024px) 20rem, (min-width: 640px) 45vw, 90vw',
+}: Props = Astro.props;
+
+const { name, image, imageAlt } = model.data;
+---
+
+<Card as="li" href={href} linkLabel={linkLabel} padding="none" class="overflow-hidden">
+  {/*
+    `layout="none"` opts this image out of the project-wide `constrained` layout set in
+    `astro.config.mjs`. That layout emits `object-fit: cover` and `height: auto` through attribute
+    selectors that outrank the utility classes, which crops straight through the taller products
+    and lets each photo's own aspect ratio decide the box height. The box is fixed here on purpose,
+    so the image is told to fill it and contain itself, and the four cards line up.
+  */}
+  {/*
+    `min-h-0` is load-bearing. A flex item's automatic minimum size is its content's, so without it
+    the photo's own aspect ratio wins over the box's and the four cards stop lining up — the one
+    500×444 photo among twelve square ones made its card 26px shorter than the rest.
+
+    The box is square because the photographs mostly are; a 4:3 box would letterbox nine of the
+    thirteen for the sake of the other four.
+  */}
+  <div class="flex aspect-square min-h-0 items-center justify-center bg-surface p-4">
+    <Image
+      src={image}
+      alt={imageAlt}
+      layout="none"
+      widths={[320, 480, 640]}
+      sizes={sizes}
+      loading="lazy"
+      decoding="async"
+      class="size-full object-contain"
+    />
+  </div>
+
+  <div class="flex flex-col gap-1 border-t border-border p-card text-center">
+    {eyebrow && <p class="text-eyebrow">{eyebrow}</p>}
+    <h3 class="text-card font-bold text-brand-strong text-balance">{name}</h3>
+  </div>
+</Card>

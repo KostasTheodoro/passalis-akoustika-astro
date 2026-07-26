@@ -1,0 +1,65 @@
+---
+import HearingModelCard from '@/components/cards/HearingModelCard.astro';
+import Button from '@/components/ui/Button.astro';
+import Section from '@/components/ui/Section.astro';
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import { HOME } from '@/data/home';
+import { hearingTypePath } from '@/data/routes';
+import { getFeaturedModels, getHearingTypes } from '@/lib/content/collections';
+
+/**
+ * `Τα ακουστικά μας` — one model from each of the four categories.
+ *
+ * Which four is not decided here. `getFeaturedModels()` returns the entries marked `featured` in
+ * the collection, already sorted by category order and then by position within it, which
+ * reproduces the live site's sequence exactly: CIC, Charge&Go, RIC, BTE.
+ *
+ * Each card links to its model's category page, as the live site does. The eyebrow says which
+ * category that is, so the destination is stated rather than discovered on arrival.
+ */
+const { featured } = HOME;
+
+const [models, types] = await Promise.all([getFeaturedModels(), getHearingTypes()]);
+const typesById = new Map(types.map((type) => [type.id, type]));
+
+const cards = models.map((model) => {
+  const type = typesById.get(model.data.type.id);
+  if (!type) {
+    // `getHearingModels` already asserts every reference resolves, so reaching this means the two
+    // helpers disagree — worth failing the build over rather than rendering a card with no label.
+    throw new Error(
+      `Featured model "${model.id}" references the unknown type "${model.data.type.id}".`,
+    );
+  }
+
+  const category = `${type.data.shortTitle} · ${type.data.latinAbbreviation}`;
+
+  return {
+    model,
+    eyebrow: category,
+    href: hearingTypePath(type.id),
+    linkLabel: `${model.data.name} — δείτε τα ακουστικά ${type.data.shortTitle}`,
+  };
+});
+---
+
+<Section labelledby="featured-heading">
+  <SectionHeading id="featured-heading" title={featured.heading} />
+
+  <ul class="mt-12 grid list-none gap-6 sm:grid-cols-2 lg:grid-cols-4">
+    {
+      cards.map((card) => (
+        <HearingModelCard
+          model={card.model}
+          eyebrow={card.eyebrow}
+          href={card.href}
+          linkLabel={card.linkLabel}
+        />
+      ))
+    }
+  </ul>
+
+  <div class="mt-12 flex justify-center">
+    <Button href={featured.cta.href}>{featured.cta.label}</Button>
+  </div>
+</Section>

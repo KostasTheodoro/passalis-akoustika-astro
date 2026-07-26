@@ -39,9 +39,12 @@ const linkLabel = `${eopyyCard.headline} — ${amount}. Διαβάστε για 
     <p class="text-body-lg font-bold text-balance">{eopyyCard.headline}</p>
 
     <span class="flex size-24 items-center justify-center rounded-pill bg-surface p-3">
+      {/* `layout="none"` for the same reason as the model cards: the shared `constrained` layout
+          would crop this logo to fill its circle rather than fit inside it. */}
       <Image
         src={eopyyCard.logo}
         alt={eopyyCard.logoAlt}
+        layout="none"
         widths={[72, 144]}
         sizes="72px"
         loading="lazy"
