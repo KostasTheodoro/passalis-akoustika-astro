@@ -1,1 +1,17 @@
 @import "tailwindcss";
+
+/**
+ * `--font-sansation` is defined by Astro's Fonts API, which the <Font> component injects into
+ * the document head. It resolves to "Sansation" followed by a metric-matched fallback that Astro
+ * generates from the font file itself, so the swap to the real face barely shifts the layout.
+ *
+ * Mapping it onto Tailwind's `--font-sans` makes Sansation the default: `font-sans` and the
+ * `body` rule below both resolve to it, and nothing has to name the family directly.
+ */
+@theme {
+  --font-sans: var(--font-sansation);
+}
+
+body {
+  font-family: var(--font-sans);
+}

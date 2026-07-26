@@ -1,7 +1,9 @@
 import react from '@astrojs/react';
 import vercel from '@astrojs/vercel';
 import tailwindcss from '@tailwindcss/vite';
-import { defineConfig, envField } from 'astro/config';
+import { defineConfig, envField, fontProviders } from 'astro/config';
+
+const sansation = 'src/assets/fonts/sansation';
 
 export default defineConfig({
   output: 'static',
@@ -19,4 +21,27 @@ export default defineConfig({
       }),
     },
   },
+  /**
+   * Sansation, self-hosted. Only the four faces the site actually uses are registered — the
+   * legacy Light and LightItalic files are not carried over, because no `font-light` or
+   * `font-thin` class exists anywhere in the source.
+   *
+   * `font-semibold` (600) and `font-extrabold` (800) have no real face and are rounded by the
+   * browser to 400 and 700, exactly as on the live site.
+   */
+  fonts: [
+    {
+      provider: fontProviders.local(),
+      name: 'Sansation',
+      cssVariable: '--font-sansation',
+      options: {
+        variants: [
+          { weight: 400, style: 'normal', src: [`./${sansation}/Sansation-Regular.woff2`] },
+          { weight: 700, style: 'normal', src: [`./${sansation}/Sansation-Bold.woff2`] },
+          { weight: 400, style: 'italic', src: [`./${sansation}/Sansation-Italic.woff2`] },
+          { weight: 700, style: 'italic', src: [`./${sansation}/Sansation-BoldItalic.woff2`] },
+        ],
+      },
+    },
+  ],
 });
