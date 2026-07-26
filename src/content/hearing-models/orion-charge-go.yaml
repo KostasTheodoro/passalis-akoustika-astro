@@ -1,8 +1,11 @@
 name: Signia Orion Charge&Go
 type: rechargeable
+# Correction, 2026-07-26. `και streaming` removed: Orion is Signia's essentials line and its own
+# product page claims rechargeability and dust/sweat resistance without mentioning Bluetooth. No
+# source confirms audio streaming, so the claim goes rather than being softened.
 description: >-
   Μεγάλο επαναφορτιζόμενο BTE μοντέλο Orion Charge&Go, για μέτρια έως βαριά απώλεια
-  ακοής, με ισχυρή μπαταρία και streaming.
+  ακοής, με ισχυρή μπαταρία.
 image: ../../assets/images/hearing/orion-charge-go.jpg
 imageAlt: Επαναφορτιζόμενο οπισθωτιαίο ακουστικό Signia Orion Charge&Go σε μπεζ χρώμα
 imageSources:

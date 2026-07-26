@@ -1,7 +1,8 @@
 name: Signia Intuis 3 S/M BTE
 type: bte
+# Wording precision, 2026-07-26. Same "6 channel MPO" correction as intuis-3-ric.yaml.
 description: >-
-  Σειρά Intuis 3 BTE, με επεξεργασία 6 καναλιών, τηλερύθμιση μέσω Signia App,
+  Σειρά Intuis 3 BTE, με 6 κανάλια MPO, τηλερύθμιση μέσω Signia App, αυτόματα
   κατευθυντικά μικρόφωνα και αντοχή σε απαιτητικά περιβάλλοντα.
 image: ../../assets/images/hearing/intuis-3-s-m.jpg
 imageAlt: Οπισθωτιαίο ακουστικό Signia Intuis 3 S/M σε μπεζ χρώμα, με λεπτό σωληνάκι και λευκό ακροφύσιο

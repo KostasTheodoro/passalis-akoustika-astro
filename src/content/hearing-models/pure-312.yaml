@@ -1,8 +1,11 @@
 name: Signia Pure 312 RIC
 type: ric
+# Correction, 2026-07-26. The `4 κλασικά προγράμματα ήχου` claim is unsourced — no Signia or dealer
+# material states a program count for Pure 312 AX, and programs are set at the fitting and in the
+# app rather than fixed in the device.
 description: >-
-  Δημοφιλές RIC με μπαταρία 312, 4 κλασικά προγράμματα ήχου, ασύρματη σύνδεση και
-  εύκολη χρήση — ιδανικό για καθημερινές εφαρμογές.
+  Δημοφιλές RIC με μπαταρία 312, ασύρματη σύνδεση και εύκολη χρήση — ιδανικό για
+  καθημερινές εφαρμογές.
 image: ../../assets/images/hearing/pure-312.jpg
 imageAlt: Ακουστικό ανοιχτής εφαρμογής Signia Pure 312 RIC σε μπεζ χρώμα, με καλώδιο και γκρι ακροφύσιο
 imageSources:
