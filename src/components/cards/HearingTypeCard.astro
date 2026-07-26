@@ -43,9 +43,12 @@ const { title, shortTitle, description, image, imageAlt } = type.data;
         `layout="none"` and `object-contain` for the same reason as the model card: the photos come
         from several sources at several aspect ratios, and cropping cuts through the product on
         some of them. The box is fixed so the four cards agree with each other.
+
+        White, not a grey tile: the RIC photo is the one 500×444 file among four, so it letterboxes,
+        and a grey ground would show as two bands beside it while the other three hid it entirely.
       */}
       <div
-        class="flex aspect-square min-h-0 w-44 shrink-0 items-center justify-center overflow-hidden rounded-card bg-page sm:w-52"
+        class="flex aspect-square min-h-0 w-44 shrink-0 items-center justify-center overflow-hidden rounded-card bg-surface sm:w-52"
       >
         <Image
           src={image}
