@@ -1,0 +1,37 @@
+---
+import type { BreadcrumbItem } from '@/components/navigation/Breadcrumbs.astro';
+import ContactBand from '@/components/sections/ContactBand.astro';
+import FaqAccordion from '@/components/sections/FaqAccordion.astro';
+import Section from '@/components/ui/Section.astro';
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import { INFORMATIONAL } from '@/data/informational';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getFaqs } from '@/lib/content/collections';
+
+/**
+ * `/syxnes-erotiseis`.
+ *
+ * Which questions, in what order and what each answers are all the collection's business.
+ * `getFaqs()` returns them sorted by `order`, which keeps the client's original nine in their
+ * original sequence with the five newer ones after them.
+ *
+ * `narrow` rather than the site default, for the same reason the live site uses `max-w-3xl`: a
+ * question and a short answer read badly across a wide column.
+ */
+const faqs = await getFaqs();
+
+const breadcrumbs: BreadcrumbItem[] = [{ label: 'Συχνές Ερωτήσεις' }];
+const { seo, heading, contact } = INFORMATIONAL.faq;
+---
+
+<BaseLayout title={seo.title} description={seo.description} breadcrumbs={breadcrumbs}>
+  <Section spacing="tight" width="narrow" labelledby="faq-heading">
+    <SectionHeading id="faq-heading" as="h1" size="title" title={heading} />
+
+    <div class="mt-12">
+      <FaqAccordion faqs={faqs} />
+    </div>
+  </Section>
+
+  <ContactBand heading={contact.heading} description={contact.description} cta={contact.cta} />
+</BaseLayout>

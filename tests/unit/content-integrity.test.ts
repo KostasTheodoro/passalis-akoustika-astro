@@ -84,8 +84,39 @@ describe('collection shape', () => {
   test('the migrated entry counts match the legacy site', () => {
     expect(hearingTypes).toHaveLength(4);
     expect(hearingModels).toHaveLength(13);
-    expect(faqs).toHaveLength(9);
     expect(providers).toHaveLength(4);
+  });
+
+  test("the legacy site's nine questions are all still present", () => {
+    // STEP-07 added five generic questions on top of the client's nine. The count is therefore no
+    // longer a parity check, but the nine themselves must never quietly disappear, so they are
+    // named here. Adding a question is expected; removing one of these is not.
+    const legacy = [
+      'how-they-work',
+      'lifespan',
+      'trial',
+      'eopyy-subsidy',
+      'process-duration',
+      'warranty',
+      'online-support',
+      'repairs',
+      'after-hours-appointments',
+    ];
+
+    const ids = new Set(faqs.map((faq) => faq.id));
+    for (const id of legacy) {
+      expect(ids.has(id), `the legacy FAQ "${id}" is missing`).toBe(true);
+    }
+
+    // The nine are also the first nine on the page: they keep `order` 1 to 9, and anything added
+    // since sorts below them.
+    const ordered = [...faqs].sort((a, b) => (a.data.order as number) - (b.data.order as number));
+    expect(
+      ordered
+        .slice(0, 9)
+        .map((faq) => faq.id)
+        .sort(),
+    ).toEqual([...legacy].sort());
   });
 
   test('every id is lowercase, hyphenated and safe to use in a URL', () => {

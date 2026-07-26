@@ -1,0 +1,72 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { render } from 'astro:content';
+import { Icon } from 'astro-icon/components';
+import { ICONS } from '@/data/icons';
+
+/**
+ * The questions, as a native disclosure list.
+ *
+ * **This ships no JavaScript.** `<details name="faq">` is the HTML exclusive-accordion attribute:
+ * opening one panel closes the others, which is the live site's one-open behaviour delivered by
+ * the browser instead of by a React island. `technical-architecture.md` asks for exactly this, and
+ * DEC-027 records the FAQ as the case where shadcn's Radix primitive is *not* the right answer.
+ *
+ * What comes free with the native element, and would otherwise have to be built and tested:
+ * `<summary>` is focusable, operates on Enter and Space, and reports its own expanded state, so
+ * there is no `aria-expanded` to keep in sync and nothing to manage on click. The global
+ * `:focus-visible` rule in `global.css` already lists `summary`, so the focus ring is the site's.
+ *
+ * In a browser too old for `name` (before Chrome 120, Safari 17.2, Firefox 130) every panel still
+ * opens and closes correctly and only the exclusivity is lost. That is a better failure than a
+ * scripted accordion that does not run at all.
+ *
+ * The answers stay in the DOM when collapsed, so they are indexable and findable with Ctrl-F.
+ *
+ * Each answer is a Markdown body rather than a string, because `content-model.md` wanted answers
+ * able to carry links, and one of them now does.
+ */
+interface Props {
+  faqs: CollectionEntry<'faqs'>[];
+}
+
+const { faqs }: Props = Astro.props;
+
+/** `render()` is async, so every answer is resolved before the markup is built. */
+const entries = await Promise.all(
+  faqs.map(async (faq) => ({ faq, Content: (await render(faq)).Content })),
+);
+---
+
+<div class="flex flex-col">
+  {
+    entries.map(({ faq, Content }) => (
+      <details
+        name="faq"
+        class="group border-b border-border transition-colors duration-(--duration-fast) hover:border-brand-strong open:border-brand-strong"
+      >
+        {/*
+          `list-none` plus the WebKit pseudo-element removes the default triangle. Both are needed:
+          Safari still draws the marker from `::-webkit-details-marker` regardless of `list-style`.
+
+          `cursor-pointer` because a summary is not a button and browsers do not give it one.
+        */}
+        <summary
+          class="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-body-lg font-bold text-ink transition-colors duration-(--duration-fast) marker:hidden group-open:text-brand-deep hover:text-brand-deep [&::-webkit-details-marker]:hidden"
+        >
+          {faq.data.question}
+
+          <Icon
+            name={ICONS.chevronDown}
+            class="size-6 shrink-0 text-ink-muted transition-transform duration-(--duration-fast) ease-out group-open:rotate-180 group-open:text-brand-deep motion-reduce:transition-none"
+            aria-hidden="true"
+          />
+        </summary>
+
+        <div class="prose pb-5">
+          <Content />
+        </div>
+      </details>
+    ))
+  }
+</div>
