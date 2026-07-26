@@ -38,17 +38,31 @@ const breadcrumbs: BreadcrumbItem[] = [
 ---
 
 <BaseLayout title={seo.title} description={seo.description} breadcrumbs={breadcrumbs}>
-  {banner && <PageBanner image={banner.image} alt={banner.alt} />}
+  {/*
+    Heading, then the band, then the prose.
 
+    The band used to sit above the title, which is what the live site does, and it left the page
+    opening with a breadcrumb trail, then a wide unexplained picture, then finally its own name.
+    Naming the page first and illustrating it second reads the right way round.
+
+    It stays full-bleed. Contained at `medium` it was measured and reverted: the geometry was
+    correct but the ΕΟΠΥΥ lockup's small-caps line stopped being legible at 960px, and at 390px the
+    strip was 68px tall. `PageBanner` documents the numbers. Full-bleed means it cannot live inside
+    a `Section`, so the heading and the body are two sections with the band between them.
+  */}
   <Section spacing="tight" width="narrow" labelledby="eopyy-heading">
     <SectionHeading id="eopyy-heading" as="h1" size="title" title={title} />
+  </Section>
 
+  {banner && <PageBanner image={banner.image} alt={banner.alt} />}
+
+  <Section spacing="tight" width="narrow">
     {/*
       `text-start`, not the live site's centred column. Three long paragraphs and two lists set
       centred are noticeably harder to read, and the ragged left edge is the reason: the eye has to
       hunt for the start of every line.
     */}
-    <div class="prose mt-10">
+    <div class="prose">
       <Content />
     </div>
 

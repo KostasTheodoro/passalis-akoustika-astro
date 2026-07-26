@@ -2,26 +2,36 @@
 import { Image } from 'astro:assets';
 
 /**
- * The full-bleed banner above a page's heading. Only `/synergates/eopyy` uses one.
+ * The full-bleed band under a page's heading. Only `/synergates/eopyy` uses one.
  *
- * The live page is the reference for this component, not the legacy source, and the maintainer's
- * instruction was to reproduce its result exactly. Four properties do that, and each is here for a
- * measured reason rather than by eye:
+ * **Why it is full-bleed, having been tried contained.** The maintainer asked for two changes at
+ * review: the title before the picture, and the picture contained rather than hero-like. The first
+ * stuck. The second was built, measured and reverted, because the artwork cannot carry a narrow
+ * column.
+ *
+ * It is not a geometry problem. Contained, the rendered ratio was 5.12 against the artwork's own
+ * 5.12 at both 1440 and 390, so nothing was stretched. It is a scale problem: the ΕΟΠΥΥ lockup on
+ * the right third carries a line of small caps reading `ΕΘΝΙΚΟΣ ΟΡΓΑΝΙΣΜΟΣ ΠΑΡΟΧΗΣ ΥΠΗΡΕΣΙΩΝ
+ * ΥΓΕΙΑΣ`. Full-bleed at 1440 the band draws 1441px wide and picks the 1536w source, and that line
+ * is legible. Capped at `medium` it drew 960px from the 1024w source, a third smaller in both
+ * dimensions, and the line turned to mush. At 390 the contained strip was 68px tall and the whole
+ * lockup was a smudge. A 5.13:1 banner with 6px caption text was drawn to be shown wide.
+ *
+ * Four properties reproduce the live rendering, each measured rather than eyeballed:
  *
  * 1. **`aspect-[34/7]`** is the live site's own box, 4.857 against the artwork's 5.128, so
  *    `object-cover` trims roughly 5% off the sides at every width. A different ratio is a
  *    different crop.
- * 2. **Full-bleed.** No `Container`, no gutter. It runs to the viewport edge on the live site at
- *    every width, so it renders directly inside `<main>`.
+ * 2. **Full-bleed.** No `Container`, no gutter, so it must render as a direct child of `<main>`.
  * 3. **`bg-surface`.** The artwork is transparent through its middle and right third, and the
  *    legacy parent is `bg-white`. Our page ground is `--color-page` (`#f7f7f6`), so without an
- *    explicit white behind it the ΕΟΠΥΥ mark would sit on grey and the banner would not match.
- * 4. **`bg-brand/10` over the image**, which is the live `bg-primary/10` expressed in the site's
- *    own teal. This wash is the reason the banner reads pale teal rather than white, and it is the
- *    single easiest thing to leave out by accident.
+ *    explicit white behind it the ΕΟΠΥΥ mark sits on grey and the blend falls apart.
+ * 4. **`bg-brand/10` over the image**, the live `bg-primary/10` in the site's own teal. This wash
+ *    is why the band reads pale teal rather than white, and it is the single easiest of the four
+ *    to leave out by accident.
  *
- * The overlay is `pointer-events-none` so it cannot swallow a click, and the image carries no
- * caption or text of its own, so nothing on the page is read through the tint.
+ * The overlay is `pointer-events-none` so it cannot swallow a click, and the artwork carries no
+ * text the page depends on, so nothing is read through the tint.
  */
 interface Props {
   image: ImageMetadata;
@@ -33,8 +43,8 @@ const { image, alt }: Props = Astro.props;
 
 <div class="relative aspect-[34/7] w-full overflow-hidden bg-surface">
   {/*
-    Eager and high priority: this is the LCP element on the route it appears on. `layout="none"`
-    because the sizing is the aspect box's job, not the image's.
+    Eager and high priority: it is the largest thing near the top of its route and so the LCP
+    candidate. `layout="none"` because the sizing is the aspect box's job, not the image's.
   */}
   <Image
     src={image}

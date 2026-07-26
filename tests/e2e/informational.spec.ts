@@ -264,51 +264,105 @@ test.describe('the providers page', () => {
   });
 });
 
-test.describe('the EOPYY banner', () => {
+test.describe('the EOPYY band', () => {
   /**
-   * The maintainer's instruction was that this reproduce the live page exactly, and that it took a
-   * while to get right the first time. The three properties that produce it are asserted here so a
-   * later layout change cannot quietly undo them.
+   * Two things were changed at review and this pins both, because they pull against each other and
+   * a later tidy-up could easily undo one in the name of the other.
+   *
+   * **It sits below the heading.** It used to run above it, as the live site does, which left the
+   * page opening with a trail, a wide unexplained picture, and only then its own name.
+   *
+   * **It is still full-bleed.** Contained at `medium` was built and reverted: the geometry was
+   * correct, but the ΕΟΠΥΥ lockup's small-caps line stopped being legible at 960px and the strip
+   * was 68px tall at 390px. Anything that caps this width brings that back.
+   *
+   * The ground and the wash are the two that would break silently. The artwork is transparent
+   * through its middle and right third, so on the page grey the ΕΟΠΥΥ mark loses its blend, and
+   * without the wash the band reads as blank white rather than pale teal.
    */
   for (const width of [390, 768, 1440]) {
-    test(`runs edge to edge at the live ratio at ${width}px`, async ({ page }) => {
+    test(`runs edge to edge below the heading at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
       await page.goto(ROUTES.eopyy);
 
       const measured = await page.evaluate(() => {
-        const banner = document.querySelector('main img')?.parentElement;
-        if (!banner) return null;
+        const img = document.querySelector('main img');
+        const banner = img?.parentElement;
+        const heading = document.querySelector('main h1');
+        if (!banner || !heading || !img) return null;
 
         const box = banner.getBoundingClientRect();
         const overlay = banner.querySelector('div');
 
         return {
           width: box.width,
-          ratio: box.width / box.height,
+          top: box.top,
+          headingBottom: heading.getBoundingClientRect().bottom,
           viewport: document.documentElement.clientWidth,
           ground: getComputedStyle(banner).backgroundColor,
           wash: overlay ? getComputedStyle(overlay).backgroundColor : null,
+          ratio: box.width / box.height,
         };
       });
 
-      expect(measured, 'the banner was not found').not.toBeNull();
+      expect(measured, 'the band was not found').not.toBeNull();
       if (!measured) return;
 
-      // Full-bleed: no container, no gutter.
+      // The heading comes first. This is the half of the review change that stuck.
+      expect(measured.top, 'the band is above the heading again').toBeGreaterThan(
+        measured.headingBottom,
+      );
+
+      // Full-bleed: no container, no gutter. Capping this is what made the lockup illegible.
       expect(Math.round(measured.width)).toBe(measured.viewport);
 
       // The live site's own 34/7 box. A different ratio is a different crop of the artwork.
       expect(measured.ratio).toBeCloseTo(34 / 7, 2);
 
-      // White behind the artwork, which is transparent through its middle and right third. On the
-      // page ground the ΕΟΠΥΥ mark would sit on grey instead.
       expect(measured.ground).toBe('rgb(255, 255, 255)');
-
-      // The teal wash over the image is the reason the banner reads pale teal rather than white,
-      // and it is the easiest of the three to lose by accident.
-      expect(measured.wash, 'the teal wash over the banner is gone').toMatch(/0\.1\)?$/);
+      expect(measured.wash, 'the teal wash over the artwork is gone').toMatch(/0\.1\)?$/);
     });
   }
+});
+
+test.describe('provider link hover', () => {
+  /**
+   * Every link on this site hovers *into* teal: the footer, the breadcrumbs, the contact list and
+   * the navigation all move to `brand-strong`. The provider links first shipped going the other
+   * way, from teal to `ink`, which was the only place anywhere that hovered out of the brand colour
+   * into grey, and the maintainer picked it out on first look.
+   *
+   * This asserts the direction rather than the exact values, so either teal step may be retuned.
+   */
+  test('moves further into the teal rather than into grey', async ({ page }) => {
+    await page.goto(ROUTES.providers);
+
+    const link = page.locator('main a[target="_blank"]').first();
+    const resting = await link.evaluate((el) => getComputedStyle(el).color);
+
+    await link.hover();
+    const hovered = await link.evaluate((el) => getComputedStyle(el).color);
+
+    const channels = (value: string) => (value.match(/[\d.]+/g) ?? []).map(Number);
+    const [r1, g1, b1] = channels(resting);
+    const [r2, g2, b2] = channels(hovered);
+
+    expect(hovered, 'the hover colour did not change').not.toBe(resting);
+
+    // Teal on this site is a colour whose blue and green sit well above its red. Grey is a colour
+    // whose channels are close together, which is what `ink` is and what this must never become.
+    const spread = (r: number, g: number, b: number) => Math.max(g, b) - r;
+    expect(
+      spread(r2 as number, g2 as number, b2 as number),
+      'the hover state went grey',
+    ).toBeGreaterThan(30);
+
+    // And it gets darker, not lighter, which is what `Button`'s ghost variant does.
+    const luminance = (r: number, g: number, b: number) => r + g + b;
+    expect(luminance(r2 as number, g2 as number, b2 as number)).toBeLessThan(
+      luminance(r1 as number, g1 as number, b1 as number),
+    );
+  });
 });
 
 test.describe('local relevance', () => {
