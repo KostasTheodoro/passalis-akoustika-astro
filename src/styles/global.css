@@ -1,17 +1,191 @@
 @import "tailwindcss";
 
 /**
- * `--font-sansation` is defined by Astro's Fonts API, which the <Font> component injects into
- * the document head. It resolves to "Sansation" followed by a metric-matched fallback that Astro
- * generates from the font file itself, so the swap to the real face barely shifts the layout.
+ * The whole design system lives in this file. Components consume these tokens and never carry a
+ * raw hex, spacing value, radius or duration of their own — `tests/unit/tokens.test.ts` enforces
+ * that, and also recomputes every contrast ratio claimed in the comments below rather than
+ * trusting them.
  *
- * Mapping it onto Tailwind's `--font-sans` makes Sansation the default: `font-sans` and the
- * `body` rule below both resolve to it, and nothing has to name the family directly.
+ * Two colours are taken directly out of `src/assets/brand/logo-mark.svg`: the teal `#149B9E` and
+ * the warm dark `#464342`. The legacy site approximated both (`#18b1b1`, `#444443`); using the
+ * logo's own values is what "preserve the palette" should have meant all along.
  */
 @theme {
+  /**
+   * `--font-sansation` is defined by Astro's Fonts API, which the <Font> component injects into
+   * the document head. It resolves to "Sansation" followed by a metric-matched fallback that Astro
+   * generates from the font file itself, so the swap to the real face barely shifts the layout.
+   *
+   * Mapping it onto Tailwind's `--font-sans` makes Sansation the default: `font-sans` and the
+   * `body` rule below both resolve to it, and nothing has to name the family directly.
+   */
   --font-sans: var(--font-sansation);
+
+  /**
+   * Teal.
+   *
+   * `--color-brand` is the logo's exact teal and the site's identity colour. It measures 3.38:1 on
+   * white, which clears the 3:1 bar for large text, icons and UI borders but not the 4.5:1 that
+   * body-size text and white-on-teal button labels need. So AA-critical work moves one step down
+   * the ramp to `--color-brand-strong` (4.74:1), and hover states to `--color-brand-deep`
+   * (6.38:1). Same hue throughout — it reads as one teal, and the identity colour is untouched.
+   */
+  --color-brand-50: #edf7f7;
+  --color-brand-100: #d6ecec;
+  --color-brand: #149b9e;
+  --color-brand-strong: #0e8083;
+  --color-brand-deep: #0b6a6c;
+
+  /**
+   * Neutrals.
+   *
+   * `--color-ink` is the logo's own dark. `--color-ink-muted` replaces the legacy `#7a7a7a`, which
+   * measured 4.29:1 and quietly failed AA for body text. `--color-page` replaces `#f6f6f6d3`,
+   * whose alpha channel made its effective contrast depend on whatever sat behind it.
+   */
+  --color-ink: #464342;
+  --color-ink-muted: #6e6a68;
+  --color-surface: #ffffff;
+  --color-page: #f7f7f6;
+  --color-border: #e4e2e0;
+  --color-border-strong: #cfccc9;
+
+  /** State colours. Nothing signals state by colour alone — each carries an icon or text too. */
+  --color-success: #1b7f4b;
+  --color-warning: #8a5a00;
+  --color-error: #b3261e;
+
+  /**
+   * Focus. Ink on white is 9.97:1; on teal and other dark grounds the `:where()` rule further down
+   * swaps in white, which is 3.38:1 on `--color-brand` and so clears the 3:1 non-text floor.
+   */
+  --color-focus: var(--color-ink);
+  --color-focus-inverse: #ffffff;
+
+  /**
+   * Type scale. Sansation ships only 400 and 700 — 600 and 800 have no real face and get
+   * synthesised by the browser, so the scale never asks for them.
+   */
+  --text-display: clamp(2rem, 1.4rem + 2.6vw, 3rem);
+  --text-display--line-height: 1.15;
+  --text-title: clamp(1.75rem, 1.45rem + 1.5vw, 2.5rem);
+  --text-title--line-height: 1.2;
+  --text-section: clamp(1.5rem, 1.35rem + 0.75vw, 2rem);
+  --text-section--line-height: 1.25;
+  --text-card: clamp(1.125rem, 1.05rem + 0.35vw, 1.25rem);
+  --text-card--line-height: 1.35;
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.65;
+  --text-body: 1rem;
+  --text-body--line-height: 1.65;
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.55;
+  --text-label: 0.8125rem;
+  --text-label--line-height: 1.4;
+
+  /** Layout. */
+  --container-narrow: 68ch;
+  --container-default: 75rem;
+  --container-wide: 87.5rem;
+
+  --spacing-gutter: 1.25rem;
+  --spacing-gutter-md: 1.5rem;
+  --spacing-gutter-lg: 2rem;
+  --spacing-section: clamp(3rem, 2rem + 4vw, 6rem);
+  --spacing-section-tight: clamp(2rem, 1.5rem + 2vw, 3.5rem);
+  --spacing-card: 1.5rem;
+  --spacing-card-lg: 2rem;
+  --spacing-header: 4rem;
+  --spacing-header-lg: 4.5rem;
+
+  /** Shape. The pill CTA and the large card radius are both carried over from the live site. */
+  --radius-control: 0.5rem;
+  --radius-card: 1rem;
+  --radius-pill: 9999px;
+
+  /** Elevation. Three steps, deliberately — the legacy site had a shadow per component. */
+  --shadow-sm: 0 1px 2px rgb(70 67 66 / 0.06), 0 1px 3px rgb(70 67 66 / 0.08);
+  --shadow-md: 0 2px 4px rgb(70 67 66 / 0.05), 0 6px 16px rgb(70 67 66 / 0.09);
+  --shadow-lg: 0 4px 8px rgb(70 67 66 / 0.05), 0 16px 32px rgb(70 67 66 / 0.11);
+
+  /** Motion. Short and purposeful; the reduced-motion block below turns all of it off. */
+  --duration-fast: 150ms;
+  --duration-base: 220ms;
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/**
+ * The measure token is not a Tailwind theme key (there is no `max-w-*` namespace entry for it), so
+ * it lives on :root and is consumed through `max-w-(--measure)`.
+ */
+:root {
+  --measure: 68ch;
+
+  /**
+   * Keeps in-page anchors from landing underneath the header when it is revealed. Matches
+   * `--spacing-header-lg` plus a little breathing room.
+   */
+  scroll-padding-top: 5.5rem;
 }
 
 body {
   font-family: var(--font-sans);
+  background-color: var(--color-page);
+  color: var(--color-ink);
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
+  -webkit-font-smoothing: antialiased;
+}
+
+/**
+ * One focus ring for the whole site. `:focus-visible` rather than `:focus` so a pointer click does
+ * not leave a ring behind, and the `outline-offset` keeps it clear of the element's own border.
+ *
+ * Nothing anywhere sets `outline: none` without putting something at least as strong in its place.
+ */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
+}
+
+/** On teal and other dark grounds the ink ring disappears, so the ring inverts. */
+:where(.on-brand) :where(a, button, [tabindex]):focus-visible {
+  outline-color: var(--color-focus-inverse);
+}
+
+/**
+ * Greek typography: never uppercase Greek text. Uppercasing drops the tonos (ΑΚΟΥΣΤΙΚΆ becomes
+ * ΑΚΟΥΣΤΙΚΑ) and costs real legibility, so small letter-spaced bold sentence case does the job
+ * that `text-transform: uppercase` does in an English design.
+ */
+.text-eyebrow {
+  font-size: var(--text-label);
+  line-height: var(--text-label--line-height);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--color-ink-muted);
+}
+
+/** Long-form text gets a readable measure without every page having to remember to ask. */
+.measure {
+  max-width: var(--measure);
+}
+
+/**
+ * `!important` is the point of this block, not an oversight: it has to beat any transition a
+ * component sets on itself, and a visitor who has asked their system for less motion should not
+ * have that answer overridden by a specificity contest.
+ */
+@media (prefers-reduced-motion: reduce) {
+  /* biome-ignore-start lint/complexity/noImportantStyles: a reduced-motion reset must win */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  /* biome-ignore-end lint/complexity/noImportantStyles: a reduced-motion reset must win */
 }
