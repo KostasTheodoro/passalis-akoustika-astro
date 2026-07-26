@@ -2,6 +2,7 @@
 import type { InferGetStaticPropsType } from 'astro';
 import HearingModelCard from '@/components/cards/HearingModelCard.astro';
 import type { BreadcrumbItem } from '@/components/navigation/Breadcrumbs.astro';
+import CatalogueCta from '@/components/sections/CatalogueCta.astro';
 import Section from '@/components/ui/Section.astro';
 import SectionHeading from '@/components/ui/SectionHeading.astro';
 import { ROUTES } from '@/data/routes';
@@ -71,4 +72,6 @@ const breadcrumbs: BreadcrumbItem[] = [
       }
     </ul>
   </Section>
+
+  <CatalogueCta />
 </BaseLayout>

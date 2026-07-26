@@ -1,6 +1,7 @@
 ---
 import HearingTypeCard from '@/components/cards/HearingTypeCard.astro';
 import type { BreadcrumbItem } from '@/components/navigation/Breadcrumbs.astro';
+import CatalogueCta from '@/components/sections/CatalogueCta.astro';
 import Section from '@/components/ui/Section.astro';
 import SectionHeading from '@/components/ui/SectionHeading.astro';
 import { CATALOGUE } from '@/data/catalogue';
@@ -32,4 +33,6 @@ const { seo, heading } = CATALOGUE.listing;
       {types.map((type, index) => <HearingTypeCard type={type} eager={index === 0} />)}
     </ul>
   </Section>
+
+  <CatalogueCta />
 </BaseLayout>
