@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
-import { expect, test } from '@playwright/test';
-import { BUSINESS } from '../../src/data/business';
+import { expect, type Locator, test } from '@playwright/test';
+import { BUSINESS, fullAddress } from '../../src/data/business';
+import { EXTERNAL_LINKS } from '../../src/data/external-links';
 import { ROUTES } from '../../src/data/routes';
 
 // `src/data/home.ts` is deliberately not imported here. It imports its images, which is the whole
@@ -158,17 +159,37 @@ test.describe('the journey to contact', () => {
     await expect(links.nth(1)).toHaveAttribute('href', ROUTES.faq);
   });
 
-  test('the closing band offers the form and the telephone', async ({ page }) => {
+  test('the closing band has one button, and it goes to the form', async ({ page }) => {
     await page.goto('/');
 
     const band = page.locator('section[aria-labelledby="contact-heading"]');
-    const links = band.locator('a');
+    // A telephone button used to sit beside this one. The number in the list rings instead.
+    const buttons = band.locator('a.rounded-pill');
 
-    await expect(links).toHaveCount(2);
-    await expect(links.nth(0)).toHaveAttribute('href', ROUTES.contact);
-    await expect(links.nth(0)).not.toBeEmpty();
-    await expect(links.nth(1)).toHaveAttribute('href', BUSINESS.telephone.href);
-    await expect(links.nth(1)).toContainText(BUSINESS.telephone.display);
+    await expect(buttons).toHaveCount(1);
+    await expect(buttons).toHaveAttribute('href', ROUTES.contact);
+    await expect(buttons).not.toBeEmpty();
+  });
+
+  /**
+   * The footer carried these four values until STEP-05. They live here now, and this is the test
+   * that keeps the "one source" guarantee honest after the move — `shell.spec.ts` asserts the
+   * footer no longer holds them.
+   */
+  test('the band carries the shop details, and three of them act', async ({ page }) => {
+    await page.goto('/');
+    const band = page.locator('section[aria-labelledby="contact-heading"]');
+
+    await expect(band).toContainText(BUSINESS.openingHours.display);
+
+    await expect(band.locator(`a[href="${BUSINESS.telephone.href}"]`)).toContainText(
+      BUSINESS.telephone.display,
+    );
+    await expect(band.locator(`a[href="mailto:${BUSINESS.email}"]`)).toContainText(BUSINESS.email);
+
+    const map = band.locator(`a[href="${EXTERNAL_LINKS.googleMaps.place}"]`);
+    await expect(map).toContainText(fullAddress);
+    await expect(map).toHaveAttribute('rel', /noopener/);
   });
 
   test('home links to the catalogue, EOPYY, the FAQ and contact', async ({ page }) => {
@@ -248,6 +269,228 @@ test.describe('featured hearing aids', () => {
       .evaluateAll((boxes) => boxes.map((b) => Math.round(b.getBoundingClientRect().height)));
 
     expect(new Set(frames).size, `photo frames differ: ${frames.join(', ')}`).toBe(1);
+  });
+});
+
+/**
+ * The EOPYY card's gradient runs `brand` → `brand-strong` at 15% → `brand-deep`, and only the two
+ * darker stops clear AA under white text. The 15% is therefore a promise: no letter may sit in the
+ * first segment.
+ *
+ * This recomputes the CSS gradient line for `to bottom left` and asks where each line of text
+ * starts along it. It deliberately does not interpolate any colours — because both remaining stops
+ * pass on their own, "no text before 15%" is sufficient whatever colour space the browser blends
+ * in, and `tests/unit/tokens.test.ts` proves the stops themselves.
+ */
+test('no text on the EOPYY card reaches the light end of its gradient', async ({ page }) => {
+  await page.goto('/');
+
+  const result = await page.evaluate(() => {
+    const link = document.querySelector<HTMLElement>('section[aria-labelledby="eopyy-heading"] a');
+    const card = link?.parentElement;
+    if (!card) return null;
+
+    const gradient = getComputedStyle(card).backgroundImage;
+    // The stop we must stay clear of, read off the rendered value rather than assumed.
+    const viaStop = Number(gradient.match(/(\d+(?:\.\d+)?)%/g)?.[1]?.replace('%', '')) / 100;
+
+    const box = card.getBoundingClientRect();
+    const { width: w, height: h } = box;
+    // `to bottom left` runs perpendicular to the top-left/bottom-right diagonal.
+    const diagonal = Math.hypot(w, h);
+    const direction = { x: -h / diagonal, y: w / diagonal };
+    const length = Math.abs(w * direction.x) + Math.abs(h * direction.y);
+    const centre = { x: box.left + w / 2, y: box.top + h / 2 };
+    const origin = {
+      x: centre.x - (length / 2) * direction.x,
+      y: centre.y - (length / 2) * direction.y,
+    };
+    const positionOf = (x: number, y: number) =>
+      ((x - origin.x) * direction.x + (y - origin.y) * direction.y) / length;
+
+    const lines = [...card.querySelectorAll('p')].map((paragraph) => {
+      const r = paragraph.getBoundingClientRect();
+      const corners: [number, number][] = [
+        [r.left, r.top],
+        [r.right, r.top],
+        [r.left, r.bottom],
+        [r.right, r.bottom],
+      ];
+      return {
+        text: (paragraph.textContent ?? '').trim().slice(0, 30),
+        earliest: Math.min(...corners.map(([x, y]) => positionOf(x, y))),
+      };
+    });
+
+    return { viaStop, lines, isGradient: gradient.includes('gradient') };
+  });
+
+  expect(result, 'the EOPYY card was not found').not.toBeNull();
+  expect(result?.isGradient, 'the EOPYY card lost its gradient').toBe(true);
+  expect(result?.viaStop).toBeGreaterThan(0);
+
+  for (const line of result?.lines ?? []) {
+    expect(
+      line.earliest,
+      `"${line.text}" starts at ${(line.earliest * 100).toFixed(1)}% of the gradient, before the ` +
+        `${((result?.viaStop ?? 0) * 100).toFixed(0)}% stop, so white on it may drop below 4.5:1`,
+    ).toBeGreaterThanOrEqual(result?.viaStop ?? 0);
+  }
+});
+
+test('the EOPYY card is one link and nothing else', async ({ page }) => {
+  await page.goto('/');
+
+  // It briefly carried a "Μάθετε περισσότερα" link inside a card that was already a link, which
+  // is two tab stops to the same place.
+  const links = page.locator('section[aria-labelledby="eopyy-heading"] a');
+  await expect(links).toHaveCount(1);
+  await expect(links).toHaveAttribute('href', ROUTES.eopyy);
+});
+
+/**
+ * Both store badges must look the same size. They cannot be given the same height to achieve it:
+ * Google's artwork carries required clear space and Apple's does not. So each asset is measured and
+ * the *visible* heights are compared — replacing either badge cannot silently break the match.
+ */
+test('both store badges render at the same visible height', async ({ page }) => {
+  await page.goto('/');
+
+  // Both badges are lazy, so `currentSrc` is empty until they are in view and decoded.
+  await page.locator('section[aria-labelledby="signia-heading"]').scrollIntoViewIfNeeded();
+  await page.waitForFunction(() =>
+    [
+      ...document.querySelectorAll<HTMLImageElement>(
+        'section[aria-labelledby="signia-heading"] a[target="_blank"] img',
+      ),
+    ].every((image) => image.complete && image.currentSrc !== ''),
+  );
+
+  const measured = await page.evaluate(async () => {
+    const images = [
+      ...document.querySelectorAll<HTMLImageElement>(
+        'section[aria-labelledby="signia-heading"] a[target="_blank"] img',
+      ),
+    ];
+
+    return Promise.all(
+      images.map(async (image) => {
+        const loaded = await new Promise<HTMLImageElement>((resolve, reject) => {
+          const probe = new Image();
+          probe.onload = () => resolve(probe);
+          probe.onerror = reject;
+          probe.src = image.currentSrc;
+        });
+
+        const canvas = document.createElement('canvas');
+        canvas.width = loaded.naturalWidth;
+        canvas.height = loaded.naturalHeight;
+        const context = canvas.getContext('2d') as CanvasRenderingContext2D;
+        context.drawImage(loaded, 0, 0);
+        const data = context.getImageData(0, 0, canvas.width, canvas.height).data;
+
+        let top = canvas.height;
+        let bottom = 0;
+        for (let y = 0; y < canvas.height; y++) {
+          for (let x = 0; x < canvas.width; x++) {
+            if ((data[(y * canvas.width + x) * 4 + 3] as number) > 12) {
+              if (y < top) top = y;
+              if (y > bottom) bottom = y;
+            }
+          }
+        }
+
+        const fraction = (bottom - top + 1) / canvas.height;
+        return {
+          alt: image.alt,
+          visibleHeight: image.getBoundingClientRect().height * fraction,
+        };
+      }),
+    );
+  });
+
+  expect(measured).toHaveLength(2);
+  const [first, second] = measured as [
+    { alt: string; visibleHeight: number },
+    (typeof measured)[0],
+  ];
+
+  expect(
+    Math.abs(first.visibleHeight - second.visibleHeight),
+    `"${first.alt}" shows ${first.visibleHeight.toFixed(1)}px of badge and "${second.alt}" shows ` +
+      `${second.visibleHeight.toFixed(1)}px`,
+  ).toBeLessThanOrEqual(1.5);
+});
+
+/**
+ * Every one of these had no hover response at all when the maintainer first saw the page.
+ *
+ * Two things about how they are driven. A linked card is covered by its own overlay anchor, so the
+ * pointer lands on the anchor and the transform belongs to its parent — hence `readParent`. And
+ * headless Chromium reports `prefers-reduced-motion: reduce` by default, which switches off every
+ * `motion-safe:` rule; without setting the media explicitly these tests would pass in the
+ * reduced-motion case and fail in the ordinary one, which is exactly backwards.
+ */
+const SHOULD_LIFT = [
+  {
+    name: 'a featured card',
+    hover: 'section[aria-labelledby="featured-heading"] li a',
+    readParent: true,
+  },
+  { name: 'the EOPYY card', hover: 'section[aria-labelledby="eopyy-heading"] a', readParent: true },
+  { name: 'a button', hover: 'main a.rounded-pill', readParent: false },
+  {
+    name: 'a store badge',
+    hover: 'section[aria-labelledby="signia-heading"] a[target="_blank"]',
+    readParent: false,
+  },
+] as const;
+
+/**
+ * Tailwind v4 writes `scale-105` to the standalone `scale` property rather than to `transform`,
+ * so reading `transform` here would report `none` however well the hover works.
+ */
+const scaleOf = (locator: Locator, readParent: boolean) =>
+  locator.evaluate((element, parent) => {
+    const node = parent ? (element.parentElement as HTMLElement) : element;
+    const style = getComputedStyle(node);
+    return `${style.scale} ${style.transform}`;
+  }, readParent);
+
+const NOT_SCALED = 'none none';
+
+test.describe('things that answer the pointer', () => {
+  for (const { name, hover, readParent } of SHOULD_LIFT) {
+    test(`${name} scales under the pointer`, async ({ page }) => {
+      await page.emulateMedia({ reducedMotion: 'no-preference' });
+      await page.goto('/');
+
+      const target = page.locator(hover).first();
+      await target.scrollIntoViewIfNeeded();
+
+      const before = await scaleOf(target, readParent);
+      await target.hover();
+      const after = await scaleOf(target, readParent);
+
+      expect(before, `${name} was already scaled before hovering`).toBe(NOT_SCALED);
+      expect(after, `${name} did not scale on hover`).not.toBe(NOT_SCALED);
+    });
+  }
+
+  test('nothing scales for a visitor who asked for less motion', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+
+    for (const { name, hover, readParent } of SHOULD_LIFT) {
+      const target = page.locator(hover).first();
+      await target.scrollIntoViewIfNeeded();
+      await target.hover();
+
+      expect(
+        await scaleOf(target, readParent),
+        `${name} still moved under prefers-reduced-motion`,
+      ).toBe(NOT_SCALED);
+    }
   });
 });
 

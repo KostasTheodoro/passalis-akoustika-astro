@@ -14,12 +14,33 @@ import { HOME } from '@/data/home';
  * The badges are the official artwork, shipped as supplied. Their alt text is the link's
  * accessible name, so it says what the link does rather than describing the picture, and each one
  * carries a screen-reader-only note that it opens a new tab.
+ *
+ * **Why the two badges are given different heights.** Google's badge is drawn on a 646×250 canvas
+ * with 41px of transparent clear space on every side — the clear space is part of the artwork and
+ * Google's brand guidelines require it, so it is not cropped out. Apple's SVG has none: the badge
+ * fills its 119.66×40 box. Give both elements the same height and Google's *visible* badge lands
+ * 33% smaller, which is exactly what the rebuild shipped. Each is therefore sized by its own
+ * content fraction, so the two visible badges match. `tests/e2e/home.spec.ts` measures the opaque
+ * bounding box of each asset and fails if they drift apart.
  */
 const { signiaApp } = HOME;
 
+/** The height both badges should *appear*, before each one's own clear space is added back. */
+const BADGE_HEIGHT = '3rem';
+
 const stores = [
-  { ...signiaApp.badges.appStore, href: EXTERNAL_LINKS.signiaApp.appStore },
-  { ...signiaApp.badges.googlePlay, href: EXTERNAL_LINKS.signiaApp.googlePlay },
+  {
+    ...signiaApp.badges.appStore,
+    href: EXTERNAL_LINKS.signiaApp.appStore,
+    /** The SVG has no clear space, so the element height is the badge height. */
+    contentFraction: 1,
+  },
+  {
+    ...signiaApp.badges.googlePlay,
+    href: EXTERNAL_LINKS.signiaApp.googlePlay,
+    /** 168 visible pixels on a 250px canvas. */
+    contentFraction: 168 / 250,
+  },
 ];
 ---
 
@@ -55,7 +76,11 @@ const stores = [
                 href={store.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                class="inline-flex rounded-control transition-opacity duration-(--duration-fast) hover:opacity-80"
+                class:list={[
+                  'inline-flex rounded-control',
+                  'transition-transform duration-(--duration-fast) ease-out',
+                  'motion-safe:hover:scale-105 motion-safe:focus-visible:scale-105 motion-safe:active:scale-95',
+                ]}
               >
                 <Image
                   src={store.image}
@@ -65,7 +90,8 @@ const stores = [
                   sizes="160px"
                   loading="lazy"
                   decoding="async"
-                  class="h-12 w-auto"
+                  class="w-auto"
+                  style={`height: calc(${BADGE_HEIGHT} / ${store.contentFraction})`}
                 />
                 <span class="sr-only"> — ανοίγει σε νέα καρτέλα</span>
               </a>
