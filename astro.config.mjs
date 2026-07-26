@@ -22,6 +22,17 @@ export default defineConfig({
     },
   },
   /**
+   * Images are optimized at build time by sharp and shipped as static files. The Vercel adapter's
+   * `imageService` is deliberately left unset, so nothing is optimized at runtime.
+   *
+   * There is no `domains` and no `remotePatterns` list: every image the site renders is local,
+   * and leaving both empty means a remote source cannot quietly creep back in.
+   */
+  image: {
+    layout: 'constrained',
+    responsiveStyles: true,
+  },
+  /**
    * Sansation, self-hosted. Only the four faces the site actually uses are registered — the
    * legacy Light and LightItalic files are not carried over, because no `font-light` or
    * `font-thin` class exists anywhere in the source.
