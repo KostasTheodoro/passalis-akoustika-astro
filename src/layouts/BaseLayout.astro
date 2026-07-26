@@ -15,7 +15,14 @@ const { title } = Astro.props;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    {/*
+      The ear mark from the logo, on the white ground the live site already uses. The wordmark is
+      unreadable at 16px, so it is not the icon. STEP-09 adds the web manifest that will reference
+      /icon-192.png and /icon-512.png.
+    */}
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
     {/* Only the two upright faces are preloaded; the italics load on demand. */}
     <Font
