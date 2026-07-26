@@ -1,5 +1,7 @@
 ---
+import EopyyPromo from '@/components/sections/EopyyPromo.astro';
 import HomeHero from '@/components/sections/HomeHero.astro';
+import HomeServices from '@/components/sections/HomeServices.astro';
 import { HOME } from '@/data/home';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
@@ -17,4 +19,6 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 
 <BaseLayout title={HOME.seo.title} description={HOME.seo.description}>
   <HomeHero />
+  <HomeServices />
+  <EopyyPromo />
 </BaseLayout>

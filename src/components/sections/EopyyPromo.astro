@@ -1,0 +1,64 @@
+---
+import { Image } from 'astro:assets';
+import { Icon } from 'astro-icon/components';
+import Section from '@/components/ui/Section.astro';
+import { HOME } from '@/data/home';
+import { ICONS } from '@/data/icons';
+import { getEopyySubsidy } from '@/lib/content/collections';
+
+/**
+ * The teal EOPYY card.
+ *
+ * It does not use `Card`, which is white by definition; this one is the page's single block of
+ * solid colour and needs its own surface. The fill is `brand-strong` rather than the identity
+ * teal because everything on it is white text — `tests/unit/tokens.test.ts` is the reason, and the
+ * buttons and the footer strip already follow the same rule.
+ *
+ * The amount is read from `src/content/pages/eopyy.md`, the one file that holds it. The card used
+ * to hard-code `450€`, which is how the live site ended up able to disagree with its own EOPYY
+ * page; `tests/unit/data.test.ts` now fails if the figure creeps back into the copy.
+ *
+ * The whole card is the link. `Section` names itself from the amount heading, so the region is
+ * announced with a number in it rather than as an anonymous block.
+ */
+const { eopyyCard } = HOME;
+const subsidy = await getEopyySubsidy();
+
+const amount = `${subsidy.adultAmount}€`;
+const linkLabel = `${eopyyCard.headline} — ${amount}. Διαβάστε για τη συμμετοχή του ΕΟΠΥΥ.`;
+---
+
+<Section tone="surface" labelledby="eopyy-heading">
+  <div class="on-brand relative mx-auto flex max-w-sm flex-col items-center gap-5 rounded-card bg-brand-strong p-card-lg text-center text-white shadow-md transition-shadow duration-(--duration-base) ease-out hover:shadow-lg focus-within:shadow-lg">
+    <a href={eopyyCard.href} aria-label={linkLabel} class="absolute inset-0 rounded-card"></a>
+
+    <p class="text-display font-bold" id="eopyy-heading">
+      <span class="sr-only">Επιδότηση ΕΟΠΥΥ: </span>{amount}
+    </p>
+
+    <p class="text-body-lg font-bold text-balance">{eopyyCard.headline}</p>
+
+    <span class="flex size-24 items-center justify-center rounded-pill bg-surface p-3">
+      <Image
+        src={eopyyCard.logo}
+        alt={eopyyCard.logoAlt}
+        widths={[72, 144]}
+        sizes="72px"
+        loading="lazy"
+        decoding="async"
+        class="h-auto w-full"
+      />
+    </span>
+
+    <p class="text-body text-pretty">{eopyyCard.note}</p>
+
+    {/*
+      The overlay anchor carries the accessible name; this line is what a sighted reader sees, so
+      it must not be a second link — the card already is one.
+    */}
+    <span class="inline-flex items-center gap-2 font-bold underline underline-offset-4">
+      Μάθετε περισσότερα
+      <Icon name={ICONS.chevronRight} class="size-4 shrink-0" aria-hidden="true" />
+    </span>
+  </div>
+</Section>

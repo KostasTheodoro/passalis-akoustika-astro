@@ -13,10 +13,23 @@ interface Props {
   spacing?: 'default' | 'tight';
   width?: 'narrow' | 'default' | 'wide';
   id?: string;
+  /**
+   * The id of the heading that names this section. A `<section>` only becomes a landmark once it
+   * has an accessible name, so passing this is what lets a screen-reader user move between the
+   * page's parts instead of scrolling through them.
+   */
+  labelledby?: string;
   class?: string;
 }
 
-const { tone = 'page', spacing = 'default', width = 'default', id, class: className } = Astro.props;
+const {
+  tone = 'page',
+  spacing = 'default',
+  width = 'default',
+  id,
+  labelledby,
+  class: className,
+} = Astro.props;
 
 const tones = {
   page: 'bg-page',
@@ -31,7 +44,11 @@ const spacings = {
 } as const;
 ---
 
-<section id={id} class:list={[tones[tone], spacings[spacing], className]}>
+<section
+  id={id}
+  aria-labelledby={labelledby}
+  class:list={[tones[tone], spacings[spacing], className]}
+>
   <Container size={width}>
     <slot />
   </Container>

@@ -13,6 +13,8 @@ interface Props {
   eyebrow?: string;
   description?: string;
   align?: 'start' | 'center';
+  /** Goes on the heading itself, so a `Section` can name itself with `labelledby`. */
+  id?: string;
   class?: string;
 }
 
@@ -23,6 +25,7 @@ const {
   eyebrow,
   description,
   align = 'center',
+  id,
   class: className,
 }: Props = Astro.props;
 
@@ -43,7 +46,7 @@ const sizes = {
   {eyebrow && <p class="text-eyebrow">{eyebrow}</p>}
 
   {/* Teal headings are the site's signature. At these sizes the logo teal clears its contrast bar. */}
-  <Tag class:list={['font-bold text-balance text-brand', sizes[size]]}>{title}</Tag>
+  <Tag id={id} class:list={['font-bold text-balance text-brand', sizes[size]]}>{title}</Tag>
 
   {
     description && (

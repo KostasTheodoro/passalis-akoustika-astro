@@ -1,0 +1,28 @@
+---
+import ServiceCard from '@/components/cards/ServiceCard.astro';
+import Button from '@/components/ui/Button.astro';
+import Section from '@/components/ui/Section.astro';
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import { HOME } from '@/data/home';
+
+/**
+ * `Γιατί να μας επιλέξετε` — the four reasons, then the link to the About page.
+ *
+ * A list, because four parallel items is what a list is for; a screen reader announces how many
+ * there are before reading the first one. The bullets are removed visually and nothing else about
+ * the semantics changes.
+ */
+const { services } = HOME;
+---
+
+<Section labelledby="services-heading">
+  <SectionHeading id="services-heading" title={services.heading} />
+
+  <ul class="mt-12 grid list-none gap-10 sm:grid-cols-2 lg:grid-cols-4">
+    {services.cards.map((card) => <ServiceCard {...card} />)}
+  </ul>
+
+  <div class="mt-12 flex justify-center">
+    <Button href={services.cta.href} variant="secondary">{services.cta.label}</Button>
+  </div>
+</Section>
