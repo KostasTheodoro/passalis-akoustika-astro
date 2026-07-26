@@ -1,0 +1,35 @@
+---
+import HearingTypeCard from '@/components/cards/HearingTypeCard.astro';
+import type { BreadcrumbItem } from '@/components/navigation/Breadcrumbs.astro';
+import Section from '@/components/ui/Section.astro';
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import { CATALOGUE } from '@/data/catalogue';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getHearingTypes } from '@/lib/content/collections';
+
+/**
+ * `/akoustika` — the four hearing-aid categories.
+ *
+ * Which four, in what order, and what each says are all the collection's business:
+ * `getHearingTypes()` returns them sorted by `order`, which is production's own sequence — CIC,
+ * Επαναφορτιζόμενα, RIC, BTE. This file decides the page, not the content.
+ *
+ * The trail is `Αρχική › Ακουστικά`. `Breadcrumbs` adds the home crumb itself, so only the part
+ * below it is passed, and the last item has no `href` because it is the page you are on.
+ */
+const types = await getHearingTypes();
+
+const breadcrumbs: BreadcrumbItem[] = [{ label: 'Ακουστικά' }];
+const { seo, heading } = CATALOGUE.listing;
+---
+
+<BaseLayout title={seo.title} description={seo.description} breadcrumbs={breadcrumbs}>
+  <Section spacing="tight" labelledby="catalogue-heading">
+    <SectionHeading id="catalogue-heading" as="h1" size="title" title={heading} />
+
+    <ul class="mt-12 flex list-none flex-col gap-6 md:gap-8">
+      {/* Only the first photo is eager: it is the one that decides this page's LCP. */}
+      {types.map((type, index) => <HearingTypeCard type={type} eager={index === 0} />)}
+    </ul>
+  </Section>
+</BaseLayout>
