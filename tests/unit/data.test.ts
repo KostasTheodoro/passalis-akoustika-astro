@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { BUSINESS, fullAddress } from '@/data/business';
+import { CATALOGUE } from '@/data/catalogue';
 import { HOME } from '@/data/home';
 import { FOOTER_NAV, PRIMARY_NAV } from '@/data/navigation';
 import { ROUTES } from '@/data/routes';
@@ -169,5 +170,38 @@ describe('home page copy', () => {
   test('the EOPYY card does not hard-code the subsidy amount', () => {
     const card = JSON.stringify(HOME.eopyyCard);
     expect(card).not.toMatch(/\d{3}\s*€/);
+  });
+});
+
+describe('catalogue copy', () => {
+  test('the contact band points at the contact page', () => {
+    const knownRoutes = new Set<string>(Object.values(ROUTES));
+    expect(knownRoutes).toContain(CATALOGUE.contact.cta.href);
+    expect(CATALOGUE.contact.cta.href).toBe(ROUTES.contact);
+  });
+
+  test('the band names the journey the way the home page names it', () => {
+    // The same action under two different labels reads as two different actions.
+    expect(CATALOGUE.contact.cta.label).toBe(HOME.contact.cta.label);
+  });
+
+  test('the band promises nothing the site cannot do', () => {
+    // There is no appointment system, so no booking verb may appear.
+    expect(CATALOGUE.contact.description).not.toMatch(/ραντεβού|κράτηση/);
+    expect(CATALOGUE.contact.heading.trim().length).toBeGreaterThan(0);
+    expect(CATALOGUE.contact.description.trim().length).toBeGreaterThan(0);
+  });
+
+  test('the listing has its own title and description, not the home page’s', () => {
+    const { seo } = CATALOGUE.listing;
+
+    expect(seo.title.trim().length).toBeGreaterThan(0);
+    expect(seo.description.trim().length).toBeGreaterThan(0);
+    expect(seo.title).not.toBe(HOME.seo.title);
+    expect(seo.description).not.toBe(HOME.seo.description);
+  });
+
+  test('the category button keeps the live site wording', () => {
+    expect(CATALOGUE.listing.cardCta).toBe('Δείτε περισσότερα');
   });
 });

@@ -148,6 +148,53 @@ describe('references between collections', () => {
     }
   });
 
+  /**
+   * "Metadata unique" is a STEP-06 acceptance criterion, and the five catalogue routes take their
+   * titles and descriptions straight from these entries. Catching a duplicate here names the file;
+   * catching it in the browser only says two pages agree.
+   */
+  test('every category has its own title and description', () => {
+    const seo = hearingTypes.map((type) => type.data.seo as { title: string; description: string });
+
+    for (const [index, entry] of seo.entries()) {
+      expect(
+        entry?.title?.trim().length,
+        `${hearingTypes[index]?.file} has no seo title`,
+      ).toBeGreaterThan(0);
+      expect(
+        entry?.description?.trim().length,
+        `${hearingTypes[index]?.file} has no seo description`,
+      ).toBeGreaterThan(0);
+    }
+
+    expect(new Set(seo.map((entry) => entry.title)).size, 'two categories share a title').toBe(
+      seo.length,
+    );
+    expect(
+      new Set(seo.map((entry) => entry.description)).size,
+      'two categories share a description',
+    ).toBe(seo.length);
+  });
+
+  /** The category page builds its heading as `{shortTitle} ({latinAbbreviation})`. */
+  test('every category can name itself the way its page heading does', () => {
+    for (const type of hearingTypes) {
+      for (const key of ['shortTitle', 'latinAbbreviation', 'description']) {
+        expect(
+          (type.data[key] as string)?.trim().length,
+          `${type.file} has no ${key}`,
+        ).toBeGreaterThan(0);
+      }
+    }
+
+    const headings = hearingTypes.map(
+      (type) => `${type.data.shortTitle} (${type.data.latinAbbreviation})`,
+    );
+    expect(new Set(headings).size, 'two categories would render the same heading').toBe(
+      headings.length,
+    );
+  });
+
   test('every hearing type has a matching route', () => {
     const knownRoutes = new Set<string>(Object.values(ROUTES));
 
