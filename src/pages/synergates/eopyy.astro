@@ -1,0 +1,65 @@
+---
+import { render } from 'astro:content';
+import type { BreadcrumbItem } from '@/components/navigation/Breadcrumbs.astro';
+import PageBanner from '@/components/sections/PageBanner.astro';
+import Button from '@/components/ui/Button.astro';
+import Section from '@/components/ui/Section.astro';
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import { ROUTES } from '@/data/routes';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getPage } from '@/lib/content/collections';
+
+/**
+ * `/synergates/eopyy`.
+ *
+ * The client's four paragraphs are unchanged, including the figures, which are the one thing on
+ * this site that a visitor may act on financially. `content-integrity.test.ts` asserts the prose
+ * and the `subsidy` frontmatter cannot drift apart.
+ *
+ * Below them the page now explains what documents are generally needed and what the steps are.
+ * That material is generic and hedged: it says what EOPYY asks for, not what this shop promises,
+ * and it closes by telling the reader to confirm the current rules with us, because these are
+ * external rules that change.
+ *
+ * There is no closing contact band here, unlike the other four routes in this step. The page
+ * already ends with the client's own call to action from `cta` frontmatter, and two of them in a
+ * row is one too many.
+ */
+const page = await getPage('eopyy');
+const { title, seo, images, cta } = page.data;
+const { Content } = await render(page);
+
+const banner = images.find((entry) => entry.wide);
+
+const breadcrumbs: BreadcrumbItem[] = [
+  { label: 'Συνεργάτες', href: ROUTES.partners },
+  { label: 'ΕΟΠΥΥ' },
+];
+---
+
+<BaseLayout title={seo.title} description={seo.description} breadcrumbs={breadcrumbs}>
+  {banner && <PageBanner image={banner.image} alt={banner.alt} />}
+
+  <Section spacing="tight" width="narrow" labelledby="eopyy-heading">
+    <SectionHeading id="eopyy-heading" as="h1" size="title" title={title} />
+
+    {/*
+      `text-start`, not the live site's centred column. Three long paragraphs and two lists set
+      centred are noticeably harder to read, and the ragged left edge is the reason: the eye has to
+      hunt for the start of every line.
+    */}
+    <div class="prose mt-10">
+      <Content />
+    </div>
+
+    {
+      cta && (
+        <div class="mt-12 flex justify-center">
+          <Button href={cta.href} size="lg" icon="mail">
+            {cta.label}
+          </Button>
+        </div>
+      )
+    }
+  </Section>
+</BaseLayout>

@@ -1,0 +1,52 @@
+---
+import { Image } from 'astro:assets';
+
+/**
+ * The full-bleed banner above a page's heading. Only `/synergates/eopyy` uses one.
+ *
+ * The live page is the reference for this component, not the legacy source, and the maintainer's
+ * instruction was to reproduce its result exactly. Four properties do that, and each is here for a
+ * measured reason rather than by eye:
+ *
+ * 1. **`aspect-[34/7]`** is the live site's own box, 4.857 against the artwork's 5.128, so
+ *    `object-cover` trims roughly 5% off the sides at every width. A different ratio is a
+ *    different crop.
+ * 2. **Full-bleed.** No `Container`, no gutter. It runs to the viewport edge on the live site at
+ *    every width, so it renders directly inside `<main>`.
+ * 3. **`bg-surface`.** The artwork is transparent through its middle and right third, and the
+ *    legacy parent is `bg-white`. Our page ground is `--color-page` (`#f7f7f6`), so without an
+ *    explicit white behind it the ΕΟΠΥΥ mark would sit on grey and the banner would not match.
+ * 4. **`bg-brand/10` over the image**, which is the live `bg-primary/10` expressed in the site's
+ *    own teal. This wash is the reason the banner reads pale teal rather than white, and it is the
+ *    single easiest thing to leave out by accident.
+ *
+ * The overlay is `pointer-events-none` so it cannot swallow a click, and the image carries no
+ * caption or text of its own, so nothing on the page is read through the tint.
+ */
+interface Props {
+  image: ImageMetadata;
+  alt: string;
+}
+
+const { image, alt }: Props = Astro.props;
+---
+
+<div class="relative aspect-[34/7] w-full overflow-hidden bg-surface">
+  {/*
+    Eager and high priority: this is the LCP element on the route it appears on. `layout="none"`
+    because the sizing is the aspect box's job, not the image's.
+  */}
+  <Image
+    src={image}
+    alt={alt}
+    layout="none"
+    widths={[640, 1024, 1536, 2000]}
+    sizes="100vw"
+    loading="eager"
+    fetchpriority="high"
+    decoding="async"
+    class="size-full object-cover"
+  />
+
+  <div class="pointer-events-none absolute inset-0 bg-brand/10"></div>
+</div>
