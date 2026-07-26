@@ -213,7 +213,18 @@ describe('token discipline', () => {
     );
 
     for (const file of components) {
-      const source = readFileSync(file, 'utf8');
+      /**
+       * Block comments come out first. The rule is about what a component *renders*, not about
+       * what it explains, and the two most useful comments in this codebase are precisely the ones
+       * naming the colours we deliberately do not use — the legacy teal the EOPYY gradient
+       * replaces, and the legacy grey the neutrals replace. Scanning prose flagged those as
+       * violations, which would have meant deleting the explanation to satisfy the test.
+       *
+       * `//` comments are left alone on purpose: stripping to end-of-line would eat the rest of
+       * any line containing a `https://` URL.
+       */
+      const source = readFileSync(file, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+
       // Matches `#abc`, `#aabbcc`, `rgb(...)` and `hsl(...)`, but not `#main` or `#id-name`.
       const found = source.match(/#[0-9a-f]{3}([0-9a-f]{3})?\b|\b(rgba?|hsla?)\(/gi);
 
