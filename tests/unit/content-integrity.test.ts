@@ -160,6 +160,11 @@ describe('references between collections', () => {
 });
 
 describe('image sources', () => {
+  /**
+   * `imageSource` / `imageSources` are a provenance record: the URL a photo originally came
+   * from. Since STEP-03 they are never fetched and never rendered — the photo itself is a local
+   * file in `image`. `tests/unit/assets.test.ts` covers those files.
+   */
   const sources = [
     ...hearingTypes.map((type) => ({ file: type.file, url: type.data.imageSource as string })),
     ...hearingModels.flatMap((model) =>
@@ -173,14 +178,36 @@ describe('image sources', () => {
     }
   });
 
-  test('only the known CIC category image is served over plain http', () => {
-    // The live site fails Lighthouse's mixed-content check because of this one URL. STEP-03
-    // localizes it. If a second one ever appears, this fails rather than shipping quietly.
+  test('the one plain-http source is provenance only, and there is still only one', () => {
+    // The live site fails Lighthouse's mixed-content check because of this URL. Nothing here
+    // requests it. If a second one ever appears, this fails rather than shipping quietly.
     const insecure = sources.filter(({ url }) => url.startsWith('http://'));
 
     expect(insecure).toHaveLength(1);
     expect(insecure[0]?.file).toContain('hearing-types');
     expect(insecure[0]?.file).toContain('cic');
+  });
+
+  test('no rendered image field holds a URL', () => {
+    const rendered = [
+      ...hearingTypes.map((type) => ({ file: type.file, value: type.data.image })),
+      ...hearingModels.map((model) => ({ file: model.file, value: model.data.image })),
+      ...providers.map((provider) => ({ file: provider.file, value: provider.data.logo })),
+      ...pages.flatMap((page) =>
+        ((page.data.images ?? []) as Array<{ image: string }>).map((entry) => ({
+          file: page.file,
+          value: entry.image,
+        })),
+      ),
+    ];
+
+    expect(rendered.length, 'no entry declares an image').toBeGreaterThan(0);
+    for (const { file, value } of rendered) {
+      expect(typeof value, `${file} has a non-string image path`).toBe('string');
+      expect(value as string, `${file} points its image at a remote URL`).toMatch(
+        /^\.\.\/\.\.\/assets\/images\//,
+      );
+    }
   });
 });
 

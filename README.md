@@ -60,8 +60,9 @@ project settings in production; they are never committed.
 ## Project structure
 
 ```text
-public/        Static assets served as-is
+public/        The handful of files that need a fixed URL: icons and the social image
 src/
+  assets/      Images, fonts and logos the build processes and fingerprints
   components/  UI components, grouped by role
   content/     Structured content collections
   data/        Shared typed data (business details, navigation)
@@ -150,12 +151,62 @@ three describing the same number; a test checks that they do.
 
 ### Replace an image
 
-Images are still hosted on the manufacturers' own sites, recorded as `imageSource` /
-`imageSources` for now. To swap one, replace the URL. Local copies and responsive sizes arrive
-in a later step, at which point this section is updated.
+Every image lives in this repository, under `src/assets/images/`:
 
-Always set `imageAlt` to something that describes the picture. It is required — a missing one
-fails the build.
+| Folder | What is in it |
+| --- | --- |
+| `hero/` | The two home-page hero photographs — one wide for desktop, one square for mobile |
+| `about/` | The five photographs on the About page |
+| `hearing/` | One photograph per hearing-aid model, named after the model's file |
+| `partners/` | Manufacturer logos, the ΕΟΠΥΥ logo, and the ΕΟΠΥΥ page banner |
+| `badges/` | The App Store and Google Play badges |
+
+To swap a photo, drop the new file into the right folder and point the entry at it:
+
+```yaml
+image: ../../assets/images/hearing/silk-cic.webp
+imageAlt: Ζεύγος ενδοκαναλικών ακουστικών Signia Silk CIC με μαύρη πρόσοψη
+```
+
+The path is always relative and always starts `../../assets/images/`, because every content
+folder sits one level under `src/content/`. `bun run test` will tell you if the file is not
+where you said it is.
+
+**Give it a sensible size before committing it.** Astro generates the small, modern formats the
+browser actually downloads, but it does that from whatever you commit, so a 12 MB photo makes
+every build slower for no gain. As a rule of thumb: a product photo wants its longest edge
+around 800px, an About photo around 1400px, and the hero no more than 2560px. A test enforces a
+ceiling per folder, and will name the file if you go over.
+
+Keep photographs as `.jpg`. Use `.webp` or `.png` only when the image genuinely needs a
+transparent background — several product cut-outs and the ΕΟΠΥΥ banner do, and flattening them
+would put a white box on the page.
+
+Always set `imageAlt` (or `alt`) to something that describes the picture — what is in the frame,
+not the model name that is already printed above it. It is required; a missing one fails the
+build.
+
+`imageSource` and `imageSources` are just a record of where a photo originally came from. The
+site never loads them. Leave them alone unless you are replacing the photo, in which case update
+them to match.
+
+### Replace the logo or the icons
+
+`src/assets/brand/` holds the logo as vector: `logo-wordmark.svg` is the full lockup for the
+header, `logo-mark.svg` is the ear on its own. The browser-tab and phone icons in `public/`
+(`favicon.svg`, `favicon.ico`, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`) are all
+the same mark on a white square. Those five are the only images that live outside
+`src/assets/` — they need fixed URLs, so they cannot be renamed by the build.
+
+### Fonts
+
+Sansation is served from `src/assets/fonts/sansation/` in four faces: regular, bold, italic and
+bold italic. They are registered in `astro.config.mjs`; the regular and bold faces are preloaded
+because they are what the top of a page needs. Nothing else has to name the family — Tailwind's
+`font-sans` already resolves to it.
+
+The light weight is deliberately not shipped, since nothing uses it. If a design ever calls for
+it, copy the two `Light` files across from the legacy repository and add them to the config.
 
 ### Update the EOPYY amounts
 
