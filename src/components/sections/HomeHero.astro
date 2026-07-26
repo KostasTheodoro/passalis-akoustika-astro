@@ -1,0 +1,118 @@
+---
+import { getImage } from 'astro:assets';
+import Button from '@/components/ui/Button.astro';
+import Container from '@/components/ui/Container.astro';
+import { HOME } from '@/data/home';
+
+/**
+ * The home page hero.
+ *
+ * Two photographs, not one at two sizes: the desktop frame is a 2560×1019 landscape and the
+ * mobile one is a 1600×1600 square. That is art direction, and `<Picture>` cannot do it — it
+ * builds a `<picture>` around a single source. So each crop goes through `getImage()` once per
+ * format and the element is written out by hand. Everything still happens at build time; nothing
+ * about this reaches the browser as JavaScript.
+ *
+ * The picture is positioned out of the flow and the band's height comes from `min-height` in rem.
+ * Two things follow. Layout shift is structurally impossible, because the image occupies no space
+ * to begin with. And the hero does not resize when a mobile browser's address bar slides away,
+ * which is what `vh` would have done.
+ *
+ * `on-brand` switches the focus ring to white — the ink ring is invisible against a near-black
+ * photograph.
+ */
+const { hero } = HOME;
+
+/** Widths the square crop is asked for; it is only ever shown below 768px. */
+const MOBILE_WIDTHS = [640, 768, 1024, 1280];
+/** Widths the landscape crop is asked for, up to its own intrinsic 2560. */
+const DESKTOP_WIDTHS = [1024, 1440, 1920, 2560];
+
+const FORMATS = ['avif', 'webp'] as const;
+
+/** The media condition the two crops swap on, written once and used by every `<source>`. */
+const DESKTOP_FROM = '(min-width: 768px)';
+
+const sources = await Promise.all(
+  FORMATS.flatMap((format) => [
+    getImage({ src: hero.image.mobile, widths: MOBILE_WIDTHS, format }).then((image) => ({
+      format,
+      media: `(max-width: 767px)`,
+      image,
+    })),
+    getImage({ src: hero.image.desktop, widths: DESKTOP_WIDTHS, format }).then((image) => ({
+      format,
+      media: DESKTOP_FROM,
+      image,
+    })),
+  ]),
+);
+
+/** The fallback the `<img>` itself carries, and the only one older browsers will read. */
+const fallback = await getImage({
+  src: hero.image.desktop,
+  widths: DESKTOP_WIDTHS,
+  format: 'jpeg',
+});
+
+/**
+ * `sizes` is the same for every source: the picture covers the full viewport width at all times.
+ */
+const SIZES = '100vw';
+---
+
+<section
+  aria-labelledby="hero-heading"
+  class="on-brand relative isolate flex min-h-[26rem] items-center overflow-hidden md:min-h-[30rem] lg:min-h-[34rem]"
+>
+  <picture>
+    {
+      sources.map(({ format, media, image }) => (
+        <source
+          media={media}
+          type={`image/${format}`}
+          srcset={image.srcSet.attribute}
+          sizes={SIZES}
+        />
+      ))
+    }
+
+    <img
+      src={fallback.src}
+      srcset={fallback.srcSet.attribute}
+      sizes={SIZES}
+      width={fallback.attributes.width ?? hero.image.desktop.width}
+      height={fallback.attributes.height ?? hero.image.desktop.height}
+      alt={hero.imageAlt}
+      loading="eager"
+      fetchpriority="high"
+      decoding="async"
+      class="absolute inset-0 -z-10 size-full object-cover"
+    />
+  </picture>
+
+  {/*
+    The scrim. Flat rather than a gradient, because the text block is centred and a gradient
+    strong enough at the middle would have to be strong everywhere anyway. Its strength is
+    argued for in `global.css` and checked in `tests/unit/tokens.test.ts`.
+  */}
+  <div class="absolute inset-0 -z-10 bg-hero-scrim"></div>
+
+  <Container size="default" class="py-section">
+    <div class="mx-auto flex max-w-3xl flex-col items-center gap-5 text-center text-white">
+      <h1 id="hero-heading" class="text-display text-balance font-bold">{hero.heading}</h1>
+
+      <p class="text-body-lg text-pretty">{hero.subheading}</p>
+
+      <div class="mt-2 flex flex-wrap justify-center gap-4">
+        <Button href={hero.primaryCta.href} size="lg" icon="mail">
+          {hero.primaryCta.label}
+        </Button>
+
+        <Button href={hero.secondaryCta.href} variant="secondary" size="lg">
+          {hero.secondaryCta.label}
+        </Button>
+      </div>
+    </div>
+  </Container>
+</section>
