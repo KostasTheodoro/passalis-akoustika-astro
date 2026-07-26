@@ -73,9 +73,14 @@ const { contact } = INFORMATIONAL.about;
     </div>
   </Section>
 
-  {/* `narrow` for the body: this is the one page on the site that is mostly continuous reading. */}
-  <Section spacing="tight" width="narrow">
-    <div class="prose">
+  {/*
+    The default container with `measure` on the prose itself, rather than a `narrow` container.
+    Both give the same reading width, but a narrow container centres it, which left the body text
+    starting 130px to the right of the `h1` above it. Constraining the block instead keeps its left
+    edge on the same line as the heading and the introduction.
+  */}
+  <Section spacing="tight">
+    <div class="prose measure">
       <Content />
     </div>
   </Section>
