@@ -14,15 +14,15 @@ seo:
 # have been localized and can actually be looked at.
 images:
   - image: ../../assets/images/about/sxetika-me-mas-1.jpg
-    alt: Ακουστικά 1
+    alt: Ειδικός τοποθετεί ακουστικό βαρηκοΐας πίσω από το αυτί χαμογελαστού νεαρού άνδρα
   - image: ../../assets/images/about/sxetika-me-mas-2.jpg
-    alt: Ακουστικά 2
+    alt: Γυναίκα με ακουστικό βαρηκοΐας ενώ ειδικός της παρουσιάζει άλλα μοντέλα
   - image: ../../assets/images/about/sxetika-me-mas-3.jpg
-    alt: Ακουστικά 3
+    alt: Ηλικιωμένος άνδρας χαμογελά καθώς η σύζυγός του ελέγχει το ακουστικό του
   - image: ../../assets/images/about/sxetika-me-mas-4.jpg
-    alt: Ακουστικά 4
+    alt: Παιδί φέρνει την παλάμη στο αυτί του, με ομόκεντρους κύκλους ήχου γύρω από αυτό
   - image: ../../assets/images/about/sxetika-me-mas-5.jpg
-    alt: Χαρούμενοι πελάτες
+    alt: Άνδρας αγγίζει το αυτί του, με εικονογραφημένο ηχητικό κύμα να καταλήγει σε αυτό
     wide: true
 ---
 

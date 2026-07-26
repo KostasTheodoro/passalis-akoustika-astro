@@ -14,7 +14,7 @@ seo:
     - 450€
 images:
   - image: ../../assets/images/partners/eopyy-banner.webp
-    alt: ΕΟΠΥΥ
+    alt: Βάζο με κέρματα δίπλα στο λογότυπο του ΕΟΠΥΥ
     wide: true
 cta:
   label: Επικοινωνήστε μαζί μας για περισσότερες λεπτομέρειες!

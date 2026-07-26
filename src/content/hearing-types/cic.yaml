@@ -15,9 +15,9 @@ seo:
     - CIC
     - Μαρούσι
 image: ../../assets/images/hearing/insio-cic-mayro.jpg
-imageAlt: Ενδοκαναλικά – CIC (Completely in Canal)
-# The only non-HTTPS image source on the site. It causes a mixed-content failure on the live
-# site and must be localized in STEP-03. `tests/unit/content-integrity.test.ts` asserts this
-# is the only `http://` source, so it cannot be forgotten.
+imageAlt: Ζεύγος ενδοκαναλικών ακουστικών με μαύρη πρόσοψη και έγχρωμο κέλυφος
+# Provenance only — the photo itself is now the local file above. This is the one source the
+# live site loads over plain http, which is why that site fails Lighthouse's mixed-content
+# check; nothing here requests it. `tests/unit/content-integrity.test.ts` keeps it that way.
 imageSource: http://hearshearingandhearables.com/wp-content/uploads/2024/03/Insio-IX_CIC_black_pair_1000x1000.jpg
 order: 1
