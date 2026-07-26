@@ -1,0 +1,74 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { Icon } from 'astro-icon/components';
+import Card from '@/components/ui/Card.astro';
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import { ICONS } from '@/data/icons';
+
+/**
+ * One manufacturer on `/synergates/paroxoi`: name, description, what it is good at, and a link to
+ * its own site.
+ *
+ * The name renders in proper case rather than the live site's `SIGNIA` and `A&M HEARING`. The
+ * collection stores it that way and `content.config.ts` says uppercasing is presentation, but the
+ * deciding reason is in `global.css`: this site does not shout, because uppercasing Greek drops
+ * the tonos. Four Latin names in caps beside Greek headings that are not would read as an
+ * inconsistency rather than a style.
+ *
+ * **The outbound link is the part that changes.** The legacy card wraps a bare logo in an anchor
+ * with `alt="Signia Logo"` and `target="_blank"`, so its accessible name is the name of a picture
+ * and nothing warns that a new tab is coming. Here one anchor holds the logo *and* a visible
+ * label, which gives it a real name, keeps it to a single tab stop, and carries the glyph the rest
+ * of the site uses for a link that leaves it.
+ *
+ * Not a linked card: it holds an external link already, and the whole-surface pattern would put a
+ * second tab stop over the same content.
+ */
+interface Props {
+  provider: CollectionEntry<'providers'>;
+  /** The Greek prefix on the outbound link, e.g. `Επίσημος ιστότοπος Signia`. */
+  websiteLabel: string;
+}
+
+const { provider, websiteLabel }: Props = Astro.props;
+const { name, description, features, logo, logoAlt, website } = provider.data;
+---
+
+<Card as="li" padding="lg">
+  <SectionHeading as="h2" size="section" title={name} align="center" />
+
+  <p class="mt-6 text-body-lg text-ink-muted text-pretty">{description}</p>
+
+  <ul class="mt-6 flex list-disc flex-col gap-2 ps-6 text-body text-ink-muted marker:text-brand-strong">
+    {features.map((feature) => <li class="text-pretty">{feature}</li>)}
+  </ul>
+
+  {/*
+    The logo sits in a fixed box so the four cards agree with each other. The artwork ranges from a
+    tall Signia lockup to a wide Siemens wordmark, and `object-contain` in a common box is what
+    stops each card's footer being a different height.
+  */}
+  <a
+    href={website}
+    target="_blank"
+    rel="noopener noreferrer"
+    class="mt-10 flex flex-col items-center gap-3 self-center rounded-card px-4 py-2 text-body font-bold text-brand-deep transition-[color,transform] duration-(--duration-fast) ease-out hover:text-ink motion-safe:hover:scale-105"
+  >
+    <Image
+      src={logo}
+      alt={logoAlt}
+      layout="none"
+      widths={[220, 440]}
+      sizes="13.75rem"
+      loading="lazy"
+      decoding="async"
+      class="h-24 w-55 object-contain"
+    />
+
+    <span class="inline-flex items-center gap-2">
+      {websiteLabel}&nbsp;{name}
+      <Icon name={ICONS.external} class="size-4 shrink-0" aria-hidden="true" />
+    </span>
+  </a>
+</Card>

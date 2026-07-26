@@ -1,0 +1,52 @@
+---
+import ProviderCard from '@/components/cards/ProviderCard.astro';
+import type { BreadcrumbItem } from '@/components/navigation/Breadcrumbs.astro';
+import ContactBand from '@/components/sections/ContactBand.astro';
+import Section from '@/components/ui/Section.astro';
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import { INFORMATIONAL } from '@/data/informational';
+import { ROUTES } from '@/data/routes';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getProviders } from '@/lib/content/collections';
+
+/**
+ * `/synergates/paroxoi`.
+ *
+ * Which four manufacturers and in what order is the collection's business. `getProviders()` sorts
+ * by `order`, which is the live site's own sequence: Signia, A&M Hearing, Rexton, Siemens.
+ *
+ * All four outbound links are client-provided and unchanged, Siemens pointing at `signia.net`
+ * included. That is deliberate rather than a copy-paste slip, and the Siemens description now says
+ * why, so a visitor who notices the two cards share a destination gets an explanation instead of
+ * assuming the page is broken.
+ */
+const providers = await getProviders();
+
+const breadcrumbs: BreadcrumbItem[] = [
+  { label: 'Συνεργάτες', href: ROUTES.partners },
+  { label: 'Πάροχοι Βοηθημάτων Ακοής' },
+];
+const { seo, heading, intro, websiteLabel, contact } = INFORMATIONAL.providers;
+---
+
+<BaseLayout title={seo.title} description={seo.description} breadcrumbs={breadcrumbs}>
+  <Section spacing="tight" width="medium" labelledby="providers-heading">
+    <SectionHeading
+      id="providers-heading"
+      as="h1"
+      size="title"
+      title={heading}
+      description={intro}
+    />
+
+    <ul class="mt-12 flex list-none flex-col gap-6 md:gap-8">
+      {
+        providers.map((provider) => (
+          <ProviderCard provider={provider} websiteLabel={websiteLabel} />
+        ))
+      }
+    </ul>
+  </Section>
+
+  <ContactBand heading={contact.heading} description={contact.description} cta={contact.cta} />
+</BaseLayout>
