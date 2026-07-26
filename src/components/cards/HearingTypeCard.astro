@@ -1,0 +1,72 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import Button from '@/components/ui/Button.astro';
+import Card from '@/components/ui/Card.astro';
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import { CATALOGUE } from '@/data/catalogue';
+import { hearingTypePath } from '@/data/routes';
+
+/**
+ * One of the four hearing-aid categories, on `/akoustika`.
+ *
+ * The shape is the live site's: the full category title across the top, a contained photo beside
+ * the description, and a teal pill to the category page. What has gone is the empty space — the
+ * legacy card fixed the photo at 240px inside a 10-unit-padded box and then added `mb-14` and
+ * `mt-18`, which left roughly a third of every card blank.
+ *
+ * **This is deliberately not a linked card.** The card already carries a `Δείτε περισσότερα`
+ * button, and making the surface a link as well would be two tab stops to one destination — the
+ * finding the maintainer raised against the EOPYY card in STEP-05, which `home.spec.ts` now
+ * guards. The button is the only link.
+ *
+ * Four buttons reading `Δείτε περισσότερα` on one page are four identical accessible names, so
+ * each takes the category name as visually hidden text. The client's wording is what is seen; a
+ * screen-reader user hears four distinct names.
+ */
+interface Props {
+  type: CollectionEntry<'hearing-types'>;
+  /** The first card on the page is the LCP candidate and must not be lazy. */
+  eager?: boolean;
+}
+
+const { type, eager = false }: Props = Astro.props;
+const { title, shortTitle, description, image, imageAlt } = type.data;
+---
+
+<Card as="li" padding="none">
+  <div class="flex flex-col gap-6 p-card md:gap-8 md:p-card-lg">
+    <SectionHeading as="h2" size="section" title={title} align="center" />
+
+    <div class="flex flex-col items-center gap-6 text-center md:flex-row md:gap-8 md:text-start">
+      {/*
+        `layout="none"` and `object-contain` for the same reason as the model card: the photos come
+        from several sources at several aspect ratios, and cropping cuts through the product on
+        some of them. The box is fixed so the four cards agree with each other.
+      */}
+      <div
+        class="flex aspect-square min-h-0 w-44 shrink-0 items-center justify-center overflow-hidden rounded-card bg-page sm:w-52"
+      >
+        <Image
+          src={image}
+          alt={imageAlt}
+          layout="none"
+          widths={[208, 416]}
+          sizes="13rem"
+          loading={eager ? 'eager' : 'lazy'}
+          fetchpriority={eager ? 'high' : undefined}
+          decoding="async"
+          class="size-full object-contain"
+        />
+      </div>
+
+      <p class="text-body-lg text-ink-muted text-pretty">{description}</p>
+    </div>
+
+    <div class="flex justify-center">
+      <Button href={hearingTypePath(type.id)} size="lg">
+        {CATALOGUE.listing.cardCta}<span class="sr-only"> για {shortTitle}</span>
+      </Button>
+    </div>
+  </div>
+</Card>
