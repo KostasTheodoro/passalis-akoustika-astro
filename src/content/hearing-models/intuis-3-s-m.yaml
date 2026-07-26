@@ -1,9 +1,14 @@
 name: Signia Intuis 3 S/M BTE
 type: bte
 # Wording precision, 2026-07-26. Same "6 channel MPO" correction as intuis-3-ric.yaml.
+# Source: signia-pro.com Intuis 3 portfolio page — dual onboard controls (push button and rocker
+# switch) with a programmable key lock, and a battery compartment exchangeable for one with a
+# direct audio input connection on the BTE models.
 description: >-
   Σειρά Intuis 3 BTE, με 6 κανάλια MPO, τηλερύθμιση μέσω Signia App, αυτόματα
-  κατευθυντικά μικρόφωνα και αντοχή σε απαιτητικά περιβάλλοντα.
+  κατευθυντικά μικρόφωνα και αντοχή σε απαιτητικά περιβάλλοντα. Διαθέτει πλήκτρο και
+  διακόπτη με κλείδωμα, ενώ η θήκη μπαταρίας μπορεί να αντικατασταθεί με έκδοση απευθείας
+  εισόδου ήχου.
 image: ../../assets/images/hearing/intuis-3-s-m.jpg
 imageAlt: Οπισθωτιαίο ακουστικό Signia Intuis 3 S/M σε μπεζ χρώμα, με λεπτό σωληνάκι και λευκό ακροφύσιο
 imageSources:

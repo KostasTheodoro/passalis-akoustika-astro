@@ -3,9 +3,13 @@ type: rechargeable
 # Two corrections, 2026-07-26. The platform was written as Augmented Xperience; Silk Charge&Go IX
 # is the Integrated Xperience (IX) generation. And the text promised streaming: Signia states this
 # model has no Bluetooth connectivity, so it cannot stream audio at all.
+# Source: signia-pro.com Silk Charge&Go IX; hearingtracker.com — up to 28 hours, pocket charging
+# case with an integrated power bank giving four more charges, IP68, Click Sleeves, no Bluetooth.
 description: >-
   Διακριτικό επαναφορτιζόμενο Silk CIC με λειτουργία Charge&Go, στην πλατφόρμα Integrated
-  Xperience για φυσικό ήχο.
+  Xperience για φυσικό ήχο. Αποδίδει έως 28 ώρες με μία φόρτιση και η θήκη τσέπης δίνει
+  άλλες τέσσερις φορτίσεις. Φοριέται αυθημερόν με θήκες Click, έχει πιστοποίηση IP68 και
+  ρυθμίζεται από το Signia App.
 image: ../../assets/images/hearing/silk-charge-go.webp
 imageAlt: Ανοιχτή λευκή βάση φόρτισης Signia Silk Charge&Go IX με δύο ενδοκαναλικά ακουστικά μέσα
 imageSources:

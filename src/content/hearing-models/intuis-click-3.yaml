@@ -1,8 +1,13 @@
 name: Signia Intuis 3 Click CIC
 type: cic
+# Source: aanviihearing.com Intuis 3 Click — 12 channels, 4 programs, speech and noise management,
+# feedback cancellation, Signia App and TeleCare. Battery size is deliberately absent: Aanvii lists
+# size 10 and three other dealers list 312, so the figure is not stated rather than guessed.
 description: >-
   Με το σύστημα Click, οι εύκαμπτες θήκες εφαρμόζουν εύκολα και αντικαθίστανται,
-  προσφέροντας άνεση και γρήγορη προσαρμογή με επεξεργασία 12 καναλιών.
+  προσφέροντας άνεση και γρήγορη προσαρμογή με επεξεργασία 12 καναλιών. Διαθέτει 4
+  προγράμματα ακρόασης, διαχείριση ομιλίας και θορύβου, καταστολή μικροφωνισμού και
+  υποστήριξη Signia App και TeleCare, χωρίς αναμονή για εκμαγείο.
 image: ../../assets/images/hearing/intuis-click-3.webp
 imageAlt: Ζεύγος ενδοκαναλικών ακουστικών Signia Intuis 3 Click με διάφανες εύκαμπτες θήκες
 imageSources:

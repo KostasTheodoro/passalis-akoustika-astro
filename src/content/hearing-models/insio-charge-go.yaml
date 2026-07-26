@@ -3,9 +3,13 @@ type: rechargeable
 # Two corrections, 2026-07-26. Insio Charge&Go AX is a custom ITC/ITE, not a CIC/IIC — the photo
 # above is Signia's own AX artwork. And the platform was written as Signia NX, two generations
 # older than the AX these are built on. The 20-hour figure and the Bluetooth claim are correct.
+# Source: signia-pro.com Insio Charge&Go AX — contactless magnetic-resonance charging, roughly four
+# hours to full, 20 hours including streaming and 24 without, Bluetooth for Android and iOS.
 description: >-
   Επαναφορτιζόμενο ακουστικό κατά παραγγελία (ITC/ITE) με βάση φόρτισης Charge&Go, έως 20
-  ώρες αυτονομία, Bluetooth και HD streaming από την πλατφόρμα Augmented Xperience.
+  ώρες αυτονομία, Bluetooth και HD streaming από την πλατφόρμα Augmented Xperience. Χωρίς
+  streaming φτάνει τις 24 ώρες, ενώ φορτίζει ασύρματα σε περίπου τέσσερις ώρες και
+  συνδέεται σε iOS και Android.
 image: ../../assets/images/hearing/insio-charge-go.jpg
 imageAlt: Λευκή βάση φόρτισης Signia Insio Charge&Go και δύο μαύρα ενδοκαναλικά ακουστικά μπροστά της
 imageSources:

@@ -1,8 +1,12 @@
 name: Signia Pure Charge&Go IX
 type: rechargeable
+# Source: signia.net Pure Charge&Go IX and BCT IX — 36 hours per charge including 5 hours of
+# streaming, three hours to full, IP68.
 description: >-
   Επαναφορτιζόμενο RIC με Bluetooth, Signia Assistant, streaming τηλεφώνου και
-  τηλεόρασης – ισχυρό και εύκολο στη χρήση.
+  τηλεόρασης – ισχυρό και εύκολο στη χρήση. Αποδίδει έως 36 ώρες με μία φόρτιση, από τις
+  οποίες 5 ώρες streaming, και φορτίζει πλήρως σε τρεις ώρες. Φέρει πιστοποίηση IP68 για
+  σκόνη και νερό.
 image: ../../assets/images/hearing/pure-charge-go.webp
 imageAlt: Λευκή βάση φόρτισης Signia Pure Charge&Go IX και δύο ακουστικά σε χρώμα γραφίτη
 imageSources:

@@ -1,8 +1,12 @@
 name: Signia Silk CIC
 type: cic
+# Source: signia-pro.com Silk X portfolio page — size 10 battery, soft-silicone Click Sleeves in
+# four sizes with open and closed versions, ready to wear without an ear impression.
 description: >-
   Πολύ διακριτικό CIC με μαλακή θήκη Silk, άνετη εφαρμογή και αόρατη εμφάνιση, ιδανικό
-  για όσους θέλουν να «εξαφανίζεται» μέσα στον ακουστικό πόρο.
+  για όσους θέλουν να «εξαφανίζεται» μέσα στον ακουστικό πόρο. Οι θήκες Click διατίθενται
+  σε τέσσερα μεγέθη, σε ανοιχτό και κλειστό τύπο, ώστε να το φορέσετε αυθημερόν χωρίς
+  εκμαγείο. Λειτουργεί με μπαταρία μεγέθους 10 και ρυθμίζεται από το Signia App.
 image: ../../assets/images/hearing/silk-cic.webp
 imageAlt: Ζεύγος ενδοκαναλικών ακουστικών Signia Silk CIC με μαύρη πρόσοψη και μαλακές γκρι θήκες
 imageSources:

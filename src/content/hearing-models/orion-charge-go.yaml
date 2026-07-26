@@ -3,9 +3,12 @@ type: rechargeable
 # Correction, 2026-07-26. `και streaming` removed: Orion is Signia's essentials line and its own
 # product page claims rechargeability and dust/sweat resistance without mentioning Bluetooth. No
 # source confirms audio streaming, so the claim goes rather than being softened.
+# Source: signia.net Orion Charge&Go — Multi Charger with fast charging, up to 24 hours on a
+# charge, certified against dust, moisture and sweat.
 description: >-
   Μεγάλο επαναφορτιζόμενο BTE μοντέλο Orion Charge&Go, για μέτρια έως βαριά απώλεια
-  ακοής, με ισχυρή μπαταρία.
+  ακοής, με ισχυρή μπαταρία. Αποδίδει έως 24 ώρες με μία φόρτιση, φορτίζει γρήγορα στη
+  βάση Multi Charger και αντέχει σε σκόνη, υγρασία και ιδρώτα.
 image: ../../assets/images/hearing/orion-charge-go.jpg
 imageAlt: Επαναφορτιζόμενο οπισθωτιαίο ακουστικό Signia Orion Charge&Go σε μπεζ χρώμα
 imageSources:

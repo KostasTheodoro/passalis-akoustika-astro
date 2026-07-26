@@ -3,9 +3,14 @@ type: ric
 # Wording precision, 2026-07-26. Signia's own phrase for the Intuis 3 family is "6 channel MPO" —
 # maximum power output, not signal-processing channels. `επεξεργασία 6 καναλιών` claimed the
 # stronger of the two.
+# Source: signia-pro.com Intuis 3 portfolio page — 6 channel MPO, automatic directional microphones,
+# push button and rocker switch with a programmable key lock, mild to severe range. The model is the
+# Intuis 3 RIC 312, hence the battery size.
 description: >-
   RIC ακουστικό με λεπτό καλώδιο και μικρό ηχείο μέσα στο κανάλι. Αυτόματα κατευθυντικά
   μικρόφωνα, μείωση θορύβου, 6 κανάλια MPO, συμβατό με Signia App και TeleCare.
+  Λειτουργεί με μπαταρία 312 και διαθέτει πλήκτρο και διακόπτη με κλείδωμα, για μικρή έως
+  βαριά απώλεια ακοής.
 image: ../../assets/images/hearing/intuis-3-ric.jpg
 imageAlt: Ακουστικό ανοιχτής εφαρμογής Signia Intuis 3 RIC σε μπεζ χρώμα, με λεπτό καλώδιο και διάφανο ακροφύσιο
 imageSources:

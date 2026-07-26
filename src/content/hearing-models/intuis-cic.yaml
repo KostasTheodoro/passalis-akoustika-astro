@@ -1,8 +1,12 @@
 name: Signia Intuis CIC
 type: cic
+# Source: Custom Intuis 3 CIC datasheets at nikagencies.com and hearingsquare.com — 12 channels,
+# size 10 battery. Signia does not publish specifications for the Intuis custom range.
 description: >-
   Διακριτικό ενδοκαναλικό ακουστικό με επεξεργασία 12 καναλιών, έλεγχο θορύβου και
-  δυνατότητα τηλερύθμισης μέσω Signia App, ιδανικό για μέτρια βαρηκοΐα.
+  δυνατότητα τηλερύθμισης μέσω Signia App, ιδανικό για μέτρια βαρηκοΐα. Κατασκευάζεται
+  κατά παραγγελία στο εκμαγείο του αυτιού σας, λειτουργεί με μπαταρία μεγέθους 10 και
+  διαθέτει καταστολή μικροφωνισμού και υποστήριξη TeleCare.
 image: ../../assets/images/hearing/intuis-cic.webp
 imageAlt: Ενδοκαναλικό ακουστικό Signia Intuis CIC σε χρώμα δέρματος, με νήμα αφαίρεσης
 imageSources:

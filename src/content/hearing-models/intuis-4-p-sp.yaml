@@ -1,8 +1,12 @@
 name: Signia Intuis 4.1 P/SP BTE
 type: bte
+# Source: signia-pro.com Intuis 4 BTE portfolio page — M, P and SP versions covering mild to
+# profound loss, built-in telecoil, StreamLine TV and StreamLine Mic compatibility, IP68.
 description: >-
   Νέα σειρά Intuis 4 με Bluetooth streaming, Signia Assistant, TeleCare, τηλερύθμιση
-  και προστασία IP68.
+  και προστασία IP68. Διατίθεται σε εκδόσεις M, P και SP που καλύπτουν από ελαφριά έως
+  πολύ βαριά απώλεια ακοής, με ενσωματωμένο τηλεπηνίο και συμβατότητα με το StreamLine TV
+  για τον ήχο της τηλεόρασης.
 image: ../../assets/images/hearing/intuis-4-p-sp.jpg
 imageAlt: Οπισθωτιαίο ακουστικό Signia Intuis 4.1 P/SP σε μπεζ χρώμα, με διάφανο άγκιστρο αυτιού
 imageSources:

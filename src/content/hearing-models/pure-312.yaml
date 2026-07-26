@@ -3,9 +3,15 @@ type: ric
 # Correction, 2026-07-26. The `4 κλασικά προγράμματα ήχου` claim is unsourced — no Signia or dealer
 # material states a program count for Pure 312 AX, and programs are set at the fitting and in the
 # app rather than fixed in the device.
+# Source: signia-pro.com and signia.net Pure 312 AX — Augmented Focus splits speech from surrounding
+# sound and processes each separately; MFi and ASHA streaming of calls, music and TV; Own Voice
+# Processing 2.0. The photo above is the Pure 312 AX.
 description: >-
   Δημοφιλές RIC με μπαταρία 312, ασύρματη σύνδεση και εύκολη χρήση — ιδανικό για
-  καθημερινές εφαρμογές.
+  καθημερινές εφαρμογές. Στην πλατφόρμα Augmented Xperience, με τεχνολογία Augmented Focus
+  που επεξεργάζεται χωριστά την ομιλία από το περιβάλλον, streaming κλήσεων, μουσικής και
+  τηλεόρασης σε iOS και Android, και Own Voice Processing 2.0 για πιο φυσική τη δική σας
+  φωνή.
 image: ../../assets/images/hearing/pure-312.jpg
 imageAlt: Ακουστικό ανοιχτής εφαρμογής Signia Pure 312 RIC σε μπεζ χρώμα, με καλώδιο και γκρι ακροφύσιο
 imageSources:

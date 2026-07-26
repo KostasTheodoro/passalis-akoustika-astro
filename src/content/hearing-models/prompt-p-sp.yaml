@@ -1,8 +1,12 @@
 name: Signia Prompt P/SP BTE
 type: bte
+# Source: Prompt P and Prompt SP datasheets at insonohearing.com, nikagencies.com and
+# aanviihearing.com — 8 channels, up to 4 programs, size 13 battery on the P and 675 on the SP,
+# fitting range to 120/130 dB on the SP. Signia does not publish specifications for this line.
 description: >-
   BTE με υψηλή ισχύ, αντοχή σε υγρασία και σκόνη, TeleCare και στιβαρή σχεδίαση για
-  κάθε χρήση.
+  κάθε χρήση. Διαθέτει 8 κανάλια και έως 4 προγράμματα ακρόασης. Η έκδοση P λειτουργεί με
+  μπαταρία 13 και η SP με μπαταρία 675, καλύπτοντας απώλεια ακοής έως και πολύ βαριά.
 image: ../../assets/images/hearing/prompt-p-sp.jpg
 imageAlt: Οπισθωτιαίο ακουστικό Signia Prompt P/SP σε μπεζ χρώμα, με διάφανο άγκιστρο και πλήκτρα ρύθμισης
 imageSources:
