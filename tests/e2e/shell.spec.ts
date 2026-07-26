@@ -245,21 +245,30 @@ test.describe('focus is always visible', () => {
 test.describe('footer', () => {
   test.use({ viewport: DESKTOP });
 
-  test('renders the business details from the one source that holds them', async ({ page }) => {
+  test('renders the business name and the year', async ({ page }) => {
+    await page.goto('/');
+
+    await expect(page.locator('footer')).toContainText(
+      `© ${new Date().getFullYear()} ${BUSINESS.name}`,
+    );
+  });
+
+  /**
+   * The footer carried the opening hours, telephone, email and address until STEP-05, when the
+   * maintainer removed them: the home page's closing band renders the same four values, and
+   * repeating them under every page was too much of the same thing.
+   *
+   * This is the guard on that decision. `home.spec.ts` asserts the same values are present in the
+   * band, so the site still shows each of them exactly once per page that needs them.
+   */
+  test('no longer repeats the contact details the home page already carries', async ({ page }) => {
     await page.goto('/');
     const footer = page.locator('footer');
 
-    await expect(footer.getByRole('link', { name: BUSINESS.telephone.display })).toHaveAttribute(
-      'href',
-      BUSINESS.telephone.href,
-    );
-    await expect(footer.getByRole('link', { name: BUSINESS.email })).toHaveAttribute(
-      'href',
-      `mailto:${BUSINESS.email}`,
-    );
-    await expect(footer).toContainText(fullAddress);
-    await expect(footer).toContainText(BUSINESS.openingHours.display);
-    await expect(footer).toContainText(`© ${new Date().getFullYear()} ${BUSINESS.name}`);
+    await expect(footer.locator(`a[href="${BUSINESS.telephone.href}"]`)).toHaveCount(0);
+    await expect(footer.locator(`a[href="mailto:${BUSINESS.email}"]`)).toHaveCount(0);
+    await expect(footer).not.toContainText(fullAddress);
+    await expect(footer).not.toContainText(BUSINESS.openingHours.display);
   });
 
   test('every primary navigation destination is reachable from the footer', async ({ page }) => {
