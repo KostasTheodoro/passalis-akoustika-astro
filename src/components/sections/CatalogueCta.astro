@@ -1,5 +1,6 @@
 ---
 import Button from '@/components/ui/Button.astro';
+import Card from '@/components/ui/Card.astro';
 import Section from '@/components/ui/Section.astro';
 import SectionHeading from '@/components/ui/SectionHeading.astro';
 import { CATALOGUE } from '@/data/catalogue';
@@ -11,7 +12,13 @@ import { CATALOGUE } from '@/data/catalogue';
  * aid and the page simply stops. `information-architecture.md` asks category pages to link clearly
  * to contact, so this is the smallest thing that does it: a question, a sentence and one button.
  *
- * Deliberately not the home page's closing band. That one carries the opening hours, telephone,
+ * **Grey ground, white card.** It shipped as a white section and disappeared into the footer, which
+ * is also white — the two read as one block. Grey separates it from the footer below and the card
+ * separates it from the grey cards section above, so the band is an object rather than a seam. It
+ * is also the arrangement `ContactCta.astro` already uses on the home page, so the site has one
+ * closing-band pattern instead of two.
+ *
+ * Deliberately still not the home band's *content*. That one carries the opening hours, telephone,
  * email and address, and STEP-05 removed exactly those from the footer so the shop's details stop
  * repeating under every page. Repeating them on five more routes would put the problem back.
  *
@@ -20,14 +27,16 @@ import { CATALOGUE } from '@/data/catalogue';
 const { contact } = CATALOGUE;
 ---
 
-<Section tone="surface" spacing="tight" labelledby="catalogue-cta-heading">
-  <SectionHeading
-    id="catalogue-cta-heading"
-    title={contact.heading}
-    description={contact.description}
-  />
+<Section tone="page" spacing="tight" width="medium" labelledby="catalogue-cta-heading">
+  <Card padding="lg" class="shadow-md">
+    <SectionHeading
+      id="catalogue-cta-heading"
+      title={contact.heading}
+      description={contact.description}
+    />
 
-  <div class="mt-8 flex justify-center">
-    <Button href={contact.cta.href} size="lg" icon="mail">{contact.cta.label}</Button>
-  </div>
+    <div class="mt-8 flex justify-center">
+      <Button href={contact.cta.href} size="lg" icon="mail">{contact.cta.label}</Button>
+    </div>
+  </Card>
 </Section>
