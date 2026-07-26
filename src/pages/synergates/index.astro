@@ -1,10 +1,12 @@
 ---
+import eopyyLogo from '@/assets/images/partners/eopyy.png';
+import signiaLogo from '@/assets/images/partners/signia.png';
 import PartnerCard from '@/components/cards/PartnerCard.astro';
 import type { BreadcrumbItem } from '@/components/navigation/Breadcrumbs.astro';
 import ContactBand from '@/components/sections/ContactBand.astro';
 import Section from '@/components/ui/Section.astro';
 import SectionHeading from '@/components/ui/SectionHeading.astro';
-import { INFORMATIONAL } from '@/data/informational';
+import { INFORMATIONAL, type PartnerLogo } from '@/data/informational';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 
 /**
@@ -16,6 +18,19 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
  * `medium`, matching the catalogue listing. Two cards each holding a logo and one sentence look
  * empty at the site's default width.
  */
+/**
+ * The two logos, imported here rather than in `informational.ts`.
+ *
+ * A data file that imports its images fails the build when one is renamed, which is why `home.ts`
+ * does it. The cost is that Playwright's transpiler cannot read such a file, and `home.spec.ts`
+ * says so at the top. Importing them at the point of use keeps both: the rename still breaks the
+ * build, and `informational.ts` stays plain enough for the e2e suite to assert against its copy.
+ */
+const LOGOS: Record<PartnerLogo, ImageMetadata> = {
+  eopyy: eopyyLogo,
+  signia: signiaLogo,
+};
+
 const breadcrumbs: BreadcrumbItem[] = [{ label: 'Συνεργάτες' }];
 const { seo, heading, intro, cards, cardCta, contact } = INFORMATIONAL.partners;
 ---
@@ -31,7 +46,7 @@ const { seo, heading, intro, cards, cardCta, contact } = INFORMATIONAL.partners;
     />
 
     <ul class="mt-12 flex list-none flex-col gap-6 md:gap-8">
-      {cards.map((card) => <PartnerCard card={card} cta={cardCta} />)}
+      {cards.map((card) => <PartnerCard card={card} logo={LOGOS[card.logo]} cta={cardCta} />)}
     </ul>
   </Section>
 

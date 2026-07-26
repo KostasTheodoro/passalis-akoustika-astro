@@ -374,6 +374,40 @@ describe('long-form pages', () => {
     );
   });
 
+  test('the EOPYY page still explains the documents and the steps', () => {
+    const body = pages.find((page) => page.id === 'eopyy')?.body ?? '';
+
+    expect(body, 'the documents section is missing').toContain('## Τι δικαιολογητικά χρειάζονται');
+    expect(body, 'the process section is missing').toContain('## Πώς γίνεται η διαδικασία');
+
+    // The hedge is the point of the documents section, not decoration. These are external rules
+    // that change, and the page must not read as a guarantee of what EOPYY will accept.
+    expect(body, 'the documents section no longer hedges').toContain('μπορεί να αλλάξουν');
+  });
+
+  test("the about page's introduction survived the move into `lead`", () => {
+    // STEP-07 moved these two paragraphs out of the Markdown body and into frontmatter so the
+    // template could set them beside the photo grid. They are the client's words and the move was
+    // supposed to be lossless, so they are pinned here. Whitespace is normalised because YAML
+    // folding and Markdown wrapping break lines in different places; every other character must
+    // match.
+    const original = [
+      'Η Πασσαλής Ακουστικά Βαρηκοΐας είναι εδώ για να βελτιώσει την καθημερινότητά σας. Η ομάδα μας προσφέρει σύγχρονες λύσεις και φροντίδα με σεβασμό και επαγγελματισμό.',
+      'Εμπιστευθείτε τους ειδικούς μας για να βρείτε το κατάλληλο ακουστικό βαρηκοΐας, προσαρμοσμένο στις δικές σας ανάγκες.',
+    ];
+
+    const about = pages.find((page) => page.id === 'about');
+    const lead = (about?.data.lead as string[] | undefined) ?? [];
+    const squash = (text: string) => text.replace(/\s+/g, ' ').trim();
+
+    expect(lead.length, 'about.md has no lead paragraphs').toBeGreaterThanOrEqual(original.length);
+    for (const [index, paragraph] of original.entries()) {
+      expect(squash(lead[index] ?? ''), `about.md lead paragraph ${index + 1} was altered`).toBe(
+        paragraph,
+      );
+    }
+  });
+
   test('every page has a non-empty body', () => {
     for (const page of pages) {
       expect(page.body.trim().length, `${page.file} has an empty body`).toBeGreaterThan(0);
@@ -383,6 +417,75 @@ describe('long-form pages', () => {
   test('every FAQ has a non-empty answer', () => {
     for (const faq of faqs) {
       expect(faq.body.trim().length, `${faq.file} has an empty answer`).toBeGreaterThan(0);
+    }
+  });
+
+  test("the client's original FAQ answers are still there word for word", () => {
+    // STEP-07 added a second sentence to three of these. The addition is allowed; editing what was
+    // already there is not, so the original sentence of each is pinned. The other six are pinned
+    // whole for the same reason.
+    const original: Record<string, string> = {
+      'how-they-work':
+        'Τα ακουστικά ενισχύουν τους ήχους που χάνετε και τα προσαρμόζουμε ανάλογα με το πρόβλημά σας και τις συνθήκες του περιβάλλοντος.',
+      lifespan: 'Έχουν διάρκεια περίπου 4–6 έτη, ανάλογα με τη χρήση και τη φροντίδα τους.',
+      trial:
+        'Ναι! Μπορείτε να τα δοκιμάσετε εδώ στο κατάστημά μας και να πειραματιστείτε με τις ρυθμίσεις.',
+      'eopyy-subsidy': 'Ναι, καλύπτονται μέσω ΕΟΠΥΥ, εφόσον έχετε σχετική γνωμάτευση.',
+      'process-duration': 'Συνήθως 1–2 επισκέψεις για μετρήσεις και προσαρμογή.',
+      warranty: 'Ναι, παρέχουμε διετή εγγύηση και συντήρηση για 3 χρόνια.',
+      'online-support': 'Μπορείτε πάντα να επικοινωνείτε τηλεφωνικά ή μέσω email για βοήθεια.',
+      repairs: 'Ναι, προσφέρουμε υπηρεσίες επισκευής στο κατάστημα ή κατόπιν παραγγελίας.',
+      'after-hours-appointments': 'Ναι, εξυπηρετούμε εκτός ωραρίου με ραντεβού για ευκολία.',
+    };
+
+    for (const [id, sentence] of Object.entries(original)) {
+      const faq = faqs.find((entry) => entry.id === id);
+      expect(faq, `the FAQ "${id}" is missing`).toBeDefined();
+      expect(
+        (faq?.body ?? '').replace(/\s+/g, ' '),
+        `the original answer in ${id}.md was altered`,
+      ).toContain(sentence);
+    }
+  });
+
+  test('every link in a FAQ answer points at a route that exists', () => {
+    // The answers can carry Markdown links now, and one does. A link to a route that has not been
+    // built is a 404 a reader reaches from the page most likely to be their first stop.
+    const known = new Set<string>(Object.values(ROUTES));
+    let checked = 0;
+
+    for (const faq of faqs) {
+      for (const [, href] of faq.body.matchAll(/\]\((\/[^)]*)\)/g)) {
+        checked += 1;
+        expect(known.has(href as string), `${faq.file} links to the unknown route "${href}"`).toBe(
+          true,
+        );
+      }
+    }
+
+    // Without this the loop above passes by finding nothing, which is how a link check quietly
+    // stops being one.
+    expect(checked, 'no FAQ answer contains a link, so nothing was checked').toBeGreaterThan(0);
+  });
+
+  test('every provider description carries its sourced closing sentence', () => {
+    // Added in STEP-07 from WS Audiology's own brand pages. Each is a checkable corporate fact
+    // rather than marketing, and the Siemens one is load-bearing: it explains why two cards on
+    // /synergates/paroxoi link to the same website.
+    const closing: Record<string, string> = {
+      signia: 'Ανήκει στον όμιλο WS Audiology',
+      'am-hearing': 'από το 1987 ανήκει στον όμιλο WS Audiology',
+      rexton: 'από το 1955',
+      siemens: 'παραπέμπουν στον ίδιο ιστότοπο',
+    };
+
+    for (const [id, sentence] of Object.entries(closing)) {
+      const provider = providers.find((entry) => entry.id === id);
+      expect(provider, `the provider "${id}" is missing`).toBeDefined();
+      expect(
+        ((provider?.data.description as string | undefined) ?? '').replace(/\s+/g, ' '),
+        `${id}.yaml lost its sourced sentence`,
+      ).toContain(sentence);
     }
   });
 });

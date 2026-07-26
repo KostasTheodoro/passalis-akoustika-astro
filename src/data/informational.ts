@@ -1,5 +1,3 @@
-import eopyyLogo from '@/assets/images/partners/eopyy.png';
-import signiaLogo from '@/assets/images/partners/signia.png';
 import { ROUTES, type RoutePath } from '@/data/routes';
 
 /**
@@ -19,6 +17,13 @@ import { ROUTES, type RoutePath } from '@/data/routes';
  * template appended the site name to titles that already contained it, which is the `/synergates`
  * double-suffix defect recorded in `content-migration-inventory.md`. STEP-09 owns the template that
  * puts it back, once, in one place.
+ *
+ * **This file imports no images, and must not start.** `home.ts` imports its own, deliberately, so
+ * that a renamed asset fails the build. The cost is that Playwright's transpiler is not Vite and
+ * chokes on the first PNG, which is why `home.spec.ts` cannot import `home.ts` and asserts against
+ * the rendered page instead. Keeping this file to strings means the informational suite can assert
+ * against the real copy. The two partner logos are named by key here and resolved to real imports
+ * in `synergates/index.astro`, so a renamed file still fails the build.
  */
 
 interface CallToAction {
@@ -30,6 +35,17 @@ interface ContactBandCopy {
   heading: string;
   description: string;
   cta: CallToAction;
+}
+
+/** The two logos `/synergates` shows. The page maps each key to a real image import. */
+export type PartnerLogo = 'eopyy' | 'signia';
+
+interface PartnerCardCopy {
+  title: string;
+  description: string;
+  logo: PartnerLogo;
+  logoAlt: string;
+  href: RoutePath;
 }
 
 /**
@@ -102,7 +118,8 @@ export const INFORMATIONAL = {
         title: 'ΕΟΠΥΥ',
         description:
           'Ενημερωθείτε για την επιδότηση του ΕΟΠΥΥ, τα δικαιολογητικά και τη διαδικασία αποζημίωσης για ακουστικά βαρηκοΐας.',
-        logo: eopyyLogo,
+        /** Resolved to an imported `ImageMetadata` by the page. */
+        logo: 'eopyy',
         logoAlt: 'Λογότυπο ΕΟΠΥΥ',
         href: ROUTES.eopyy,
       },
@@ -110,11 +127,11 @@ export const INFORMATIONAL = {
         title: 'Πάροχοι Βοηθημάτων Ακοής',
         description:
           'Δείτε τους επίσημους παρόχους ακουστικών βαρηκοΐας με τους οποίους συνεργαζόμαστε, προσφέροντάς σας τις καλύτερες λύσεις για τις ανάγκες σας. Signia, A&M Hearing, Rexton και Siemens.',
-        logo: signiaLogo,
+        logo: 'signia',
         logoAlt: 'Λογότυπο Signia',
         href: ROUTES.providers,
       },
-    ],
+    ] satisfies readonly PartnerCardCopy[],
 
     /**
      * One label for both cards, as the live site has it. Two identical accessible names on one page

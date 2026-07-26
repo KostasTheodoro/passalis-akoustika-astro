@@ -22,12 +22,14 @@ import type { INFORMATIONAL } from '@/data/informational';
  */
 interface Props {
   card: (typeof INFORMATIONAL.partners.cards)[number];
+  /** The card's logo, resolved from its key by the page so this file imports no assets. */
+  logo: ImageMetadata;
   /** The shared `Δείτε λεπτομέρειες` label, passed in rather than read from the module here. */
   cta: string;
 }
 
-const { card, cta }: Props = Astro.props;
-const { title, description, logo, logoAlt, href } = card;
+const { card, logo, cta }: Props = Astro.props;
+const { title, description, logoAlt, href } = card;
 ---
 
 <Card as="li" padding="none">
