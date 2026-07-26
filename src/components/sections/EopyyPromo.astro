@@ -14,12 +14,17 @@ import { getEopyySubsidy } from '@/lib/content/collections';
  * bottom-left, so the identity teal survives only as a highlight in the top-right corner where the
  * card has padding and no words.
  *
- * The `15%` is load-bearing, not a round number. Text starts at 22.6% along this gradient's line,
- * so putting `brand-strong` at 15% means every letter sits between `brand-strong` (4.74:1 under
- * white) and `brand-deep` (6.38:1) — and because *both* of those clear AA on their own, the
- * guarantee holds whatever colour space the browser interpolates in. At the 30% it started out
- * with, the top two lines landed at 4.38:1. `tests/e2e/home.spec.ts` recomputes that geometry and
- * fails if any text ever reaches the light segment.
+ * Left to right, so the lighter teal reads as a band down the left edge rather than a corner. The
+ * generous padding and the slightly smaller type are what make that band visible: the more of the
+ * card the text does not cover, the more of the gradient there is to see.
+ *
+ * The `12%` is load-bearing, not a round number. It has to sit inside the left padding gutter,
+ * before the earliest letter — then every letter sits between `brand-strong` (4.74:1 under white)
+ * and `brand-deep` (6.38:1), and because *both* of those clear AA on their own the guarantee holds
+ * whatever colour space the browser interpolates in. An earlier draft of this card put the stop at
+ * 30% of a diagonal and the top two lines landed at 4.38:1. `tests/e2e/home.spec.ts` recomputes
+ * the geometry for whatever direction and stop are set here and fails if any text reaches the
+ * light segment, so this cannot be adjusted by eye into a contrast failure.
  *
  * The whole card is the link, as on the live site. There is deliberately nothing else clickable
  * inside it: an overlay anchor and a second link in the same box is a trap for anyone tabbing.
@@ -34,20 +39,24 @@ const linkLabel = `${eopyyCard.headline} — ${amount}. Διαβάστε για 
 <Section tone="surface" labelledby="eopyy-heading">
   <div
     class:list={[
-      'on-brand relative mx-auto flex max-w-sm flex-col items-center gap-4 rounded-card-lg p-card-lg text-center text-white',
-      'bg-linear-to-bl from-brand from-0% via-brand-strong via-15% to-brand-deep',
+      'on-brand relative mx-auto flex max-w-sm flex-col items-center gap-5 rounded-card-lg px-11 py-12 text-center text-white',
+      'bg-linear-to-r from-brand from-0% via-brand-strong via-12% to-brand-deep',
       'shadow-lg transition-[transform,box-shadow] duration-(--duration-fast) ease-out',
       'hover:shadow-xl focus-within:shadow-xl motion-safe:hover:scale-105 motion-safe:focus-within:scale-105',
     ]}
   >
     <a href={eopyyCard.href} aria-label={linkLabel} class="absolute inset-0 rounded-card-lg"></a>
 
-    <p id="eopyy-heading" class="text-title font-bold">
+    <p id="eopyy-heading" class="text-section font-bold">
       <span class="sr-only">Επιδότηση ΕΟΠΥΥ: </span>{amount}
     </p>
 
-    {/* `text-card` is 18–20px; the live card sets both of these lines at 20px. All bold. */}
-    <p class="text-card font-bold text-balance">{eopyyCard.headline}</p>
+    {/*
+      18px bold — a notch down from the live card's 20px, so more of the gradient shows. The width
+      cap wraps the note onto two lines the way the live card's explicit `<br>` does, and keeps
+      both lines clear of the light band down the left edge.
+    */}
+    <p class="max-w-64 text-body-lg font-bold text-balance">{eopyyCard.headline}</p>
 
     <span class="flex size-32 shrink-0 items-center justify-center rounded-pill bg-surface">
       <Image
@@ -62,6 +71,6 @@ const linkLabel = `${eopyyCard.headline} — ${amount}. Διαβάστε για 
       />
     </span>
 
-    <p class="text-card font-bold text-balance">{eopyyCard.note}</p>
+    <p class="max-w-64 text-body-lg font-bold text-balance">{eopyyCard.note}</p>
   </div>
 </Section>

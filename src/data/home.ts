@@ -114,8 +114,13 @@ export const HOME = {
    */
   contact: {
     heading: 'Μιλήστε μαζί μας',
+    /**
+     * Two sentences. The second adds no claim the page does not already make: the free hearing
+     * test and the modern equipment are the `hearing-test` service card's own words, and the
+     * location is the address rendered beside this copy.
+     */
     description:
-      'Έχετε απορίες για τα ακουστικά βαρηκοΐας, τον έλεγχο ακοής ή τη συμμετοχή του ΕΟΠΥΥ; Στείλτε μας μήνυμα ή τηλεφωνήστε μας.',
+      'Έχετε απορίες για τα ακουστικά βαρηκοΐας, τον έλεγχο ακοής ή τη συμμετοχή του ΕΟΠΥΥ; Στείλτε μας μήνυμα ή τηλεφωνήστε μας. Ο έλεγχος ακοής γίνεται χωρίς χρέωση, με σύγχρονο εξοπλισμό, στο κατάστημά μας στο Μαρούσι.',
     cta: { label: 'Επικοινωνήστε μαζί μας', href: ROUTES.contact } satisfies CallToAction,
   },
 

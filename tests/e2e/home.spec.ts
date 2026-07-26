@@ -296,9 +296,29 @@ test('no text on the EOPYY card reaches the light end of its gradient', async ({
 
     const box = card.getBoundingClientRect();
     const { width: w, height: h } = box;
-    // `to bottom left` runs perpendicular to the top-left/bottom-right diagonal.
+
+    /**
+     * The direction is read from the rendered value too, so changing `bg-linear-to-*` cannot
+     * quietly invalidate this test. An axis keyword points along that axis; a corner keyword runs
+     * perpendicular to the *other* diagonal, which is how CSS defines it.
+     */
+    const keyword = gradient.match(
+      /to (?:top|bottom|left|right)(?: (?:top|bottom|left|right))?/,
+    )?.[0];
     const diagonal = Math.hypot(w, h);
-    const direction = { x: -h / diagonal, y: w / diagonal };
+    const directions: Record<string, { x: number; y: number }> = {
+      'to right': { x: 1, y: 0 },
+      'to left': { x: -1, y: 0 },
+      'to bottom': { x: 0, y: 1 },
+      'to top': { x: 0, y: -1 },
+      'to left bottom': { x: -h / diagonal, y: w / diagonal },
+      'to right top': { x: h / diagonal, y: -w / diagonal },
+      'to right bottom': { x: h / diagonal, y: w / diagonal },
+      'to left top': { x: -h / diagonal, y: -w / diagonal },
+    };
+    const direction = directions[keyword ?? ''];
+    if (!direction) return { unknownDirection: gradient };
+
     const length = Math.abs(w * direction.x) + Math.abs(h * direction.y);
     const centre = { x: box.left + w / 2, y: box.top + h / 2 };
     const origin = {
@@ -322,10 +342,16 @@ test('no text on the EOPYY card reaches the light end of its gradient', async ({
       };
     });
 
-    return { viaStop, lines, isGradient: gradient.includes('gradient') };
+    return { viaStop, lines, keyword, isGradient: gradient.includes('gradient') };
   });
 
   expect(result, 'the EOPYY card was not found').not.toBeNull();
+  expect(
+    'unknownDirection' in (result ?? {})
+      ? (result as { unknownDirection: string }).unknownDirection
+      : null,
+    'the gradient direction could not be parsed, so nothing was checked',
+  ).toBeNull();
   expect(result?.isGradient, 'the EOPYY card lost its gradient').toBe(true);
   expect(result?.viaStop).toBeGreaterThan(0);
 

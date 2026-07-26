@@ -27,8 +27,9 @@ const { contact } = HOME;
 <Section tone="surface" labelledby="contact-heading">
   <Card padding="lg" class="shadow-md">
     <div class="grid gap-10 md:grid-cols-2 md:gap-14">
-      {/* Centred against the taller contact list, so the copy does not hang from the top edge. */}
-      <div class="flex flex-col justify-center gap-4">
+      {/* Top-aligned, so the heading starts level with the opening hours rather than beside the
+          telephone. Both columns begin at the same line. */}
+      <div class="flex flex-col gap-4">
         <SectionHeading
           id="contact-heading"
           title={contact.heading}
