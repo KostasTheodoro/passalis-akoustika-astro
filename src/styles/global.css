@@ -112,8 +112,16 @@
   --text-label: 0.8125rem;
   --text-label--line-height: 1.4;
 
-  /** Layout. */
+  /**
+   * Layout.
+   *
+   * `medium` is the catalogue's measure. At `default` a model card runs 1200px wide, which leaves a
+   * 690px text column and a description on two lines beside a tall photo — the card reads as mostly
+   * empty. At 64rem the text wraps to four or five lines and the card gains the height back. The
+   * legacy site did the same thing with `max-w-4xl`, one step narrower still.
+   */
   --container-narrow: 68ch;
+  --container-medium: 64rem;
   --container-default: 75rem;
   --container-wide: 87.5rem;
 

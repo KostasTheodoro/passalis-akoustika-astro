@@ -44,7 +44,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 ---
 
 <BaseLayout title={seo.title} description={seo.description} breadcrumbs={breadcrumbs}>
-  <Section spacing="tight" labelledby="category-heading">
+  {/* `medium` for the same reason as the listing: the model rows need a narrower text column. */}
+  <Section spacing="tight" width="medium" labelledby="category-heading">
     {/*
       The category's own description, which the live site writes on the listing card and then never
       shows again. Here it tells a reader who arrived from the navigation what this category is

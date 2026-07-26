@@ -48,14 +48,14 @@ const { title, shortTitle, description, image, imageAlt } = type.data;
         and a grey ground would show as two bands beside it while the other three hid it entirely.
       */}
       <div
-        class="flex aspect-square min-h-0 w-44 shrink-0 items-center justify-center overflow-hidden rounded-card bg-surface sm:w-52"
+        class="flex aspect-square min-h-0 w-52 shrink-0 items-center justify-center overflow-hidden rounded-card bg-surface sm:w-60"
       >
         <Image
           src={image}
           alt={imageAlt}
           layout="none"
-          widths={[208, 416]}
-          sizes="13rem"
+          widths={[240, 480]}
+          sizes="15rem"
           loading={eager ? 'eager' : 'lazy'}
           fetchpriority={eager ? 'high' : undefined}
           decoding="async"

@@ -25,7 +25,11 @@ const { seo, heading } = CATALOGUE.listing;
 ---
 
 <BaseLayout title={seo.title} description={seo.description} breadcrumbs={breadcrumbs}>
-  <Section spacing="tight" labelledby="catalogue-heading">
+  {/*
+    `medium`, not the site-wide default. At 1200px the category cards leave a 690px text column and
+    a two-line description beside a 240px photo, which is a card that is mostly air.
+  */}
+  <Section spacing="tight" width="medium" labelledby="catalogue-heading">
     <SectionHeading id="catalogue-heading" as="h1" size="title" title={heading} />
 
     <ul class="mt-12 flex list-none flex-col gap-6 md:gap-8">

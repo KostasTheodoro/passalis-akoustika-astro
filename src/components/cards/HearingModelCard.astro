@@ -67,8 +67,8 @@ const Heading = headingLevel;
  * a fixed 13rem, so its `sizes` is a fixed length and the browser stops guessing.
  */
 const imageSizes =
-  sizes ?? (isRow ? '11rem' : '(min-width: 1024px) 20rem, (min-width: 640px) 45vw, 90vw');
-const imageWidths = isRow ? [176, 352] : [320, 480, 640];
+  sizes ?? (isRow ? '15rem' : '(min-width: 1024px) 20rem, (min-width: 640px) 45vw, 90vw');
+const imageWidths = isRow ? [240, 480] : [320, 480, 640];
 
 /*
  * `layout="none"` opts this image out of the project-wide `constrained` layout set in
@@ -89,13 +89,14 @@ const imageWidths = isRow ? [176, 352] : [320, 480, 640];
  * square photos and then appears as two grey bands beside the four that are not square — the same
  * inconsistency on the category page and the listing. White is white either way.
  *
- * 11rem rather than the live site's 15rem. Two lines of description beside a 15rem photo is a card
- * that is mostly empty, which is the legacy card's actual problem; at 11rem the row still reads as
- * a photo beside text and the card is about a third shorter.
+ * 15rem, the live site's own size. It was briefly 11rem, on the theory that a big photo beside two
+ * lines of text is what made the legacy card look empty. The photo was never the problem — the
+ * column was too wide and the text too short. Both are fixed elsewhere: the list now runs to
+ * `--container-medium`, and each description carries the model's actual specifications.
  */
 const photoFrame = [
   'flex aspect-square min-h-0 items-center justify-center overflow-hidden',
-  isRow ? 'w-40 shrink-0 rounded-card bg-surface sm:w-44' : 'rounded-t-card bg-surface p-4',
+  isRow ? 'w-52 shrink-0 rounded-card bg-surface sm:w-60' : 'rounded-t-card bg-surface p-4',
 ];
 ---
 

@@ -7,8 +7,11 @@
  * from STEP-05 onward goes through this.
  */
 interface Props {
-  /** `narrow` is the reading measure for long-form text; `wide` is for full-bleed-ish grids. */
-  size?: 'narrow' | 'default' | 'wide';
+  /**
+   * `narrow` is the reading measure for long-form text; `medium` is the catalogue's, where a wide
+   * column leaves the cards looking empty; `wide` is for full-bleed-ish grids.
+   */
+  size?: 'narrow' | 'medium' | 'default' | 'wide';
   class?: string;
   as?: 'div' | 'section' | 'header' | 'footer' | 'nav';
 }
@@ -17,6 +20,7 @@ const { size = 'default', class: className, as: Tag = 'div' }: Props = Astro.pro
 
 const widths = {
   narrow: 'max-w-narrow',
+  medium: 'max-w-medium',
   default: 'max-w-default',
   wide: 'max-w-wide',
 } as const;
