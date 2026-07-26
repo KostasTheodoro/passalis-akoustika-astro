@@ -1,34 +1,47 @@
 ---
+import BusinessContactList from '@/components/layout/BusinessContactList.astro';
 import Button from '@/components/ui/Button.astro';
+import Card from '@/components/ui/Card.astro';
 import Section from '@/components/ui/Section.astro';
 import SectionHeading from '@/components/ui/SectionHeading.astro';
-import { BUSINESS } from '@/data/business';
 import { HOME } from '@/data/home';
 
 /**
- * The closing call to action. The one section on this page with no counterpart on the live site,
- * added in STEP-05 on the maintainer's instruction.
+ * The closing call to action. The one section on this page with no counterpart on the live site.
  *
  * It sits here because this is the end of the browse sequence: the reader has seen why, what the
- * fund pays, and what is available, and the next thing to do is get in touch. The telephone is a
- * second button rather than a line of text because on a phone it is one tap to the shop, and the
- * number comes from `BUSINESS` like every other rendering of it.
+ * fund pays, and what is available, and the next thing to do is get in touch. The shop's hours,
+ * telephone, email and address sit beside the invitation, because a visitor deciding whether to
+ * ring wants to know when the shop is open before they do.
+ *
+ * There is no telephone button. The number in the list already rings, and so do the email and the
+ * address — a second control that duplicates one of them would only be a bigger target for the
+ * same thing. That leaves one button, and it belongs under both columns rather than in either.
+ *
+ * The card is not a linked card: it holds four links and a button, which is exactly the case
+ * `Card` documents as disqualifying the whole-surface pattern.
  */
 const { contact } = HOME;
 ---
 
-<Section tone="brand" spacing="tight" labelledby="contact-heading">
-  <SectionHeading
-    id="contact-heading"
-    title={contact.heading}
-    description={contact.description}
-  />
+<Section tone="surface" labelledby="contact-heading">
+  <Card padding="lg" class="shadow-md">
+    <div class="grid gap-10 md:grid-cols-2 md:gap-14">
+      {/* Centred against the taller contact list, so the copy does not hang from the top edge. */}
+      <div class="flex flex-col justify-center gap-4">
+        <SectionHeading
+          id="contact-heading"
+          title={contact.heading}
+          description={contact.description}
+          align="start"
+        />
+      </div>
 
-  <div class="mt-8 flex flex-wrap justify-center gap-4">
-    <Button href={contact.cta.href} size="lg" icon="mail">{contact.cta.label}</Button>
+      <BusinessContactList class="md:justify-self-end" />
+    </div>
 
-    <Button href={BUSINESS.telephone.href} variant="secondary" size="lg" icon="phone">
-      {BUSINESS.telephone.display}
-    </Button>
-  </div>
+    <div class="mt-10 flex justify-center">
+      <Button href={contact.cta.href} size="lg" icon="mail">{contact.cta.label}</Button>
+    </div>
+  </Card>
 </Section>

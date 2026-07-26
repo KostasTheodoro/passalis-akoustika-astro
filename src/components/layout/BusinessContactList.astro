@@ -1,0 +1,73 @@
+---
+import { Icon } from 'astro-icon/components';
+import { BUSINESS, fullAddress } from '@/data/business';
+import { EXTERNAL_LINKS } from '@/data/external-links';
+import { ICONS } from '@/data/icons';
+
+/**
+ * The shop's opening hours, telephone, email and address, as one list.
+ *
+ * Three of the four do something. The telephone rings, the email opens a mail client, the address
+ * opens the map — a visitor should not have to select and copy a phone number off a page. Opening
+ * hours is the odd one out because it is information rather than an action, so it is the one item
+ * that is not a link and does not underline on hover.
+ *
+ * Every value comes from `BUSINESS`. STEP-08's contact page should render this same component
+ * rather than writing the details out again; the legacy site kept them in three places and they
+ * had already drifted apart by the time STEP-00 found them.
+ */
+interface Props {
+  class?: string;
+}
+
+const { class: className }: Props = Astro.props;
+
+/** Shared by the three links so the hover treatment cannot drift between them. */
+const linkClass =
+  'rounded-control text-ink transition-colors duration-(--duration-fast) hover:text-brand-strong hover:underline';
+---
+
+<ul class:list={['flex flex-col gap-4 text-body', className]}>
+  <li class="flex items-start gap-3">
+    <Icon name={ICONS.clock} class="mt-1 size-5 shrink-0 text-brand" aria-hidden="true" />
+    <span>
+      <span class="block font-bold">Ωράριο λειτουργίας</span>
+      <span class="text-ink-muted">{BUSINESS.openingHours.display}</span>
+    </span>
+  </li>
+
+  <li class="flex items-start gap-3">
+    <Icon name={ICONS.phone} class="mt-1 size-5 shrink-0 text-brand" aria-hidden="true" />
+    <span>
+      <span class="block font-bold">Τηλέφωνο</span>
+      <a href={BUSINESS.telephone.href} class:list={[linkClass, 'font-bold text-brand-strong']}>
+        {BUSINESS.telephone.display}
+      </a>
+    </span>
+  </li>
+
+  <li class="flex items-start gap-3">
+    <Icon name={ICONS.mail} class="mt-1 size-5 shrink-0 text-brand" aria-hidden="true" />
+    <span>
+      <span class="block font-bold">Email</span>
+      <a href={`mailto:${BUSINESS.email}`} class:list={[linkClass, 'break-all']}>
+        {BUSINESS.email}
+      </a>
+    </span>
+  </li>
+
+  <li class="flex items-start gap-3">
+    <Icon name={ICONS.mapPin} class="mt-1 size-5 shrink-0 text-brand" aria-hidden="true" />
+    <span>
+      <span class="block font-bold">Διεύθυνση</span>
+      <a
+        href={EXTERNAL_LINKS.googleMaps.place}
+        target="_blank"
+        rel="noopener noreferrer"
+        class={linkClass}
+      >
+        {fullAddress}<span class="sr-only"> — άνοιγμα στους χάρτες Google σε νέα καρτέλα</span>
+      </a>
+    </span>
+  </li>
+</ul>
