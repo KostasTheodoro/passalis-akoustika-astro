@@ -11,6 +11,12 @@
  * `linkLabel`, because an empty anchor has no accessible name; and anything interactive inside a
  * linked card has to sit above the overlay with `relative z-10`, or it cannot be clicked. A card
  * with several nested controls should not be a linked card at all.
+ *
+ * A linked card also lifts: 5% larger and a deeper shadow under the pointer, and the same under
+ * keyboard focus, which is the interaction the live site has on its product and EOPYY cards. It is
+ * gated on `href` because only a card that does something should respond to being pointed at, and
+ * on `motion-safe:` so it does not move for a visitor who asked for less motion. `z-10` on hover
+ * keeps the growing card above its neighbours rather than under them.
  */
 interface Props {
   href?: string;
@@ -43,8 +49,11 @@ const paddings = {
 <Tag
   class:list={[
     'relative flex flex-col rounded-card border border-border bg-surface shadow-sm',
-    'transition-shadow duration-(--duration-base) ease-out',
-    href && 'hover:shadow-md focus-within:shadow-md',
+    'transition-[transform,box-shadow] duration-(--duration-fast) ease-out',
+    href && [
+      'hover:z-10 hover:shadow-lg focus-within:z-10 focus-within:shadow-lg',
+      'motion-safe:hover:scale-105 motion-safe:focus-within:scale-105',
+    ],
     paddings[padding],
     className,
   ]}

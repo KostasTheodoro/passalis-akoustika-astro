@@ -127,9 +127,14 @@
   --spacing-header: 4rem;
   --spacing-header-lg: 4.5rem;
 
-  /** Shape. The pill CTA and the large card radius are both carried over from the live site. */
+  /**
+   * Shape. The pill CTA and the card radius are both carried over from the live site.
+   * `--radius-card-lg` is the live EOPYY card's 32px corner — the one place the site rounds
+   * harder than everything else, and the reason that card reads as a distinct object.
+   */
   --radius-control: 0.5rem;
   --radius-card: 1rem;
+  --radius-card-lg: 2rem;
   --radius-pill: 9999px;
 
   /** Elevation. Three steps, deliberately — the legacy site had a shadow per component. */

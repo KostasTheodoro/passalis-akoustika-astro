@@ -5,10 +5,15 @@ import { ICONS, type IconName } from '@/data/icons';
 /**
  * The teal pill, kept.
  *
- * Two things are deliberate. The fill is `brand-strong` rather than the identity teal, because
- * white on the identity teal is 3.38:1 and a button label needs 4.5:1 — see `global.css`. And the
+ * Three things are deliberate. The fill is `brand-strong` rather than the identity teal, because
+ * white on the identity teal is 3.38:1 and a button label needs 4.5:1 — see `global.css`. The
  * hover still inverts to a white face with a teal label, which is the interaction the live site
- * has and the client is used to.
+ * has and the client is used to. And it lifts very slightly under the pointer and presses in when
+ * clicked: 3% and 2%, small enough to feel rather than to watch.
+ *
+ * The lift is behind `motion-safe:`, so a visitor who has asked their system for less motion gets
+ * the colour change and nothing else. The global reduced-motion block would zero the duration
+ * anyway, but that only makes the movement instant — this removes it.
  *
  * Renders an `<a>` when it is given an `href` and a `<button>` when it is not, so a link never
  * pretends to be a button or the other way round.
@@ -64,7 +69,8 @@ const sizes = {
   rel={external ? 'noopener noreferrer' : undefined}
   class:list={[
     'inline-flex items-center justify-center gap-2 rounded-pill font-bold',
-    'transition-colors duration-(--duration-fast) ease-out',
+    'transition-[color,background-color,border-color,transform] duration-(--duration-fast) ease-out',
+    'motion-safe:hover:scale-[1.03] motion-safe:active:scale-[0.98]',
     'disabled:pointer-events-none disabled:opacity-60',
     variants[variant],
     sizes[size],
