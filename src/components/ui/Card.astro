@@ -1,0 +1,54 @@
+---
+/**
+ * The white card the whole site is built out of.
+ *
+ * When given an `href` the whole surface becomes the link target through an overlay anchor rather
+ * than by wrapping the contents in an `<a>`. That keeps the card's own markup — headings, lists,
+ * paragraphs — semantically intact, and puts the focus ring around the card instead of around
+ * whichever run of text happened to be the link.
+ *
+ * Two rules come with it, and `component-specifications.md` is the reason: a linked card needs a
+ * `linkLabel`, because an empty anchor has no accessible name; and anything interactive inside a
+ * linked card has to sit above the overlay with `relative z-10`, or it cannot be clicked. A card
+ * with several nested controls should not be a linked card at all.
+ */
+interface Props {
+  href?: string;
+  /** The accessible name for the overlay link. Required whenever `href` is set. */
+  linkLabel?: string;
+  as?: 'div' | 'article' | 'li';
+  padding?: 'default' | 'lg' | 'none';
+  class?: string;
+}
+
+const {
+  href,
+  linkLabel,
+  as: Tag = 'div',
+  padding = 'default',
+  class: className,
+}: Props = Astro.props;
+
+if (href && !linkLabel) {
+  throw new Error('Card: a card with an `href` also needs a `linkLabel` for its overlay link.');
+}
+
+const paddings = {
+  none: '',
+  default: 'p-card',
+  lg: 'p-card-lg',
+} as const;
+---
+
+<Tag
+  class:list={[
+    'relative flex flex-col rounded-card border border-border bg-surface shadow-sm',
+    'transition-shadow duration-(--duration-base) ease-out',
+    href && 'hover:shadow-md focus-within:shadow-md',
+    paddings[padding],
+    className,
+  ]}
+>
+  {href && <a href={href} aria-label={linkLabel} class="absolute inset-0 rounded-card" />}
+  <slot />
+</Tag>

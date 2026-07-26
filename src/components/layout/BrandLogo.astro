@@ -1,0 +1,30 @@
+---
+import Wordmark from '@/assets/brand/logo-wordmark.svg';
+import { BUSINESS } from '@/data/business';
+import { ROUTES } from '@/data/routes';
+
+/**
+ * The logo, as a link home.
+ *
+ * The SVG is imported as a component, so Astro inlines it: it inherits the page's colour handling,
+ * scales without a second file, and costs no request. `role="img"` and the `<title>` inside
+ * `logo-wordmark.svg` would give it an accessible name of their own, so the anchor carries the
+ * name instead and the graphic is hidden from the accessibility tree — otherwise a screen reader
+ * announces the business twice on the way past.
+ */
+interface Props {
+  /** Rendered height in pixels. The width follows from the artwork's 326.7 × 112.62 aspect. */
+  height?: number;
+  class?: string;
+}
+
+const { height = 44, class: className }: Props = Astro.props;
+---
+
+<a
+  href={ROUTES.home}
+  class:list={['inline-flex shrink-0 items-center rounded-control', className]}
+  aria-label={`${BUSINESS.name} — αρχική σελίδα`}
+>
+  <Wordmark height={height} width={Math.round((height * 326.7) / 112.62)} aria-hidden="true" />
+</a>

@@ -1,7 +1,38 @@
 ---
+import Button from '@/components/ui/Button.astro';
+import Section from '@/components/ui/Section.astro';
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import { BUSINESS } from '@/data/business';
+import { HOME } from '@/data/home';
+import { ROUTES } from '@/data/routes';
 import BaseLayout from '@/layouts/BaseLayout.astro';
+
+/**
+ * A placeholder body, so the shell has a real page to live on while STEP-04 is reviewed.
+ * STEP-05 replaces everything below `<BaseLayout>` with the actual home page.
+ */
 ---
 
-<BaseLayout title="Passalis Akoustika">
-  <p>Project bootstrap in progress.</p>
+<BaseLayout title={HOME.seo.title} description={HOME.seo.description}>
+  <Section tone="brand">
+    <SectionHeading
+      as="h1"
+      size="display"
+      title={HOME.hero.heading}
+      description={HOME.hero.subheading}
+    />
+
+    <div class="mt-8 flex flex-wrap justify-center gap-4">
+      <Button href={ROUTES.hearingAids}>Δείτε τα ακουστικά μας</Button>
+      <Button href={ROUTES.contact} variant="secondary" icon="phone">
+        Επικοινωνήστε μαζί μας
+      </Button>
+    </div>
+  </Section>
+
+  <Section width="narrow">
+    <p class="text-center text-body-lg text-ink-muted">
+      {BUSINESS.name} — {BUSINESS.serviceArea}.
+    </p>
+  </Section>
 </BaseLayout>

@@ -1,12 +1,30 @@
 ---
 import { Font } from 'astro:assets';
+import SiteFooter from '@/components/layout/SiteFooter.astro';
+import SkipLink from '@/components/layout/SkipLink.astro';
+import Breadcrumbs, { type BreadcrumbItem } from '@/components/navigation/Breadcrumbs.astro';
+import SiteHeader from '@/components/navigation/SiteHeader.astro';
+import Container from '@/components/ui/Container.astro';
 import '../styles/global.css';
 
+/**
+ * The shell every page renders inside.
+ *
+ * This layout owns the site's only `<main>`. No page may render one of its own — the live site
+ * has nested `<main>` elements on seven routes because each page reached for the landmark
+ * separately, and that is the defect this arrangement exists to prevent.
+ *
+ * `description` is accepted now so pages have somewhere to put it; STEP-09 owns the rest of the
+ * document head, including titles, canonicals, social metadata and structured data.
+ */
 interface Props {
   title: string;
+  description?: string;
+  /** Rendered above the page heading on nested routes. Home is added by the component. */
+  breadcrumbs?: BreadcrumbItem[];
 }
 
-const { title } = Astro.props;
+const { title, description, breadcrumbs }: Props = Astro.props;
 ---
 
 <!doctype html>
@@ -34,8 +52,24 @@ const { title } = Astro.props;
     />
 
     <title>{title}</title>
+    {description && <meta name="description" content={description} />}
   </head>
-  <body>
-    <slot />
+  <body class="flex min-h-dvh flex-col">
+    <SkipLink />
+    <SiteHeader />
+
+    {/* `tabindex="-1"` is what lets the skip link actually move focus here, not just the viewport. */}
+    <main id="main" tabindex="-1" class="flex-1">
+      {
+        breadcrumbs && (
+          <Container size="default" class="pt-6">
+            <Breadcrumbs items={breadcrumbs} />
+          </Container>
+        )
+      }
+      <slot />
+    </main>
+
+    <SiteFooter />
   </body>
 </html>

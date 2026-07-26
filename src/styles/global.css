@@ -50,6 +50,9 @@
   --color-border: #e4e2e0;
   --color-border-strong: #cfccc9;
 
+  /** The scrim behind the mobile drawer. The one place a colour is deliberately not opaque. */
+  --color-backdrop: rgb(70 67 66 / 0.55);
+
   /** State colours. Nothing signals state by colour alone — each carries an icon or text too. */
   --color-success: #1b7f4b;
   --color-warning: #8a5a00;

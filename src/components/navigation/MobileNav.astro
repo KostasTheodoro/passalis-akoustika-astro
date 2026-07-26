@@ -1,0 +1,217 @@
+---
+import { Icon } from 'astro-icon/components';
+import BrandLogo from '@/components/layout/BrandLogo.astro';
+import { BUSINESS, fullAddress } from '@/data/business';
+import { EXTERNAL_LINKS } from '@/data/external-links';
+import { ICONS } from '@/data/icons';
+import { PRIMARY_NAV } from '@/data/navigation';
+
+/**
+ * The drawer, below `lg`.
+ *
+ * Built on a native `<dialog>` opened with `showModal()`, which is where nearly all of the
+ * behaviour comes from: focus is trapped inside it, Escape closes it, everything behind it goes
+ * inert, and the backdrop is the platform's own. A React sheet — shadcn/ui's, say — would ship
+ * React DOM and Radix Dialog on every page of the site to arrive at the same place. The script
+ * below is what is left over once the platform has done its part: a scroll lock, closing on
+ * navigation, and returning focus to the trigger.
+ *
+ * Contents mirror the live drawer: logo, close, top-level links with their children indented
+ * beneath, and the phone and address at the bottom.
+ */
+const current = Astro.url.pathname.replace(/\/+$/, '') || '/';
+---
+
+<div class="lg:hidden">
+  <button
+    type="button"
+    data-drawer-open
+    aria-expanded="false"
+    aria-controls="mobile-drawer"
+    aria-label="Άνοιγμα μενού"
+    class="inline-flex size-11 items-center justify-center rounded-control text-ink transition-colors duration-(--duration-fast) hover:text-brand-strong"
+  >
+    <Icon name={ICONS.menu} class="size-7" aria-hidden="true" />
+  </button>
+
+  {/*
+    The dialog and the navigation inside it carry separate names: the dialog is the thing that
+    opened, the nav is the landmark within it. Only one primary navigation is ever in the
+    accessibility tree — this wrapper is `lg:hidden`, the desktop one is `hidden lg:block`.
+  */}
+  <dialog
+    id="mobile-drawer"
+    data-drawer
+    aria-label="Μενού"
+    class="m-0 h-dvh max-h-dvh w-[min(20rem,88vw)] max-w-none bg-surface p-0 text-ink"
+  >
+    <div class="flex h-full flex-col overflow-y-auto">
+      <div class="flex items-center justify-between gap-4 border-b border-border px-gutter py-4">
+        <BrandLogo height={36} />
+
+        <button
+          type="button"
+          data-drawer-close
+          aria-label="Κλείσιμο μενού"
+          class="inline-flex size-11 items-center justify-center rounded-control text-ink transition-colors duration-(--duration-fast) hover:text-brand-strong"
+        >
+          <Icon name={ICONS.close} class="size-6" aria-hidden="true" />
+        </button>
+      </div>
+
+      <nav aria-label="Κύρια πλοήγηση" class="flex-1 px-gutter py-4">
+        <ul class="flex flex-col gap-1">
+          {
+            PRIMARY_NAV.map((item) => (
+              <li>
+                <a
+                  href={item.href}
+                  aria-current={current === item.href ? 'page' : undefined}
+                  class:list={[
+                    'block rounded-control px-3 py-3 text-body-lg',
+                    current === item.href
+                      ? 'font-bold text-brand-strong underline decoration-2 underline-offset-4'
+                      : 'text-ink',
+                  ]}
+                >
+                  {item.label}
+                </a>
+
+                {item.children && (
+                  <ul class="flex flex-col gap-1 ps-4">
+                    {item.children.map((child) => (
+                      <li>
+                        <a
+                          href={child.href}
+                          aria-current={current === child.href ? 'page' : undefined}
+                          class:list={[
+                            'block rounded-control px-3 py-2.5 text-body',
+                            current === child.href
+                              ? 'font-bold text-brand-strong underline decoration-2 underline-offset-4'
+                              : 'text-ink-muted',
+                          ]}
+                        >
+                          {child.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <div class="flex flex-col gap-3 border-t border-border px-gutter py-5 text-small">
+        <a href={BUSINESS.telephone.href} class="inline-flex items-center gap-3 rounded-control font-bold text-brand-strong">
+          <Icon name={ICONS.phone} class="size-5 shrink-0" aria-hidden="true" />
+          {BUSINESS.telephone.display}
+        </a>
+
+        <a
+          href={EXTERNAL_LINKS.googleMaps.place}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-start gap-3 rounded-control text-ink-muted"
+        >
+          <Icon name={ICONS.mapPin} class="mt-0.5 size-5 shrink-0" aria-hidden="true" />
+          <span>{fullAddress}<span class="sr-only"> — άνοιγμα στους χάρτες Google</span></span>
+        </a>
+      </div>
+    </div>
+  </dialog>
+</div>
+
+<style>
+  [data-drawer] {
+    /* Pinned to the start edge, full height, so it reads as a drawer rather than a centred modal. */
+    position: fixed;
+    inset-block: 0;
+    inset-inline-start: 0;
+    border: 0;
+    box-shadow: var(--shadow-lg);
+  }
+
+  [data-drawer]::backdrop {
+    background: var(--color-backdrop);
+  }
+
+  /*
+   * `allow-discrete` is what lets `display` participate in the transition, so the panel can slide
+   * in from nothing and slide back out before it is removed. Where it is unsupported the drawer
+   * simply appears and disappears, which is a perfectly good drawer.
+   */
+  @media (prefers-reduced-motion: no-preference) {
+    [data-drawer] {
+      translate: -100% 0;
+      transition:
+        translate var(--duration-base) var(--ease-out),
+        display var(--duration-base) allow-discrete,
+        overlay var(--duration-base) allow-discrete;
+    }
+
+    [data-drawer][open] {
+      translate: 0 0;
+    }
+
+    @starting-style {
+      [data-drawer][open] {
+        translate: -100% 0;
+      }
+    }
+
+    [data-drawer]::backdrop {
+      opacity: 0;
+      transition:
+        opacity var(--duration-base) var(--ease-out),
+        display var(--duration-base) allow-discrete,
+        overlay var(--duration-base) allow-discrete;
+    }
+
+    [data-drawer][open]::backdrop {
+      opacity: 1;
+    }
+
+    @starting-style {
+      [data-drawer][open]::backdrop {
+        opacity: 0;
+      }
+    }
+  }
+</style>
+
+<script>
+  const drawer = document.querySelector<HTMLDialogElement>('[data-drawer]');
+  const trigger = document.querySelector<HTMLButtonElement>('[data-drawer-open]');
+  const close = document.querySelector<HTMLButtonElement>('[data-drawer-close]');
+
+  if (drawer && trigger && close) {
+    function open() {
+      drawer!.showModal();
+      trigger!.setAttribute('aria-expanded', 'true');
+      // `showModal` makes the background inert but does not stop it scrolling behind the panel.
+      document.documentElement.style.overflow = 'hidden';
+    }
+
+    drawer.addEventListener('close', () => {
+      trigger.setAttribute('aria-expanded', 'false');
+      document.documentElement.style.overflow = '';
+      // Browsers vary on whether they restore focus themselves, so it is done explicitly.
+      trigger.focus();
+    });
+
+    trigger.addEventListener('click', open);
+    close.addEventListener('click', () => drawer.close());
+
+    // Choosing a destination closes the drawer, rather than leaving it open behind the new page.
+    for (const link of drawer.querySelectorAll('a')) {
+      link.addEventListener('click', () => drawer.close());
+    }
+
+    // A click on the backdrop lands on the dialog itself, since the panel fills it completely.
+    drawer.addEventListener('click', (event) => {
+      if (event.target === drawer) drawer.close();
+    });
+  }
+</script>

@@ -1,0 +1,127 @@
+---
+import { Icon } from 'astro-icon/components';
+import BrandLogo from '@/components/layout/BrandLogo.astro';
+import DesktopNav from '@/components/navigation/DesktopNav.astro';
+import MobileNav from '@/components/navigation/MobileNav.astro';
+import Container from '@/components/ui/Container.astro';
+import { BUSINESS } from '@/data/business';
+import { EXTERNAL_LINKS } from '@/data/external-links';
+import { ICONS } from '@/data/icons';
+
+/**
+ * The site header.
+ *
+ * It is `position: sticky`, which means it keeps its place in the flow at the top of the document
+ * and nothing shifts when it hides or returns — the alternative, swapping between static and
+ * fixed, moves the whole page by the header's height at the moment of the swap.
+ *
+ * Three states, on `data-header-state`:
+ *   top      — at the top of the page, flat, indistinguishable from an ordinary header
+ *   visible  — pinned over the content with a shadow, after the reader scrolled up
+ *   hidden   — translated out of view, after the reader scrolled down
+ */
+---
+
+<header
+  data-site-header
+  data-header-state="top"
+  class="sticky top-0 z-40 border-b border-border bg-surface"
+>
+  <Container size="wide" class="flex h-header items-center justify-between gap-4 lg:h-header-lg">
+    <BrandLogo height={40} />
+
+    <DesktopNav />
+
+    {/* Phone and address, exactly where the live site puts them. Both are links, which they were not. */}
+    <div class="hidden items-center gap-6 text-small lg:flex">
+      <a
+        href={BUSINESS.telephone.href}
+        class="inline-flex items-center gap-2 rounded-control text-ink transition-colors duration-(--duration-fast) hover:text-brand-strong"
+      >
+        <Icon name={ICONS.phone} class="size-4 shrink-0 text-brand" aria-hidden="true" />
+        {BUSINESS.telephone.display}
+      </a>
+
+      <a
+        href={EXTERNAL_LINKS.googleMaps.place}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex items-center gap-2 rounded-control text-ink transition-colors duration-(--duration-fast) hover:text-brand-strong"
+      >
+        <Icon name={ICONS.mapPin} class="size-4 shrink-0 text-brand" aria-hidden="true" />
+        <span>{BUSINESS.address.street}</span>
+        <span class="sr-only">{`, ${BUSINESS.address.locality} ${BUSINESS.address.postalCode} — άνοιγμα στους χάρτες Google`}</span>
+      </a>
+    </div>
+
+    <MobileNav />
+  </Container>
+</header>
+
+<style>
+  [data-site-header] {
+    transition: transform var(--duration-base) var(--ease-out);
+  }
+
+  [data-header-state='hidden'] {
+    transform: translateY(-100%);
+  }
+
+  [data-header-state='visible'] {
+    box-shadow: var(--shadow-md);
+  }
+</style>
+
+<script>
+  /**
+   * Hide on the way down, come back on the way up.
+   *
+   * Read once per frame from a passive listener, so the scroll thread is never blocked. The 8px
+   * threshold is there because trackpad momentum and touch fling both deliver a scatter of
+   * one-and-two-pixel events in the opposite direction at the end of a gesture, and without it the
+   * bar flickers at the end of every scroll.
+   */
+  const header = document.querySelector<HTMLElement>('[data-site-header]');
+
+  if (header) {
+    const THRESHOLD = 8;
+    let last = window.scrollY;
+    let ticking = false;
+
+    const setState = (state: 'top' | 'visible' | 'hidden') => {
+      header.dataset.headerState = state;
+    };
+
+    function update() {
+      const y = window.scrollY;
+
+      if (y <= 0) {
+        setState('top');
+      } else if (y > last + THRESHOLD && y > header!.offsetHeight) {
+        setState('hidden');
+      } else if (y < last - THRESHOLD) {
+        setState('visible');
+      }
+
+      // Ignore the rubber-band overscroll iOS reports as a negative offset.
+      last = Math.max(y, 0);
+      ticking = false;
+    }
+
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(update);
+        }
+      },
+      { passive: true },
+    );
+
+    // A keyboard reader tabbing backwards into a hidden header must be able to see where they are.
+    header.addEventListener('focusin', () => {
+      if (header.dataset.headerState === 'hidden') setState('visible');
+    });
+  }
+</script>

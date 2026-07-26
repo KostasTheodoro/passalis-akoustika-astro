@@ -1,0 +1,78 @@
+---
+import { Icon } from 'astro-icon/components';
+import { ICONS, type IconName } from '@/data/icons';
+
+/**
+ * The teal pill, kept.
+ *
+ * Two things are deliberate. The fill is `brand-strong` rather than the identity teal, because
+ * white on the identity teal is 3.38:1 and a button label needs 4.5:1 — see `global.css`. And the
+ * hover still inverts to a white face with a teal label, which is the interaction the live site
+ * has and the client is used to.
+ *
+ * Renders an `<a>` when it is given an `href` and a `<button>` when it is not, so a link never
+ * pretends to be a button or the other way round.
+ */
+interface Props {
+  href?: string;
+  variant?: 'primary' | 'secondary' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+  type?: 'button' | 'submit';
+  icon?: IconName;
+  /** Set when the link leaves the site: adds the target, the rel, and the usual glyph. */
+  external?: boolean;
+  disabled?: boolean;
+  class?: string;
+  'aria-label'?: string;
+}
+
+const {
+  href,
+  variant = 'primary',
+  size = 'md',
+  type = 'button',
+  icon,
+  external = false,
+  disabled = false,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const Tag = href ? 'a' : 'button';
+
+const variants = {
+  primary:
+    'border-2 border-brand-strong bg-brand-strong text-white hover:bg-surface hover:text-brand-strong',
+  secondary:
+    'border-2 border-brand-strong bg-surface text-brand-strong hover:bg-brand-strong hover:text-white',
+  ghost: 'border-2 border-transparent text-brand-strong hover:text-brand-deep hover:underline',
+} as const;
+
+/** `md` is 44px tall, which is the touch target the responsive spec asks for. */
+const sizes = {
+  sm: 'h-10 px-4 text-small',
+  md: 'h-11 px-6 text-body',
+  lg: 'h-13 px-8 text-body-lg',
+} as const;
+---
+
+<Tag
+  href={href}
+  type={href ? undefined : type}
+  disabled={href ? undefined : disabled}
+  target={external ? '_blank' : undefined}
+  rel={external ? 'noopener noreferrer' : undefined}
+  class:list={[
+    'inline-flex items-center justify-center gap-2 rounded-pill font-bold',
+    'transition-colors duration-(--duration-fast) ease-out',
+    'disabled:pointer-events-none disabled:opacity-60',
+    variants[variant],
+    sizes[size],
+    className,
+  ]}
+  {...rest}
+>
+  {icon && <Icon name={ICONS[icon]} class="size-5 shrink-0" aria-hidden="true" />}
+  <slot />
+  {external && <Icon name={ICONS.external} class="size-4 shrink-0" aria-hidden="true" />}
+</Tag>

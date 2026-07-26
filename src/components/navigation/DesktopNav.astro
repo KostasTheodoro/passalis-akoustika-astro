@@ -1,0 +1,160 @@
+---
+import { Icon } from 'astro-icon/components';
+import { ICONS } from '@/data/icons';
+import { PRIMARY_NAV } from '@/data/navigation';
+
+/**
+ * The horizontal navigation, from `lg` up.
+ *
+ * The live site's submenus open on `mouseenter` and nothing else — there is no focus handler at
+ * all, so the eight links under `Ακουστικά` and `Συνεργάτες` cannot be reached without a mouse.
+ * STEP-00 recorded that as a genuine defect rather than something to preserve, so this is a
+ * disclosure: the section label stays a real link to the section, and a separate button beside it
+ * opens the submenu by pointer, by click and by keyboard, with `aria-expanded` telling the truth
+ * in all three cases.
+ */
+const current = Astro.url.pathname.replace(/\/+$/, '') || '/';
+
+/** A stable id per submenu, for `aria-controls`. */
+const submenuId = (href: string) => `submenu-${href.replace(/[^\w]+/g, '-').replace(/^-|-$/g, '')}`;
+---
+
+<nav aria-label="Κύρια πλοήγηση" class="hidden lg:block">
+  <ul class="flex items-center gap-1">
+    {
+      PRIMARY_NAV.map((item) => {
+        const isCurrent = current === item.href;
+        const hasSection = current === item.href || current.startsWith(`${item.href}/`);
+
+        return (
+          <li class="relative" data-nav-group={item.children ? '' : undefined}>
+            <div class="flex items-center">
+              <a
+                href={item.href}
+                aria-current={isCurrent ? 'page' : undefined}
+                class:list={[
+                  'rounded-control px-3 py-2 text-body transition-colors duration-(--duration-fast)',
+                  'hover:text-brand-strong',
+                  /* Not colour alone: the current section is underlined as well as recoloured. */
+                  hasSection
+                    ? 'font-bold text-brand-strong underline decoration-2 underline-offset-8'
+                    : 'text-ink',
+                ]}
+              >
+                {item.label}
+              </a>
+
+              {item.children && (
+                <button
+                  type="button"
+                  aria-expanded="false"
+                  aria-controls={submenuId(item.href)}
+                  aria-label={`Άνοιγμα υπομενού: ${item.label}`}
+                  data-nav-toggle
+                  class="rounded-control p-1 text-ink transition-colors duration-(--duration-fast) hover:text-brand-strong"
+                >
+                  <Icon name={ICONS.chevronDown} class="size-4 transition-transform" aria-hidden="true" />
+                </button>
+              )}
+            </div>
+
+            {item.children && (
+              <ul
+                id={submenuId(item.href)}
+                data-nav-submenu
+                class="absolute start-0 top-full z-10 min-w-64 rounded-card border border-border bg-surface p-2 shadow-lg"
+              >
+                {item.children.map((child) => (
+                  <li>
+                    <a
+                      href={child.href}
+                      aria-current={current === child.href ? 'page' : undefined}
+                      class:list={[
+                        'block rounded-control px-3 py-2 text-body transition-colors duration-(--duration-fast)',
+                        'hover:bg-brand-50 hover:text-brand-strong',
+                        current === child.href ? 'font-bold text-brand-strong' : 'text-ink',
+                      ]}
+                    >
+                      {child.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        );
+      })
+    }
+  </ul>
+</nav>
+
+<style>
+  /* Closed is the default, so the submenu is invisible and unfocusable before any script runs. */
+  [data-nav-submenu] {
+    display: none;
+  }
+
+  [data-nav-group][data-open='true'] [data-nav-submenu] {
+    display: block;
+  }
+
+  [data-nav-group][data-open='true'] [data-nav-toggle] :global(svg) {
+    transform: rotate(180deg);
+  }
+</style>
+
+<script>
+  /**
+   * Opens and closes the submenus. Pointer and keyboard drive the same `setOpen`, so the visible
+   * state and `aria-expanded` cannot disagree — which is the part the live site gets wrong.
+   */
+  const groups = document.querySelectorAll<HTMLElement>('[data-nav-group]');
+  const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  function setOpen(group: HTMLElement, open: boolean) {
+    group.dataset.open = String(open);
+    group.querySelector('[data-nav-toggle]')?.setAttribute('aria-expanded', String(open));
+  }
+
+  function closeAll(except?: HTMLElement) {
+    for (const group of groups) {
+      if (group !== except) setOpen(group, false);
+    }
+  }
+
+  for (const group of groups) {
+    const toggle = group.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+
+    toggle?.addEventListener('click', () => {
+      const open = group.dataset.open !== 'true';
+      closeAll(group);
+      setOpen(group, open);
+    });
+
+    if (canHover) {
+      group.addEventListener('mouseenter', () => {
+        closeAll(group);
+        setOpen(group, true);
+      });
+      group.addEventListener('mouseleave', () => setOpen(group, false));
+    }
+
+    // Escape closes and hands focus back to the button that opened it.
+    group.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && group.dataset.open === 'true') {
+        setOpen(group, false);
+        toggle?.focus();
+      }
+    });
+
+    // Tabbing out of the group closes it, so a submenu never lingers behind the next section.
+    group.addEventListener('focusout', (event) => {
+      if (!group.contains(event.relatedTarget as Node | null)) setOpen(group, false);
+    });
+  }
+
+  document.addEventListener('click', (event) => {
+    const target = event.target as Node;
+    if (![...groups].some((group) => group.contains(target))) closeAll();
+  });
+</script>

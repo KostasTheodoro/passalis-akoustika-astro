@@ -1,0 +1,38 @@
+---
+import Container from '@/components/ui/Container.astro';
+
+/**
+ * A page section with its vertical rhythm already decided.
+ *
+ * `tone` is the only background choice a section gets. Keeping it to three named grounds is what
+ * stops the page becoming a run of subtly different off-whites, which is roughly what happened to
+ * the live site.
+ */
+interface Props {
+  tone?: 'page' | 'surface' | 'brand';
+  spacing?: 'default' | 'tight';
+  width?: 'narrow' | 'default' | 'wide';
+  id?: string;
+  class?: string;
+}
+
+const { tone = 'page', spacing = 'default', width = 'default', id, class: className } = Astro.props;
+
+const tones = {
+  page: 'bg-page',
+  surface: 'bg-surface',
+  /** The pale teal band the live site uses behind the hero. */
+  brand: 'bg-brand-50',
+} as const;
+
+const spacings = {
+  default: 'py-section',
+  tight: 'py-section-tight',
+} as const;
+---
+
+<section id={id} class:list={[tones[tone], spacings[spacing], className]}>
+  <Container size={width}>
+    <slot />
+  </Container>
+</section>

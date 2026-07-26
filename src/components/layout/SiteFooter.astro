@@ -1,0 +1,124 @@
+---
+import { Icon } from 'astro-icon/components';
+import BrandLogo from '@/components/layout/BrandLogo.astro';
+import Container from '@/components/ui/Container.astro';
+import { BUSINESS, fullAddress } from '@/data/business';
+import { EXTERNAL_LINKS } from '@/data/external-links';
+import { ICONS } from '@/data/icons';
+import { FOOTER_NAV } from '@/data/navigation';
+
+/**
+ * The footer.
+ *
+ * The live site's footer is a single teal strip with a copyright line in English. This keeps that
+ * strip — it is the one piece of the footer anyone would recognise — and puts a proper footer
+ * above it: the logo and a one-line description, the two navigation columns, and the business's
+ * address, telephone and opening hours.
+ *
+ * The contact details and the hours share a column rather than splitting into two. Name, address,
+ * telephone and hours are the block a reader scans as one thing when they are deciding whether to
+ * ring, and it is the same grouping STEP-09 will emit as `LocalBusiness` structured data — from
+ * this exact object, so the two cannot drift.
+ *
+ * Every value here comes from `BUSINESS`. The legacy site kept its contact details in three places
+ * that had already disagreed with each other by the time STEP-00 found them.
+ */
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t border-border bg-surface">
+  <Container size="default" class="py-section-tight">
+    <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr]">
+      <div class="flex flex-col gap-5 md:col-span-2 lg:col-span-1">
+        <BrandLogo height={48} />
+
+        <p class="max-w-xs text-small text-ink-muted">
+          Ακουστικά βαρηκοΐας, έλεγχος ακοής και υποστήριξη στο Μαρούσι.
+        </p>
+
+        <ul class="flex flex-col gap-3 text-small">
+          <li class="flex items-start gap-3">
+            <Icon name={ICONS.clock} class="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
+            <span>
+              <span class="block font-bold">Ωράριο λειτουργίας</span>
+              <span class="text-ink-muted">{BUSINESS.openingHours.display}</span>
+            </span>
+          </li>
+
+          <li class="flex items-start gap-3">
+            <Icon name={ICONS.phone} class="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
+            <a
+              href={BUSINESS.telephone.href}
+              class="rounded-control font-bold text-brand-strong hover:underline"
+            >
+              {BUSINESS.telephone.display}
+            </a>
+          </li>
+
+          <li class="flex items-start gap-3">
+            <Icon name={ICONS.mail} class="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
+            <a
+              href={`mailto:${BUSINESS.email}`}
+              class="rounded-control break-all text-ink transition-colors duration-(--duration-fast) hover:text-brand-strong hover:underline"
+            >
+              {BUSINESS.email}
+            </a>
+          </li>
+
+          <li class="flex items-start gap-3">
+            <Icon
+              name={ICONS.mapPin}
+              class="mt-0.5 size-4 shrink-0 text-brand"
+              aria-hidden="true"
+            />
+            <a
+              href={EXTERNAL_LINKS.googleMaps.place}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="rounded-control text-ink transition-colors duration-(--duration-fast) hover:text-brand-strong hover:underline"
+            >
+              {fullAddress}<span class="sr-only"> — άνοιγμα στους χάρτες Google</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      {
+        FOOTER_NAV.map((group) => (
+          <nav aria-label={group.heading}>
+            <h2 class="text-eyebrow">{group.heading}</h2>
+
+            <ul class="mt-4 flex flex-col gap-2.5">
+              {group.links.map((link) => (
+                <li>
+                  <a
+                    href={link.href}
+                    class="rounded-control text-small text-ink transition-colors duration-(--duration-fast) hover:text-brand-strong hover:underline"
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ))
+      }
+
+    </div>
+  </Container>
+
+  {/*
+    The teal strip the live site ends on, kept — with the copyright finally in Greek.
+
+    The fill is `brand-strong` rather than the identity teal for the same reason the buttons are:
+    the line sits at 14px, and white on the identity teal is 3.38:1 against the 4.5:1 a line of
+    text that size needs. `tests/unit/tokens.test.ts` checks this pairing directly.
+  */}
+  <div class="on-brand bg-brand-strong text-white">
+    <Container size="default" class="py-4">
+      <p class="text-center text-small">
+        © {year} {BUSINESS.name}. Με επιφύλαξη παντός δικαιώματος.
+      </p>
+    </Container>
+  </div>
+</footer>

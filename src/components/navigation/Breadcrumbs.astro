@@ -1,0 +1,58 @@
+---
+import { Icon } from 'astro-icon/components';
+import { ICONS } from '@/data/icons';
+import { ROUTES } from '@/data/routes';
+
+/**
+ * The trail on nested routes.
+ *
+ * An ordered list, because the order is the meaning. The last entry is the current page and is not
+ * a link — a link to where you already are is noise for everyone and a trap for a screen-reader
+ * user, so it carries `aria-current="page"` instead.
+ *
+ * STEP-09 generates `BreadcrumbList` structured data from this same `items` array, so what is on
+ * the page and what is in the markup cannot describe different journeys.
+ */
+export interface BreadcrumbItem {
+  label: string;
+  /** Absent on the current page, which is always the last item. */
+  href?: string;
+}
+
+interface Props {
+  items: BreadcrumbItem[];
+  class?: string;
+}
+
+const { items, class: className }: Props = Astro.props;
+
+/** Home is implicit on every trail, so callers pass only the part below it. */
+const trail: BreadcrumbItem[] = [{ label: 'Αρχική', href: ROUTES.home }, ...items];
+---
+
+<nav aria-label="Διαδρομή πλοήγησης" class:list={className}>
+  <ol class="flex flex-wrap items-center gap-x-1 gap-y-1 text-small text-ink-muted">
+    {
+      trail.map((item, index) => (
+        <li class="flex items-center gap-1">
+          {index > 0 && (
+            <Icon name={ICONS.chevronRight} class="size-4 shrink-0 opacity-60" aria-hidden="true" />
+          )}
+
+          {item.href ? (
+            <a
+              href={item.href}
+              class="rounded-control transition-colors duration-(--duration-fast) hover:text-brand-strong hover:underline"
+            >
+              {item.label}
+            </a>
+          ) : (
+            <span aria-current="page" class="font-bold text-ink">
+              {item.label}
+            </span>
+          )}
+        </li>
+      ))
+    }
+  </ol>
+</nav>
