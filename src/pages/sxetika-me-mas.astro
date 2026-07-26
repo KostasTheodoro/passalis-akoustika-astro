@@ -1,0 +1,105 @@
+---
+import { Image } from 'astro:assets';
+import { render } from 'astro:content';
+import type { BreadcrumbItem } from '@/components/navigation/Breadcrumbs.astro';
+import ContactBand from '@/components/sections/ContactBand.astro';
+import Section from '@/components/ui/Section.astro';
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import { INFORMATIONAL } from '@/data/informational';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getPage } from '@/lib/content/collections';
+
+/**
+ * `/sxetika-me-mas`.
+ *
+ * The shape is the live site's: the introduction beside a 2×2 grid of photographs, then the prose,
+ * then one wide photograph. What has changed is that the prose now continues past the mission
+ * statement into how the shop works and a plain-language section on hearing loss, and that the
+ * page ends with a way to get in touch rather than simply stopping.
+ *
+ * The split between `lead` and the Markdown body is what makes the two-column opening possible.
+ * `render()` returns one block of HTML that cannot be cut in half, so the paragraphs that belong
+ * beside the grid are separate strings in the entry's frontmatter.
+ */
+const page = await getPage('about');
+const { title, seo, lead, images } = page.data;
+const { Content } = await render(page);
+
+/** The first four are the grid; the fifth is marked `wide` and closes the page. */
+const gridImages = images.filter((entry) => !entry.wide);
+const wideImage = images.find((entry) => entry.wide);
+
+const breadcrumbs: BreadcrumbItem[] = [{ label: 'Σχετικά με εμάς' }];
+const { contact } = INFORMATIONAL.about;
+---
+
+<BaseLayout title={seo.title} description={seo.description} breadcrumbs={breadcrumbs}>
+  <Section spacing="tight" labelledby="about-heading">
+    <div class="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
+      <div class="flex flex-col gap-5">
+        <SectionHeading id="about-heading" as="h1" size="title" title={title} align="start" />
+
+        {lead.map((paragraph) => <p class="text-body-lg text-ink-muted text-pretty">{paragraph}</p>)}
+      </div>
+
+      {/*
+        Fixed aspect on every tile so the four photographs agree with each other. They are
+        different sizes and crops at source, so `object-cover` is right here where the catalogue
+        needs `object-contain`: these are photographs of people rather than products on white, and
+        trimming an edge costs nothing.
+
+        Only the first is eager. On a phone the grid sits below the heading and none of them is the
+        LCP element, but on a wide screen the first tile is a candidate.
+      */}
+      <ul class="grid list-none grid-cols-2 gap-4">
+        {
+          gridImages.map((entry, index) => (
+            <li class="overflow-hidden rounded-card shadow-md">
+              <Image
+                src={entry.image}
+                alt={entry.alt}
+                layout="none"
+                widths={[320, 640]}
+                sizes="(min-width: 1024px) 20rem, 45vw"
+                loading={index === 0 ? 'eager' : 'lazy'}
+                fetchpriority={index === 0 ? 'high' : undefined}
+                decoding="async"
+                class="aspect-4/3 size-full object-cover"
+              />
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </Section>
+
+  {/* `narrow` for the body: this is the one page on the site that is mostly continuous reading. */}
+  <Section spacing="tight" width="narrow">
+    <div class="prose">
+      <Content />
+    </div>
+  </Section>
+
+  {
+    wideImage && (
+      <Section spacing="tight" width="medium">
+        <Image
+          src={wideImage.image}
+          alt={wideImage.alt}
+          layout="constrained"
+          widths={[640, 1024, 1280]}
+          sizes="(min-width: 1024px) 64rem, 100vw"
+          loading="lazy"
+          decoding="async"
+          class="w-full rounded-card-lg shadow-lg"
+        />
+      </Section>
+    )
+  }
+
+  <ContactBand
+    heading={contact.heading}
+    description={contact.description}
+    cta={contact.cta}
+  />
+</BaseLayout>
