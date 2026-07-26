@@ -44,6 +44,30 @@ function contrast(a: string, b: string): number {
 
 const WHITE = '#ffffff';
 
+/** Reads an `rgb(r g b / a)` token into its four numbers. */
+function rgba(value: string): { r: number; g: number; b: number; alpha: number } {
+  const match = value.match(/^rgb\(\s*(\d+)\s+(\d+)\s+(\d+)\s*\/\s*([\d.]+)\s*\)$/);
+  if (!match) throw new Error(`${value} is not an "rgb(r g b / a)" colour`);
+
+  const [r, g, b, alpha] = match.slice(1, 5).map(Number) as [number, number, number, number];
+  return { r, g, b, alpha };
+}
+
+/** Flattens a translucent colour onto an opaque one and returns the resulting hex. */
+function composite(translucent: string, over: string): string {
+  const { r, g, b, alpha } = rgba(translucent);
+  const base = over.replace('#', '');
+
+  return `#${[r, g, b]
+    .map((channelValue, index) => {
+      const under = Number.parseInt(base.slice(index * 2, index * 2 + 2), 16);
+      return Math.round(channelValue * alpha + under * (1 - alpha))
+        .toString(16)
+        .padStart(2, '0');
+    })
+    .join('')}`;
+}
+
 describe('contrast ratios', () => {
   /** WCAG AA: 4.5:1 for normal-size text, 3:1 for large text and non-text UI. */
   const AA_TEXT = 4.5;
@@ -80,6 +104,31 @@ describe('contrast ratios', () => {
   test('the focus ring is visible on the page background', () => {
     const ratio = contrast(token('color-focus'), token('color-page'));
     expect(ratio).toBeGreaterThanOrEqual(3);
+  });
+
+  /**
+   * The hero puts white text on a photograph. Nothing can be asserted about the photograph's
+   * pixels here, so the scrim is held to the strictest case there is: composited over pure white,
+   * brighter than anything a photograph can contain, white text on it must still clear AA. Every
+   * real pixel in the image is darker than white, so every real pixel does better than this.
+   */
+  test('white hero text survives the scrim over the brightest possible photograph', () => {
+    const flattened = composite(token('color-hero-scrim'), WHITE);
+    const ratio = contrast(WHITE, flattened);
+
+    expect(ratio, `white on the scrim over white is ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(
+      AA_TEXT,
+    );
+  });
+
+  test('the soft scrim is genuinely softer, and is never load-bearing on its own', () => {
+    const soft = rgba(token('color-hero-scrim-soft'));
+    const strong = rgba(token('color-hero-scrim'));
+
+    expect(soft.alpha).toBeLessThan(strong.alpha);
+    // It shapes the image and nothing else: on its own it does not carry text to AA, which is
+    // why `HomeHero.astro` never puts a word on top of it alone.
+    expect(contrast(WHITE, composite(token('color-hero-scrim-soft'), WHITE))).toBeLessThan(AA_TEXT);
   });
 
   test('the teal ramp gets progressively darker', () => {

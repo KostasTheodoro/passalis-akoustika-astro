@@ -41,7 +41,13 @@ export const HOME = {
     heading: 'Καλωσήρθατε στα ακουστικά βαρηκοΐας Πασσαλής',
     subheading:
       'Είμαστε εδώ για να σας βοηθήσουμε με όλες τις απορίες σας για τα ακουστικά βαρηκοΐας',
-    cta: { label: 'Συχνές Ερωτήσεις', href: ROUTES.faq } satisfies CallToAction,
+    /**
+     * The live site's hero carries one button, to the FAQ. That button is unchanged and keeps its
+     * place; the contact button is new, added on the maintainer's instruction in STEP-05, and
+     * takes the primary role because contacting the business is where the whole page leads.
+     */
+    primaryCta: { label: 'Επικοινωνήστε μαζί μας', href: ROUTES.contact } satisfies CallToAction,
+    secondaryCta: { label: 'Συχνές Ερωτήσεις', href: ROUTES.faq } satisfies CallToAction,
     /**
      * Two separate photographs, not one image at two sizes: the desktop frame is a wide
      * landscape and the mobile one is square, so STEP-05 needs a `<picture>` with a media
@@ -97,6 +103,20 @@ export const HOME = {
   featured: {
     heading: 'Τα ακουστικά μας',
     cta: { label: 'Δείτε όλα τα ακουστικά', href: ROUTES.hearingAids } satisfies CallToAction,
+  },
+
+  /**
+   * The closing call to action, new in STEP-05 and the one section with no counterpart on the live
+   * site. It names only what the site already offers — hearing test, hearing aids, EOPYY — and
+   * avoids any booking verb, because there is no appointment system to book with.
+   *
+   * The telephone number is not repeated here: the template renders it from `BUSINESS`.
+   */
+  contact: {
+    heading: 'Μιλήστε μαζί μας',
+    description:
+      'Έχετε απορίες για τα ακουστικά βαρηκοΐας, τον έλεγχο ακοής ή τη συμμετοχή του ΕΟΠΥΥ; Στείλτε μας μήνυμα ή τηλεφωνήστε μας.',
+    cta: { label: 'Επικοινωνήστε μαζί μας', href: ROUTES.contact } satisfies CallToAction,
   },
 
   signiaApp: {

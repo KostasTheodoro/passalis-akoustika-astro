@@ -136,10 +136,34 @@ describe('home page copy', () => {
   test('every call to action points at a known route', () => {
     const knownRoutes = new Set<string>(Object.values(ROUTES));
 
-    for (const cta of [HOME.hero.cta, HOME.services.cta, HOME.featured.cta]) {
+    for (const cta of [
+      HOME.hero.primaryCta,
+      HOME.hero.secondaryCta,
+      HOME.services.cta,
+      HOME.featured.cta,
+      HOME.contact.cta,
+    ]) {
       expect(knownRoutes).toContain(cta.href);
     }
     expect(knownRoutes).toContain(HOME.eopyyCard.href);
+  });
+
+  test('the two ways to reach contact from the home page agree on where it is', () => {
+    // The hero button and the closing band are the same journey twice, deliberately. If one of
+    // them is ever dropped, the other must still be the contact route.
+    expect(HOME.hero.primaryCta.href).toBe(ROUTES.contact);
+    expect(HOME.contact.cta.href).toBe(ROUTES.contact);
+  });
+
+  test('the hero keeps the FAQ button the live site has', () => {
+    expect(HOME.hero.secondaryCta.href).toBe(ROUTES.faq);
+  });
+
+  test('the closing band has something to say', () => {
+    expect(HOME.contact.heading.trim().length).toBeGreaterThan(0);
+    expect(HOME.contact.description.trim().length).toBeGreaterThan(0);
+    // It must not promise an appointment the business cannot take online.
+    expect(HOME.contact.description).not.toMatch(/ραντεβού|κράτηση/);
   });
 
   test('the EOPYY card does not hard-code the subsidy amount', () => {

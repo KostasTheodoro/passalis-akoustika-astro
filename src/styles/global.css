@@ -50,8 +50,23 @@
   --color-border: #e4e2e0;
   --color-border-strong: #cfccc9;
 
-  /** The scrim behind the mobile drawer. The one place a colour is deliberately not opaque. */
+  /**
+   * The two scrims. These are the only colours on the site that are deliberately not opaque,
+   * because both exist to sit on top of something else.
+   *
+   * `--color-backdrop` dims the page behind the mobile drawer.
+   *
+   * `--color-hero-scrim` darkens the hero photograph so white text stays readable on it. Its
+   * alpha is not a taste decision: composited over pure white — brighter than any pixel a
+   * photograph can contain — it leaves white text at about 5.3:1, clearing the 4.5:1 that
+   * normal-size text needs. Over the actual near-black photograph it is far higher.
+   * `tests/unit/tokens.test.ts` recomputes that worst case, so lightening this token fails there
+   * rather than in a Lighthouse run several steps later. `--color-hero-scrim-soft` is the same
+   * colour at a strength that only shapes the image; nothing legible may rely on it alone.
+   */
   --color-backdrop: rgb(70 67 66 / 0.55);
+  --color-hero-scrim: rgb(9 32 36 / 0.66);
+  --color-hero-scrim-soft: rgb(9 32 36 / 0.3);
 
   /** State colours. Nothing signals state by colour alone — each carries an icon or text too. */
   --color-success: #1b7f4b;
