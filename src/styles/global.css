@@ -215,6 +215,107 @@ body {
 }
 
 /**
+ * Markdown bodies.
+ *
+ * `render()` hands back plain HTML with no classes on it, so the styling has to be applied from
+ * the outside. This is the whole of it, and it covers only what the four Markdown bodies on the
+ * site actually contain: paragraphs, two heading levels, both list kinds, links and bold.
+ *
+ * `@tailwindcss/typography` was considered and rejected. Its defaults carry their own type scale,
+ * colours and spacing, so adopting it would mean writing a config block to override each of those
+ * back to the tokens above — a dependency whose output we would spend as much effort undoing as
+ * this costs to write.
+ *
+ * `:where()` keeps every selector at zero specificity, so a utility class on any individual
+ * element still wins without needing `!important`.
+ */
+.prose {
+  color: var(--color-ink);
+}
+
+.prose :where(p, ul, ol) {
+  font-size: var(--text-body-lg);
+  line-height: var(--text-body-lg--line-height);
+  color: var(--color-ink-muted);
+  text-wrap: pretty;
+}
+
+.prose :where(p, ul, ol) + :where(p, ul, ol) {
+  margin-top: 1.25em;
+}
+
+/**
+ * Headings inside prose are `h2` and `h3` because the page owns the `h1`. Teal at these sizes,
+ * matching `SectionHeading`, so a section title written in Markdown and one written in a component
+ * do not look like two different things.
+ */
+.prose :where(h2, h3) {
+  color: var(--color-brand);
+  font-weight: 700;
+  text-wrap: balance;
+}
+
+.prose :where(h2) {
+  font-size: var(--text-section);
+  line-height: var(--text-section--line-height);
+}
+
+.prose :where(h3) {
+  font-size: var(--text-body-lg);
+  line-height: 1.4;
+}
+
+/* Generous above, tight below: a heading belongs to the text under it, not over it. */
+.prose :where(h2, h3):not(:first-child) {
+  margin-top: 2rem;
+}
+
+.prose :where(h2, h3) + * {
+  margin-top: 0.75rem;
+}
+
+.prose :where(ul, ol) {
+  padding-inline-start: 1.5rem;
+}
+
+.prose :where(ul) {
+  list-style: disc;
+}
+
+.prose :where(ol) {
+  list-style: decimal;
+}
+
+.prose :where(li) + :where(li) {
+  margin-top: 0.5rem;
+}
+
+.prose :where(li)::marker {
+  color: var(--color-brand-strong);
+}
+
+/**
+ * `brand-deep`, not `brand`. Prose renders on both `--color-surface` and `--color-page`, and only
+ * the deep step clears 4.5:1 on both — see the colour block at the top of this file.
+ */
+.prose :where(a) {
+  color: var(--color-brand-deep);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.prose :where(a):hover {
+  color: var(--color-ink);
+}
+
+.prose :where(strong) {
+  color: var(--color-ink);
+  font-weight: 700;
+}
+
+/**
  * `!important` is the point of this block, not an oversight: it has to beat any transition a
  * component sets on itself, and a visitor who has asked their system for less motion should not
  * have that answer overridden by a specificity contest.

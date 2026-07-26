@@ -112,6 +112,16 @@ const pages = defineCollection({
       title: z.string(),
       description: z.string(),
       seo,
+      /**
+       * Opening paragraphs that a template may place outside the flow of the body, one string per
+       * paragraph. The About page needs this: its introduction sits beside the photo grid on
+       * production while the rest of the prose runs full width below, and a single rendered body
+       * cannot be split in two.
+       *
+       * Optional, so a page that reads as one continuous document leaves it empty and puts
+       * everything in the Markdown body.
+       */
+      lead: z.array(z.string()).default([]),
       /** Images belonging to the page. The template decides how they are arranged. */
       images: z
         .array(

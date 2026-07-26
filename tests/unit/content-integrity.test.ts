@@ -367,6 +367,36 @@ describe('text quality', () => {
     }
   });
 
+  test('no visitor-facing copy uses an em dash', () => {
+    // A maintainer instruction, given during STEP-07 planning: em dashes read as machine-written
+    // Greek. The en dash is deliberately still allowed, because the client's own copy uses it for
+    // ranges and title separators ("4–6 έτη", "ΕΟΠΥΥ – Συμμετοχή"), and stripping those would be
+    // editing client text to satisfy a style rule about a different character.
+    //
+    // Comments are stripped before the check. The rule is about text a visitor reads, and the
+    // source comments in this repository have used em dashes since STEP-01; rewriting thirty of
+    // them across already-accepted files would be a large diff that improves nothing on screen.
+    //
+    // `src/data` is checked alongside the collections because half the site's Greek lives there:
+    // the home page, the catalogue bands and the informational page strings are all TypeScript.
+    const dataFiles = readdirSync('src/data')
+      .filter((file) => extname(file) === '.ts')
+      .map((file) => join('src/data', file));
+
+    /** Drops `#` lines from YAML and frontmatter, and `//` and block comments from TypeScript. */
+    function stripComments(source: string, file: string): string {
+      if (extname(file) === '.ts') {
+        return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+      }
+      return source.replace(/^\s*#.*$/gm, '');
+    }
+
+    for (const file of [...allFiles, ...dataFiles]) {
+      const copy = stripComments(readFileSync(file, 'utf8'), file);
+      expect(copy.includes('—'), `${file} contains an em dash in visitor-facing copy`).toBe(false);
+    }
+  });
+
   test('no word mixes Latin and Greek letters', () => {
     // Catches mojibake like the legacy "kanaλους", and part-Greek abbreviations such as the
     // legacy "ΙΙC" (Greek Ι + Greek Ι + Latin C). Abbreviations spelled *entirely* in Greek
