@@ -40,7 +40,12 @@ const {
 const { name, image, imageAlt } = model.data;
 ---
 
-<Card as="li" href={href} linkLabel={linkLabel} padding="none" class="overflow-hidden">
+{/*
+  No `overflow-hidden` on the card. The overlay anchor is `inset-0`, so its focus ring is drawn
+  2px outside the card's own edge — clipping the card clips the ring, and the card becomes a
+  control you cannot see yourself land on. The photo frame does its own clipping instead.
+*/}
+<Card as="li" href={href} linkLabel={linkLabel} padding="none">
   {/*
     `layout="none"` opts this image out of the project-wide `constrained` layout set in
     `astro.config.mjs`. That layout emits `object-fit: cover` and `height: auto` through attribute
@@ -56,7 +61,9 @@ const { name, image, imageAlt } = model.data;
     The box is square because the photographs mostly are; a 4:3 box would letterbox nine of the
     thirteen for the sake of the other four.
   */}
-  <div class="flex aspect-square min-h-0 items-center justify-center bg-surface p-4">
+  <div
+    class="flex aspect-square min-h-0 items-center justify-center overflow-hidden rounded-t-card bg-surface p-4"
+  >
     <Image
       src={image}
       alt={imageAlt}
@@ -71,6 +78,16 @@ const { name, image, imageAlt } = model.data;
 
   <div class="flex flex-col gap-1 border-t border-border p-card text-center">
     {eyebrow && <p class="text-eyebrow">{eyebrow}</p>}
-    <h3 class="text-card font-bold text-brand-strong text-balance">{name}</h3>
+    {/*
+      `brand-deep` rather than `brand-strong`, and every card title on the site follows it.
+
+      `text-card` tops out at 20px bold, under the 24px that would let the 3:1 large-text
+      threshold apply, so these need the full 4.5:1. `brand-strong` gives 4.74:1 on white but only
+      4.41:1 on the page ground — which is exactly how the four service cards failed Lighthouse
+      once they were rendered. One step further down the same ramp clears 5.8:1 on every ground the
+      site has, so a card title is safe wherever a card is put. `tests/unit/tokens.test.ts` now
+      checks all three grounds rather than white alone.
+    */}
+    <h3 class="text-card font-bold text-brand-deep text-balance">{name}</h3>
   </div>
 </Card>

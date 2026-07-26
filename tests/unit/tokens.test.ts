@@ -89,6 +89,46 @@ describe('contrast ratios', () => {
     );
   });
 
+  /**
+   * White is not the only ground the site has, and checking against it alone is what let four
+   * bold teal card titles ship at 4.41:1 on `--color-page` while every test here passed.
+   *
+   * `--color-page` and `--color-brand-50` are both lighter-than-mid but darker than white, so any
+   * token that carries normal-size text has to clear its bar on the darkest of the three, not the
+   * lightest.
+   */
+  const GROUNDS = ['surface', 'page', 'brand-50'] as const;
+
+  test.each([
+    ['ink', AA_TEXT],
+    ['ink-muted', AA_TEXT],
+    // `brand-deep` is the card-title colour precisely because it clears AA on all three.
+    ['brand-deep', AA_TEXT],
+    // `brand` carries only large headings, so 3:1 is its bar.
+    ['brand', AA_LARGE],
+  ])('--color-%s meets %s:1 on every ground the site uses', (name, minimum) => {
+    for (const ground of GROUNDS) {
+      const ratio = contrast(token(`color-${name}`), token(`color-${ground}`));
+      expect(
+        ratio,
+        `--color-${name} is ${ratio.toFixed(2)}:1 on --color-${ground}`,
+      ).toBeGreaterThanOrEqual(minimum as number);
+    }
+  });
+
+  /**
+   * `--color-brand-strong` is the exception, and this test is the record of it: it clears AA on
+   * white and nowhere else. It is correct behind a white button face, in the footer, and on any
+   * `bg-surface` card — and wrong for text sitting straight on `--color-page`. Anything that needs
+   * to work on more than white reaches for `--color-brand-deep` instead.
+   */
+  test('--color-brand-strong is a white-ground colour and nothing more', () => {
+    expect(contrast(token('color-brand-strong'), token('color-surface'))).toBeGreaterThanOrEqual(
+      AA_TEXT,
+    );
+    expect(contrast(token('color-brand-strong'), token('color-page'))).toBeLessThan(AA_TEXT);
+  });
+
   test('white labels on a brand-strong fill meet AA', () => {
     // This is the whole reason `--color-brand-strong` exists: white on `--color-brand` is only
     // 3.38:1, which is not enough behind a button label.

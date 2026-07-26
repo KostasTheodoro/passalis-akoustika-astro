@@ -205,6 +205,39 @@ test.describe('featured hearing aids', () => {
     }
   });
 
+  /**
+   * A linked card draws its focus ring 2px outside the overlay anchor, which is the card's own
+   * edge — so `overflow-hidden` anywhere up the chain clips the ring away and the card becomes a
+   * control a keyboard user cannot see themselves land on. This caught exactly that.
+   */
+  test('the focus ring on a card is not clipped by an ancestor', async ({ page }) => {
+    await page.goto('/');
+
+    const clipped = await page.evaluate(() => {
+      const link = document.querySelector<HTMLElement>(
+        'section[aria-labelledby="featured-heading"] li a',
+      );
+      if (!link) return ['no card link found'];
+
+      const offenders: string[] = [];
+      for (
+        let node = link.parentElement;
+        node && node !== document.body;
+        node = node.parentElement
+      ) {
+        const { overflow, overflowX, overflowY } = getComputedStyle(node);
+        if (
+          [overflow, overflowX, overflowY].some((value) => value === 'hidden' || value === 'clip')
+        ) {
+          offenders.push(`${node.tagName.toLowerCase()}.${node.className}`);
+        }
+      }
+      return offenders;
+    });
+
+    expect(clipped, `the focus ring is clipped by ${clipped.join(', ')}`).toEqual([]);
+  });
+
   test('the four photo frames are identical, so the row lines up', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');

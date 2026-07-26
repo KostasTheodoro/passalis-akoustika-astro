@@ -25,7 +25,8 @@ const { icon, title, description, as: Tag = 'li' }: Props = Astro.props;
     <Icon name={ICONS[icon]} class="size-7 text-brand-strong" aria-hidden="true" />
   </span>
 
-  <h3 class="text-card font-bold text-brand-strong text-balance">{title}</h3>
+  {/* `brand-deep`, not `brand-strong`. See `HearingModelCard.astro` for why. */}
+  <h3 class="text-card font-bold text-brand-deep text-balance">{title}</h3>
 
   <p class="text-body text-ink-muted text-pretty">{description}</p>
 </Tag>

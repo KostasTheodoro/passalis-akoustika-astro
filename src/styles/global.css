@@ -29,6 +29,17 @@
    * body-size text and white-on-teal button labels need. So AA-critical work moves one step down
    * the ramp to `--color-brand-strong` (4.74:1), and hover states to `--color-brand-deep`
    * (6.38:1). Same hue throughout — it reads as one teal, and the identity colour is untouched.
+   *
+   * Those two figures are against **white**, and that distinction turned out to matter. On
+   * `--color-page` the same `--color-brand-strong` measures only 4.41:1, which is how four bold
+   * teal card titles on the home page failed Lighthouse in STEP-05 while every contrast test here
+   * passed. So the division of labour is:
+   *
+   *   `--color-brand-strong`  white grounds only — button faces, `bg-surface` cards, the footer
+   *   `--color-brand-deep`    text on any ground, including `--color-page` and `--color-brand-50`
+   *
+   * `tests/unit/tokens.test.ts` now checks every text token against all three grounds rather than
+   * against white alone, and pins `--color-brand-strong`'s white-only status in place.
    */
   --color-brand-50: #edf7f7;
   --color-brand-100: #d6ecec;
