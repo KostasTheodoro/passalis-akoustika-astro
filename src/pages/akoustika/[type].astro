@@ -1,0 +1,74 @@
+---
+import type { InferGetStaticPropsType } from 'astro';
+import HearingModelCard from '@/components/cards/HearingModelCard.astro';
+import type { BreadcrumbItem } from '@/components/navigation/Breadcrumbs.astro';
+import Section from '@/components/ui/Section.astro';
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import { ROUTES } from '@/data/routes';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getHearingTypes, getModelsForType } from '@/lib/content/collections';
+
+/**
+ * The four category pages: `/akoustika/cic`, `/rechargeable`, `/ric`, `/bte`.
+ *
+ * The entry id **is** the URL segment — that is stated in `content.config.ts` and asserted by
+ * `tests/unit/content-integrity.test.ts`, which checks every category has a matching entry in
+ * `ROUTES`. So four entries produce exactly four pages.
+ *
+ * That is also what makes the 404 real. The live site takes any `[type]` at all and renders
+ * "Δεν βρέθηκε αυτή η κατηγορία." at HTTP 200, indexable and self-canonical. Here there is no
+ * unknown-category branch to write: nothing is emitted for a slug that has no entry, so the
+ * server answers with `404.astro` and a 404 status.
+ */
+export async function getStaticPaths() {
+  const types = await getHearingTypes();
+
+  return types.map((type) => ({ params: { type: type.id }, props: { type } }));
+}
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+
+const { type } = Astro.props;
+const { shortTitle, latinAbbreviation, description, seo } = type.data;
+
+/** The live site's own heading, e.g. `Ενδοκαναλικά (CIC)`. Also the last breadcrumb. */
+const heading = `${shortTitle} (${latinAbbreviation})`;
+
+const models = await getModelsForType(type.id);
+
+const breadcrumbs: BreadcrumbItem[] = [
+  { label: 'Ακουστικά', href: ROUTES.hearingAids },
+  { label: heading },
+];
+---
+
+<BaseLayout title={seo.title} description={seo.description} breadcrumbs={breadcrumbs}>
+  <Section spacing="tight" labelledby="category-heading">
+    {/*
+      The category's own description, which the live site writes on the listing card and then never
+      shows again. Here it tells a reader who arrived from the navigation what this category is
+      before they read four model names.
+    */}
+    <SectionHeading
+      id="category-heading"
+      as="h1"
+      size="title"
+      title={heading}
+      description={description}
+    />
+
+    {/*
+      `h2`, not the live site's `h3`. These sit directly under the page heading, and the live site
+      skips a level on every one of these four pages.
+
+      No `href`: the reader is already in this category, and there are no model-detail pages.
+    */}
+    <ul class="mt-12 flex list-none flex-col gap-6 md:gap-8">
+      {
+        models.map((model, index) => (
+          <HearingModelCard model={model} variant="row" headingLevel="h2" eager={index === 0} />
+        ))
+      }
+    </ul>
+  </Section>
+</BaseLayout>
