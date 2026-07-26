@@ -1,25 +1,28 @@
 ---
 import { Image } from 'astro:assets';
-import { Icon } from 'astro-icon/components';
 import Section from '@/components/ui/Section.astro';
 import { HOME } from '@/data/home';
-import { ICONS } from '@/data/icons';
 import { getEopyySubsidy } from '@/lib/content/collections';
 
 /**
- * The teal EOPYY card.
+ * The teal EOPYY card — the page's one block of colour, and the only thing on it that rounds to
+ * 32px. It does not use `Card`, which is white by definition.
  *
- * It does not use `Card`, which is white by definition; this one is the page's single block of
- * solid colour and needs its own surface. The fill is `brand-strong` rather than the identity
- * teal because everything on it is white text — `tests/unit/tokens.test.ts` is the reason, and the
- * buttons and the footer strip already follow the same rule.
+ * **The gradient.** The live card runs `#18b1b1` to `cyan-200`, and white text on that pastel end
+ * measures 1.25:1 — one of the contrast defects STEP-00 logged against the live home page. This
+ * keeps the gradient and loses the defect: three stops down our own teal ramp, running to the
+ * bottom-left, so the identity teal survives only as a highlight in the top-right corner where the
+ * card has padding and no words.
  *
- * The amount is read from `src/content/pages/eopyy.md`, the one file that holds it. The card used
- * to hard-code `450€`, which is how the live site ended up able to disagree with its own EOPYY
- * page; `tests/unit/data.test.ts` now fails if the figure creeps back into the copy.
+ * The `15%` is load-bearing, not a round number. Text starts at 22.6% along this gradient's line,
+ * so putting `brand-strong` at 15% means every letter sits between `brand-strong` (4.74:1 under
+ * white) and `brand-deep` (6.38:1) — and because *both* of those clear AA on their own, the
+ * guarantee holds whatever colour space the browser interpolates in. At the 30% it started out
+ * with, the top two lines landed at 4.38:1. `tests/e2e/home.spec.ts` recomputes that geometry and
+ * fails if any text ever reaches the light segment.
  *
- * The whole card is the link. `Section` names itself from the amount heading, so the region is
- * announced with a number in it rather than as an anonymous block.
+ * The whole card is the link, as on the live site. There is deliberately nothing else clickable
+ * inside it: an overlay anchor and a second link in the same box is a trap for anyone tabbing.
  */
 const { eopyyCard } = HOME;
 const subsidy = await getEopyySubsidy();
@@ -29,39 +32,36 @@ const linkLabel = `${eopyyCard.headline} — ${amount}. Διαβάστε για 
 ---
 
 <Section tone="surface" labelledby="eopyy-heading">
-  <div class="on-brand relative mx-auto flex max-w-sm flex-col items-center gap-5 rounded-card bg-brand-strong p-card-lg text-center text-white shadow-md transition-shadow duration-(--duration-base) ease-out hover:shadow-lg focus-within:shadow-lg">
-    <a href={eopyyCard.href} aria-label={linkLabel} class="absolute inset-0 rounded-card"></a>
+  <div
+    class:list={[
+      'on-brand relative mx-auto flex max-w-sm flex-col items-center gap-4 rounded-card-lg p-card-lg text-center text-white',
+      'bg-linear-to-bl from-brand from-0% via-brand-strong via-15% to-brand-deep',
+      'shadow-lg transition-[transform,box-shadow] duration-(--duration-fast) ease-out',
+      'hover:shadow-xl focus-within:shadow-xl motion-safe:hover:scale-105 motion-safe:focus-within:scale-105',
+    ]}
+  >
+    <a href={eopyyCard.href} aria-label={linkLabel} class="absolute inset-0 rounded-card-lg"></a>
 
-    <p class="text-display font-bold" id="eopyy-heading">
+    <p id="eopyy-heading" class="text-title font-bold">
       <span class="sr-only">Επιδότηση ΕΟΠΥΥ: </span>{amount}
     </p>
 
-    <p class="text-body-lg font-bold text-balance">{eopyyCard.headline}</p>
+    {/* `text-card` is 18–20px; the live card sets both of these lines at 20px. All bold. */}
+    <p class="text-card font-bold text-balance">{eopyyCard.headline}</p>
 
-    <span class="flex size-24 items-center justify-center rounded-pill bg-surface p-3">
-      {/* `layout="none"` for the same reason as the model cards: the shared `constrained` layout
-          would crop this logo to fill its circle rather than fit inside it. */}
+    <span class="flex size-32 shrink-0 items-center justify-center rounded-pill bg-surface">
       <Image
         src={eopyyCard.logo}
         alt={eopyyCard.logoAlt}
         layout="none"
-        widths={[72, 144]}
-        sizes="72px"
+        widths={[110, 220]}
+        sizes="110px"
         loading="lazy"
         decoding="async"
-        class="h-auto w-full"
+        class="size-[110px] object-contain"
       />
     </span>
 
-    <p class="text-body text-pretty">{eopyyCard.note}</p>
-
-    {/*
-      The overlay anchor carries the accessible name; this line is what a sighted reader sees, so
-      it must not be a second link — the card already is one.
-    */}
-    <span class="inline-flex items-center gap-2 font-bold underline underline-offset-4">
-      Μάθετε περισσότερα
-      <Icon name={ICONS.chevronRight} class="size-4 shrink-0" aria-hidden="true" />
-    </span>
+    <p class="text-card font-bold text-balance">{eopyyCard.note}</p>
   </div>
 </Section>
