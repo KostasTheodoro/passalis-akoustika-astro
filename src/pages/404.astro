@@ -1,0 +1,50 @@
+---
+import Button from '@/components/ui/Button.astro';
+import Section from '@/components/ui/Section.astro';
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import { ROUTES } from '@/data/routes';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+/**
+ * The page an unknown address gets.
+ *
+ * It exists because of the catalogue: `/akoustika/[type]` generates exactly four pages, so any
+ * other slug has to be answered by something, and the live site answers with an indexable HTTP 200
+ * saying "Δεν βρέθηκε αυτή η κατηγορία." Its generic 404 is worse — it is Next's English default,
+ * "This page could not be found.", on an all-Greek site.
+ *
+ * Astro emits this as `dist/404.html`, which `astro preview` and Vercel's static hosting both
+ * serve with a real 404 status for anything they cannot match.
+ *
+ * No breadcrumbs: a trail to a page that does not exist describes nothing. The two ways out are
+ * the two places a lost visitor most likely wanted.
+ *
+ * The four strings are here rather than in `src/data/`, because one page with four strings and no
+ * second reader does not need a data file. STEP-09 owns this page's `noindex` and canonical, as it
+ * does for every other route.
+ */
+const NOT_FOUND = {
+  title: 'Η σελίδα δεν βρέθηκε',
+  description:
+    'Η διεύθυνση που ζητήσατε δεν υπάρχει ή έχει αλλάξει. Δείτε τα ακουστικά μας ή επιστρέψτε στην αρχική σελίδα.',
+  home: 'Αρχική σελίδα',
+  catalogue: 'Δείτε τα ακουστικά',
+} as const;
+---
+
+<BaseLayout title={NOT_FOUND.title} description={NOT_FOUND.description}>
+  <Section labelledby="not-found-heading">
+    <SectionHeading
+      id="not-found-heading"
+      as="h1"
+      size="title"
+      title={NOT_FOUND.title}
+      description={NOT_FOUND.description}
+    />
+
+    <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+      <Button href={ROUTES.home} size="lg">{NOT_FOUND.home}</Button>
+      <Button href={ROUTES.hearingAids} variant="secondary" size="lg">{NOT_FOUND.catalogue}</Button>
+    </div>
+  </Section>
+</BaseLayout>
