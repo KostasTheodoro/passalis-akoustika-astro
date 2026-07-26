@@ -32,11 +32,18 @@ import { ICONS } from '@/data/icons';
 
     <DesktopNav />
 
-    {/* Phone and address, exactly where the live site puts them. Both are links, which they were not. */}
+    {/*
+      Phone and address, where the live site puts them, and both links now — neither was.
+
+      The address waits for `xl`. At exactly 1024, where the desktop navigation takes over, the
+      logo, five nav items, the number and the street do not fit on one line together, and the
+      header grows to three rows of wrapped Greek. The number always fits, so it stays; the street
+      is in the footer and the drawer either way.
+    */}
     <div class="hidden items-center gap-6 text-small lg:flex">
       <a
         href={BUSINESS.telephone.href}
-        class="inline-flex items-center gap-2 rounded-control text-ink transition-colors duration-(--duration-fast) hover:text-brand-strong"
+        class="inline-flex items-center gap-2 whitespace-nowrap rounded-control text-ink transition-colors duration-(--duration-fast) hover:text-brand-strong"
       >
         <Icon name={ICONS.phone} class="size-4 shrink-0 text-brand" aria-hidden="true" />
         {BUSINESS.telephone.display}
@@ -46,7 +53,7 @@ import { ICONS } from '@/data/icons';
         href={EXTERNAL_LINKS.googleMaps.place}
         target="_blank"
         rel="noopener noreferrer"
-        class="inline-flex items-center gap-2 rounded-control text-ink transition-colors duration-(--duration-fast) hover:text-brand-strong"
+        class="hidden items-center gap-2 whitespace-nowrap rounded-control text-ink transition-colors duration-(--duration-fast) hover:text-brand-strong xl:inline-flex"
       >
         <Icon name={ICONS.mapPin} class="size-4 shrink-0 text-brand" aria-hidden="true" />
         <span>{BUSINESS.address.street}</span>

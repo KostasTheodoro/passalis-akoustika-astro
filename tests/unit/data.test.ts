@@ -83,6 +83,46 @@ describe('navigation', () => {
     const hrefs = primaryLinks.map((link) => link.href);
     expect(new Set(hrefs).size).toBe(hrefs.length);
   });
+
+  test('the footer has the two link groups the layout renders', () => {
+    // The footer's third column is the address, telephone and opening hours, which come from
+    // `BUSINESS` rather than from here. A third group would put a column where there is none.
+    expect(FOOTER_NAV).toHaveLength(2);
+
+    for (const group of FOOTER_NAV) {
+      expect(group.heading.trim().length).toBeGreaterThan(0);
+      expect(group.links.length).toBeGreaterThan(0);
+    }
+  });
+
+  test('no route is listed twice in the footer', () => {
+    const hrefs = footerLinks.map((link) => link.href);
+    expect(new Set(hrefs).size).toBe(hrefs.length);
+  });
+
+  test('every primary destination is also reachable from the footer', () => {
+    const reachable = new Set(footerLinks.map((link) => link.href));
+
+    for (const link of primaryLinks) {
+      expect(reachable, `${link.label} is in the header but not the footer`).toContain(link.href);
+    }
+  });
+
+  test('the header and the footer agree on what each route is called', () => {
+    // With one deliberate exception per group: the link to a section's own index sits under a
+    // heading that already names the section, so `/akoustika` reads `Ακουστικά` in the header and
+    // `Όλοι οι τύποι` beneath the footer heading `Ακουστικά`. Anywhere else, a route that goes by
+    // two different names in two different places is drift.
+    const sectionRoots = new Set<string>(FOOTER_NAV.map((group) => group.links[0]?.href ?? ''));
+    const footerLabels = new Map(footerLinks.map((link) => [link.href, link.label]));
+
+    for (const link of primaryLinks) {
+      if (sectionRoots.has(link.href)) continue;
+
+      const footerLabel = footerLabels.get(link.href);
+      if (footerLabel) expect(footerLabel, `${link.href} is named twice`).toBe(link.label);
+    }
+  });
 });
 
 describe('home page copy', () => {
