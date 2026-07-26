@@ -25,8 +25,13 @@ const { icon, title, description, as: Tag = 'li' }: Props = Astro.props;
     <Icon name={ICONS[icon]} class="size-7 text-brand-strong" aria-hidden="true" />
   </span>
 
-  {/* `brand-deep`, not `brand-strong`. See `HearingModelCard.astro` for why. */}
-  <h3 class="text-card font-bold text-brand-deep text-balance">{title}</h3>
+  {/*
+    Ink, not teal. The live site sets these four titles in the body colour and reserves teal for
+    section headings and product names — putting them in teal was a change the rebuild made and
+    did not need. It also takes the last card title off the teal contrast ramp entirely: ink is
+    9.97:1 on white and clears AA on every ground without argument.
+  */}
+  <h3 class="text-card font-bold text-ink text-balance">{title}</h3>
 
   <p class="text-body text-ink-muted text-pretty">{description}</p>
 </Tag>

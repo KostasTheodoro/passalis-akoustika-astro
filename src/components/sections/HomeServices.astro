@@ -22,7 +22,8 @@ const { services } = HOME;
     {services.cards.map((card) => <ServiceCard {...card} />)}
   </ul>
 
+  {/* Primary and large, as the live site has it — this is a real destination, not an aside. */}
   <div class="mt-12 flex justify-center">
-    <Button href={services.cta.href} variant="secondary">{services.cta.label}</Button>
+    <Button href={services.cta.href} size="lg">{services.cta.label}</Button>
   </div>
 </Section>
