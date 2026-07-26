@@ -2,12 +2,25 @@ import react from '@astrojs/react';
 import vercel from '@astrojs/vercel';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, envField, fontProviders } from 'astro/config';
+import icon from 'astro-icon';
 
 const sansation = 'src/assets/fonts/sansation';
 
 export default defineConfig({
   output: 'static',
-  integrations: [react()],
+  /**
+   * `astro-icon` resolves Iconify names to inline SVG at build time — no runtime library, no icon
+   * font, no sprite request, and only the icons actually used reach the output.
+   *
+   * Two sets, for one reason each: Lucide is the shell set (one consistent 24px stroke grid), and
+   * Heroicons is kept because the live site's four service icons are drawn from it, so keeping
+   * them there means they do not change. `src/data/icons.ts` is the only place that names them.
+   *
+   * No `include` option: without it the integration reads the installed `@iconify-json/*` packages
+   * on demand and emits only the icons a page actually renders. Setting `include` would pull whole
+   * collections into the build.
+   */
+  integrations: [react(), icon()],
   adapter: vercel(),
   vite: {
     plugins: [tailwindcss()],
