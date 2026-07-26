@@ -1,0 +1,39 @@
+---
+import PartnerCard from '@/components/cards/PartnerCard.astro';
+import type { BreadcrumbItem } from '@/components/navigation/Breadcrumbs.astro';
+import ContactBand from '@/components/sections/ContactBand.astro';
+import Section from '@/components/ui/Section.astro';
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import { INFORMATIONAL } from '@/data/informational';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+/**
+ * `/synergates`, the landing page above the EOPYY and provider pages.
+ *
+ * The only route in this step with no collection entry behind it, because there is no subject here
+ * to model: the page is two signposts. Its copy lives in `informational.ts` for that reason.
+ *
+ * `medium`, matching the catalogue listing. Two cards each holding a logo and one sentence look
+ * empty at the site's default width.
+ */
+const breadcrumbs: BreadcrumbItem[] = [{ label: 'Συνεργάτες' }];
+const { seo, heading, intro, cards, cardCta, contact } = INFORMATIONAL.partners;
+---
+
+<BaseLayout title={seo.title} description={seo.description} breadcrumbs={breadcrumbs}>
+  <Section spacing="tight" width="medium" labelledby="partners-heading">
+    <SectionHeading
+      id="partners-heading"
+      as="h1"
+      size="title"
+      title={heading}
+      description={intro}
+    />
+
+    <ul class="mt-12 flex list-none flex-col gap-6 md:gap-8">
+      {cards.map((card) => <PartnerCard card={card} cta={cardCta} />)}
+    </ul>
+  </Section>
+
+  <ContactBand heading={contact.heading} description={contact.description} cta={contact.cta} />
+</BaseLayout>

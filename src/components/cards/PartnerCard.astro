@@ -1,0 +1,65 @@
+---
+import { Image } from 'astro:assets';
+import Button from '@/components/ui/Button.astro';
+import Card from '@/components/ui/Card.astro';
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import type { INFORMATIONAL } from '@/data/informational';
+
+/**
+ * One of the two cards on `/synergates`: a heading, a logo beside a sentence, and a link on.
+ *
+ * The shape is the live site's, with its empty space taken out. The legacy card sets `mb-10` under
+ * the first heading, `mb-20` under the second and `mt-10` above both buttons, which is why the two
+ * cards are different heights on production despite holding the same amount of text.
+ *
+ * **Not a linked card.** It carries a button already, and making the surface a link as well would
+ * be two tab stops to one destination. That is the finding the maintainer raised against the EOPYY
+ * card in STEP-05, and `HearingTypeCard` follows the same rule.
+ *
+ * Both cards use the same `Δείτε λεπτομέρειες` label, as the live site does, so each takes its own
+ * title as visually hidden text. What everyone sees is the client's wording; a screen-reader user
+ * hears two distinct names instead of the same one twice.
+ */
+interface Props {
+  card: (typeof INFORMATIONAL.partners.cards)[number];
+  /** The shared `Δείτε λεπτομέρειες` label, passed in rather than read from the module here. */
+  cta: string;
+}
+
+const { card, cta }: Props = Astro.props;
+const { title, description, logo, logoAlt, href } = card;
+---
+
+<Card as="li" padding="none">
+  <div class="flex flex-col gap-6 p-card md:gap-8 md:p-card-lg">
+    <SectionHeading as="h2" size="section" title={title} align="center" />
+
+    <div class="flex flex-col items-center gap-6 text-center md:flex-row md:gap-8 md:text-start">
+      {/*
+        A fixed square box with `object-contain`, so the two logos agree with each other: the EOPYY
+        mark is square and the Signia one is taller than it is wide, and without this the cards
+        would sit at different heights for no reason a reader could see.
+      */}
+      <div class="flex size-40 shrink-0 items-center justify-center sm:size-48">
+        <Image
+          src={logo}
+          alt={logoAlt}
+          layout="none"
+          widths={[192, 384]}
+          sizes="12rem"
+          loading="lazy"
+          decoding="async"
+          class="size-full object-contain"
+        />
+      </div>
+
+      <p class="text-body-lg text-ink-muted text-pretty">{description}</p>
+    </div>
+
+    <div class="flex justify-center">
+      <Button href={href} size="lg">
+        {cta}<span class="sr-only"> για {title}</span>
+      </Button>
+    </div>
+  </div>
+</Card>
