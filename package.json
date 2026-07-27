@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview",
+    "preview": "bun run scripts/preview-server.ts",
     "astro": "astro",
     "check": "astro check",
     "biome": "biome check .",
