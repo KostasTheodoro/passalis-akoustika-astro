@@ -51,8 +51,12 @@ export const PRIMARY_NAV: NavItem[] = [
  * group here for it. The partner links fold into `Η εταιρεία` rather than standing alone, which
  * also balances the two columns at five links and six.
  *
- * STEP-08 adds the privacy page to `Η εταιρεία` once that page exists; linking it earlier would
- * only produce a 404.
+ * The privacy page joins the end of `Η εταιρεία` in the same commit that creates the page, not
+ * before: `ROUTES.privacy` exists as soon as the constant is declared, so linking it early would
+ * put a 404 in the footer of every page on the site.
+ *
+ * It will not go in `PRIMARY_NAV`. A privacy notice is something a visitor looks for when they want
+ * it, not a destination competing with the catalogue in the header.
  */
 export const FOOTER_NAV: { heading: string; links: NavLink[] }[] = [
   {

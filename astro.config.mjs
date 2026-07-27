@@ -40,12 +40,48 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
   },
+  /**
+   * `PUBLIC_SITE_URL` is the only client-readable value here. Everything the contact endpoint needs
+   * is `context: 'server', access: 'secret'`, which is what keeps it out of the browser bundle.
+   *
+   * The recipient and sender addresses are not secrets in the way an API key is, but they are the
+   * addresses a spam harvester would most like to have, and there is no reason for either to reach
+   * a client. `access: 'secret'` is the setting that guarantees that rather than relying on nobody
+   * importing them from the wrong side.
+   *
+   * **`RESEND_API_KEY` is optional on purpose.** Without it the mailer does not send: it logs a
+   * redacted summary and the form reports development behaviour explicitly. That is what lets the
+   * whole step build, run and be tested with no production credentials, and it is also why the test
+   * suite cannot send real email by construction rather than by discipline. The key, the verified
+   * sending domain and the firewall rule are all STEP-11's.
+   */
   env: {
     schema: {
       PUBLIC_SITE_URL: envField.string({
         context: 'client',
         access: 'public',
         default: 'http://localhost:4321',
+      }),
+      RESEND_API_KEY: envField.string({
+        context: 'server',
+        access: 'secret',
+        optional: true,
+      }),
+      CONTACT_RECIPIENT_EMAIL: envField.string({
+        context: 'server',
+        access: 'secret',
+        optional: true,
+      }),
+      CONTACT_SENDER_EMAIL: envField.string({
+        context: 'server',
+        access: 'secret',
+        optional: true,
+      }),
+      CONTACT_SENDER_NAME: envField.string({
+        context: 'server',
+        access: 'secret',
+        optional: true,
+        default: 'Πασσαλής Ακουστικά',
       }),
     },
   },

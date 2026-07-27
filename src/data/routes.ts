@@ -21,6 +21,12 @@ export const ROUTES = {
   about: '/sxetika-me-mas',
   faq: '/syxnes-erotiseis',
   contact: '/epikoinonia',
+  /**
+   * New in STEP-08. The legacy site has no privacy page at all, which is why this is the one route
+   * here that is not a preserved URL. The slug is the transliteration the route-parity matrix
+   * proposed in STEP-00.
+   */
+  privacy: '/politiki-aporritou',
 } as const;
 
 export type RoutePath = (typeof ROUTES)[keyof typeof ROUTES];

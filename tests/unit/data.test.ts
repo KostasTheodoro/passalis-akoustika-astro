@@ -109,6 +109,23 @@ describe('navigation', () => {
     }
   });
 
+  test.todo('the privacy page is reachable from the footer but not the header', () => {
+    // `information-architecture.md` asks for privacy in the footer, and the contact form's
+    // acknowledgement links to the same page. It is deliberately absent from the header: a privacy
+    // notice is something a visitor goes looking for, not a destination competing with the
+    // catalogue.
+    //
+    // The footer is the only place it can be found without first opening the contact form, so if
+    // this link is ever dropped the page becomes reachable only by agreeing to it.
+    const footerHrefs: string[] = footerLinks.map((link) => link.href);
+    const headerHrefs: string[] = primaryLinks.map((link) => link.href);
+
+    expect(footerHrefs, 'the privacy page is not linked from the footer').toContain(ROUTES.privacy);
+    expect(headerHrefs, 'the privacy page should not be in the primary navigation').not.toContain(
+      ROUTES.privacy,
+    );
+  });
+
   test('the header and the footer agree on what each route is called', () => {
     // With one deliberate exception per group: the link to a section's own index sits under a
     // heading that already names the section, so `/akoustika` reads `Ακουστικά` in the header and
