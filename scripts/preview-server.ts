@@ -48,6 +48,19 @@ async function serverHandler(): Promise<FetchHandler | null> {
   }
 }
 
+/**
+ * Compressible types, and the reason this server bothers.
+ *
+ * Vercel compresses every text response and sets long cache headers on hashed assets. A preview
+ * server that does neither is not a fair place to measure anything: the first Lighthouse run
+ * against this page reported "Enable text compression" at 0 and a 2.9s First Contentful Paint,
+ * which said more about the harness than about the site.
+ *
+ * So the two things the platform does for free are done here too, and a performance number
+ * measured against this server means something.
+ */
+const COMPRESSIBLE = /^(text\/|application\/(javascript|json|xml)|image\/svg)/;
+
 /** The candidate files a path could mean, in the order Vercel itself would try them. */
 function candidates(pathname: string): string[] {
   const clean = decodeURIComponent(pathname).replace(/^\/+/, '').replace(/\/+$/, '');
@@ -59,6 +72,38 @@ function candidates(pathname: string): string[] {
     join(CLIENT_ROOT, `${clean}.html`),
     join(CLIENT_ROOT, clean, 'index.html'),
   ];
+}
+
+/**
+ * Serves a file the way the platform would: compressed when it is text, and cached hard when its
+ * name carries a content hash.
+ *
+ * `/_astro/` filenames include a hash of their contents, so a year is safe and correct: a changed
+ * file is a different URL. Everything else gets `no-cache`, which still allows a conditional
+ * request but never serves a stale page.
+ */
+async function staticResponse(
+  request: Request,
+  file: Bun.BunFile,
+  path: string,
+): Promise<Response> {
+  const type = file.type || 'application/octet-stream';
+  const immutable = path.includes('_astro/');
+
+  const headers = new Headers({
+    'content-type': type,
+    'cache-control': immutable ? 'public, max-age=31536000, immutable' : 'public, no-cache',
+  });
+
+  const accepts = request.headers.get('accept-encoding') ?? '';
+  if (COMPRESSIBLE.test(type) && accepts.includes('gzip')) {
+    const compressed = Bun.gzipSync(new Uint8Array(await file.arrayBuffer()));
+    headers.set('content-encoding', 'gzip');
+    headers.set('vary', 'accept-encoding');
+    return new Response(compressed, { headers });
+  }
+
+  return new Response(file, { headers });
 }
 
 Bun.serve({
@@ -76,7 +121,7 @@ Bun.serve({
           // A directory read reports as existing on some platforms; a zero-byte HTML file never
           // does legitimately, so this also guards against serving one.
           if (candidate.endsWith('.html') && file.size === 0) continue;
-          return new Response(file);
+          return await staticResponse(request, file, candidate);
         }
       }
     }

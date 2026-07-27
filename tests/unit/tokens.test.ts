@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { readdirSync, readFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
+import { cn } from '@/lib/utils';
 
 /**
  * The design tokens claim specific contrast ratios in their comments. This file recomputes them
@@ -230,5 +231,45 @@ describe('token discipline', () => {
 
       expect(found, `${file} hard-codes ${found?.join(', ')} instead of using a token`).toBeNull();
     }
+  });
+});
+
+describe("cn() understands this project's scale", () => {
+  /**
+   * `tailwind-merge` resolves conflicts from a map of Tailwind's *default* utilities, and treats an
+   * unrecognised `text-*` as a colour. Our type scale is custom, so without configuration
+   * `text-body-lg` looked like a colour, conflicted with `text-white`, and silently removed it.
+   *
+   * That shipped a submit button with ink text on a teal fill at 2.07:1. Nothing threw; a class
+   * just went missing. These check the resolution rather than the rendering, because the rendering
+   * is where it was found far too late.
+   */
+  const SIZES = ['display', 'title', 'section', 'card', 'body-lg', 'body', 'small', 'label'];
+
+  test.each(SIZES)('a colour survives being combined with text-%s', (size) => {
+    const result = cn('text-white', `text-${size}`);
+
+    expect(result, `text-${size} ate the colour`).toContain('text-white');
+    expect(result).toContain(`text-${size}`);
+  });
+
+  test('two sizes still collapse to the last one', () => {
+    // The point of the library. Registering the scale must not stop it doing its job.
+    expect(cn('text-body', 'text-body-lg')).toBe('text-body-lg');
+  });
+
+  test('two colours still collapse to the last one', () => {
+    expect(cn('text-ink', 'text-brand-strong')).toBe('text-brand-strong');
+  });
+
+  test('the submit button keeps a white label on its teal fill', () => {
+    // The exact combination that failed, in the order `SubmitButton.tsx` writes it.
+    const result = cn(
+      'border-2 border-brand-strong bg-brand-strong text-white hover:bg-surface hover:text-brand-strong',
+      'h-13 px-8 text-body-lg',
+    );
+
+    expect(result).toContain('text-white');
+    expect(result).toContain('bg-brand-strong');
   });
 });
