@@ -1,6 +1,6 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { type Page, test } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 import { buildOwnerNotification } from '../../src/emails/owner-notification';
 import { buildVisitorAcknowledgement } from '../../src/emails/visitor-acknowledgement';
 import type { ContactPayload } from '../../src/lib/forms/contact-schema';
@@ -25,6 +25,12 @@ const FILL_TIME_MS = 3_500;
 test.describe.configure({ mode: 'serial' });
 
 async function fill(page: Page, unique: string) {
+  // Wait for the island before typing into it. Without this the first field is filled while the
+  // markup still has no listeners on it, React hydrates over the value, and the capture shows a
+  // validation error on an empty name instead of whatever it was staging. Astro drops the `ssr`
+  // marker once the island is live.
+  await expect(page.locator('astro-island')).not.toHaveAttribute('ssr', '');
+
   await page.getByLabel('Όνομα', { exact: false }).fill('Νίκος');
   await page.getByLabel('Επώνυμο', { exact: false }).fill('Παπαδόπουλος');
   await page.getByLabel('Email', { exact: false }).fill(`nikos+${unique}@example.gr`);
@@ -79,6 +85,38 @@ test('a filled form, and the result it produces', async ({ page }) => {
   // A build with no Resend key must say the message was not sent, not report success.
   await page.waitForTimeout(2_000);
   await page.screenshot({ path: join(OUT, 'form-development-result-1280.png'), fullPage: true });
+});
+
+test('a focused field, and a failure', async ({ page }) => {
+  await page.setViewportSize({ width: 900, height: 1200 });
+
+  // The teal ring that replaced the site's ink outline on this form only.
+  await page.goto('/epikoinonia');
+  await page.getByLabel('Email', { exact: false }).focus();
+  await page.locator('form').screenshot({ path: join(OUT, 'field-focused-900.png') });
+
+  // The failure path, faked at the network so it costs nothing at the rate limiter and always
+  // produces the same picture: red button, red toast, red inline line, and the form still intact.
+  await page.route('**/api/contact', (route) =>
+    route.fulfill({
+      status: 500,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: false, reason: 'server' }),
+    }),
+  );
+
+  await page.goto('/epikoinonia');
+  await fill(page, `artifact-error-${Date.now()}`);
+  await page.waitForTimeout(FILL_TIME_MS);
+  await page.getByRole('button', { name: /Αποστολή|Γίνεται/ }).click();
+
+  // Caught while the button is still holding the cross.
+  await page.waitForTimeout(350);
+  await page.screenshot({ path: join(OUT, 'form-error-button-900.png'), fullPage: true });
+
+  // And again once the toast has arrived.
+  await page.waitForTimeout(1_200);
+  await page.screenshot({ path: join(OUT, 'form-error-toast-900.png'), fullPage: true });
 });
 
 test('the privacy page', async ({ page }) => {
