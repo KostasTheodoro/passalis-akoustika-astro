@@ -1,5 +1,7 @@
 ---
+import { Image } from 'astro:assets';
 import { Icon } from 'astro-icon/components';
+import blurredMap from '@/assets/images/map-marousi-blurred.webp';
 import { BUSINESS, fullAddress } from '@/data/business';
 import { CONTACT } from '@/data/contact';
 import { EXTERNAL_LINKS } from '@/data/external-links';
@@ -43,27 +45,64 @@ import { ICONS } from '@/data/icons';
     could change that.
   */}
   <div class="relative flex aspect-16/10 flex-col items-center justify-center gap-4 p-card text-center sm:aspect-21/9">
-    <Icon name={ICONS.mapPin} class="size-10 text-brand" aria-hidden="true" />
+    {/*
+      The blurred map, built once by `scripts/build-map-image.ts` and committed. It is a real
+      picture of these streets, from OpenStreetMap, which is why the caption below carries the
+      attribution ODbL requires. Nothing here is fetched at runtime.
 
-    <div>
-      <p class="font-bold text-ink">{BUSINESS.name}</p>
-      <p class="mt-1 text-body text-ink-muted">{fullAddress}</p>
+      `eager`, unusually: it is the whole background of the panel, so lazy-loading it would show an
+      empty box for a moment on the one route where somebody is looking for the shop's location.
+      It is 40 kB and blurred images compress well.
+    */}
+    <Image
+      src={blurredMap}
+      alt=""
+      aria-hidden="true"
+      loading="eager"
+      widths={[640, 1280]}
+      sizes="(min-width: 1024px) 64rem, 100vw"
+      class="absolute inset-0 size-full object-cover"
+    />
+
+    {/*
+      The content sits on a near-opaque card rather than straight on the map.
+
+      A scrim strong enough to keep `text-ink-muted` above 4.5:1 over the map's darker road casings
+      would have washed the map out to almost nothing, which defeats the point of having it. A card
+      keeps every contrast ratio the same as it was on a plain panel, and lets the map stay legible
+      around it.
+    */}
+    <div class="relative flex max-w-md flex-col items-center gap-4 rounded-card bg-surface/95 p-card shadow-sm">
+      <Icon name={ICONS.mapPin} class="size-10 text-brand" aria-hidden="true" />
+
+      <div>
+        <p class="font-bold text-ink">{BUSINESS.name}</p>
+        <p class="mt-1 text-body text-ink-muted">{fullAddress}</p>
+      </div>
+
+      <button
+        type="button"
+        data-map-load
+        class="inline-flex h-11 items-center justify-center gap-2 rounded-pill border-2 border-brand-strong bg-brand-strong px-6 font-bold text-white transition-[color,background-color,border-color,transform] duration-(--duration-fast) ease-out hover:bg-surface hover:text-brand-strong motion-safe:hover:scale-[1.03] motion-safe:active:scale-[0.98]"
+      >
+        <Icon name={ICONS.mapPin} class="size-5 shrink-0" aria-hidden="true" />
+        {CONTACT.map.load}
+      </button>
+
+      <p class="text-small text-ink-muted">{CONTACT.map.note}</p>
     </div>
-
-    <button
-      type="button"
-      data-map-load
-      class="inline-flex h-11 items-center justify-center gap-2 rounded-pill border-2 border-brand-strong bg-brand-strong px-6 font-bold text-white transition-[color,background-color,border-color,transform] duration-(--duration-fast) ease-out hover:bg-surface hover:text-brand-strong motion-safe:hover:scale-[1.03] motion-safe:active:scale-[0.98]"
-    >
-      <Icon name={ICONS.mapPin} class="size-5 shrink-0" aria-hidden="true" />
-      {CONTACT.map.load}
-    </button>
-
-    <p class="max-w-sm text-small text-ink-muted">{CONTACT.map.note}</p>
   </div>
 </div>
 
-<p class="mt-4 text-small">
+{/*
+  The attribution is a licence condition, not decoration.
+
+  The background image is derived from OpenStreetMap data, which is published under the ODbL, and
+  that licence requires the credit to be shown wherever the derived work appears. Blurring it does
+  not remove the obligation. **If the image is ever replaced with something that is not OSM-derived,
+  remove this line in the same change; while the image is there, it stays.**
+*/}
+<p class="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-small">
   <a
     href={EXTERNAL_LINKS.googleMaps.place}
     target="_blank"
@@ -73,6 +112,18 @@ import { ICONS } from '@/data/icons';
     {CONTACT.map.externalLabel}
     <span class="sr-only"> (ανοίγει σε νέα καρτέλα)</span>
   </a>
+
+  <span class="text-ink-muted">
+    Υπόβαθρο:
+    <a
+      href="https://www.openstreetmap.org/copyright"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="rounded-control underline underline-offset-2 transition-colors duration-(--duration-fast) hover:text-ink"
+    >
+      © OpenStreetMap contributors
+    </a>
+  </span>
 </p>
 
 {/*
