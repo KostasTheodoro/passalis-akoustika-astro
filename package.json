@@ -14,8 +14,9 @@
     "check": "astro check",
     "biome": "biome check .",
     "biome:fix": "biome check --write .",
-    "test": "bun test --pass-with-no-tests --path-ignore-patterns=tests/e2e",
-    "test:e2e": "playwright test"
+    "test": "bun test --pass-with-no-tests --path-ignore-patterns=tests/e2e --path-ignore-patterns=tests/artifacts",
+    "test:e2e": "playwright test",
+    "artifacts": "playwright test --config playwright.artifacts.config.ts"
   },
   "dependencies": {
     "@astrojs/mdx": "^7.0.4",

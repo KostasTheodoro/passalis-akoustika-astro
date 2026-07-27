@@ -17,6 +17,22 @@ import { ROUTES } from '../../src/data/routes';
 const MINIMUM_FILL_TIME_MS = 3_500;
 
 /**
+ * Waits for the island to hydrate before touching it.
+ *
+ * Not defensive padding: two tests here failed only in the full parallel run and passed in
+ * isolation, which is the signature of a race rather than a bug. The island is `client:idle`, so
+ * under load React attaches later, and a `fill()` that lands first writes into markup with no
+ * listeners on it. The value appears, the blur does nothing, and the assertion that an error shows
+ * fails against a form that was never wired up yet.
+ *
+ * Astro marks an island `ssr` until it hydrates and removes the attribute afterwards, so this waits
+ * for the real thing rather than for an arbitrary timeout.
+ */
+async function hydrated(page: import('@playwright/test').Page) {
+  await expect(page.locator('astro-island')).not.toHaveAttribute('ssr', '');
+}
+
+/**
  * Fills every required field with something valid, and with something **different every time**.
  *
  * The unique address and message are not cosmetic. `guards.ts` fingerprints email plus message and
@@ -25,6 +41,7 @@ const MINIMUM_FILL_TIME_MS = 3_500;
  * which looks like a broken form and is actually the guard doing its job.
  */
 async function fillValidly(page: import('@playwright/test').Page, unique: string) {
+  await hydrated(page);
   await page.getByLabel(CONTACT.form.fields.firstName.label, { exact: false }).fill('Νίκος');
   await page.getByLabel(CONTACT.form.fields.lastName.label, { exact: false }).fill('Παπαδόπουλος');
   await page.getByLabel('Email', { exact: false }).fill(`nikos+${unique}@example.gr`);
@@ -119,6 +136,7 @@ test.describe('client validation', () => {
     });
 
     await page.goto(ROUTES.contact);
+    await hydrated(page);
     await page.getByRole('button', { name: CONTACT.form.submit }).click();
 
     // Five controls use the shared message element: two names, email, enquiry type and message.
@@ -134,6 +152,7 @@ test.describe('client validation', () => {
 
   test('an invalid control is marked invalid and described by its error', async ({ page }) => {
     await page.goto(ROUTES.contact);
+    await hydrated(page);
 
     const email = page.getByLabel('Email', { exact: false });
     await email.fill('not-an-email');
@@ -151,6 +170,7 @@ test.describe('client validation', () => {
 
   test('focus moves to the first field with a problem', async ({ page }) => {
     await page.goto(ROUTES.contact);
+    await hydrated(page);
     await page.getByRole('button', { name: CONTACT.form.submit }).click();
 
     await expect(
@@ -160,6 +180,7 @@ test.describe('client validation', () => {
 
   test('an error clears once the value is corrected', async ({ page }) => {
     await page.goto(ROUTES.contact);
+    await hydrated(page);
 
     const email = page.getByLabel('Email', { exact: false });
     await email.fill('nope');
@@ -296,6 +317,7 @@ test.describe('reduced motion', () => {
     // and the assertion sits next to the thing it is about.
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto(ROUTES.contact);
+    await hydrated(page);
     await page.getByRole('checkbox').check();
 
     const duration = await page
