@@ -3,6 +3,16 @@ dist/
 .astro/
 .vercel/
 
+# review artifacts
+#
+# Screenshots and rendered emails produced by `bun run artifacts` for the maintainer to look at.
+# They are review material, not source, and they belong beside the step that produced them under
+# `.workflow/`, which is ignored globally.
+#
+# This entry exists because a capture run without ARTIFACT_DIR set writes here by default, and a
+# `git add -A` then swept twelve screenshots into a commit that reached the public repository.
+artifacts/
+
 # dependencies
 node_modules/
 

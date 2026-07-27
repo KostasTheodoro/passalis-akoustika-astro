@@ -16,7 +16,18 @@ import type { ContactPayload } from '../../src/lib/forms/contact-schema';
  * Run it with `bun run artifacts`, against a preview server.
  */
 
-const OUT = process.env.ARTIFACT_DIR ?? 'artifacts/step-08';
+/**
+ * Where the captures go.
+ *
+ * The default writes **outside the repository**, deliberately. It used to default to
+ * `artifacts/step-08` inside it, and one run without `ARTIFACT_DIR` set followed by a `git add -A`
+ * put twelve screenshots into a commit that reached the public repository. `.gitignore` now covers
+ * `artifacts/` as well, so this is the second of two locks on the same mistake.
+ *
+ * Review material belongs beside the step that produced it, under `.workflow/`, which is ignored
+ * globally. Pass `ARTIFACT_DIR` to put it there.
+ */
+const OUT = process.env.ARTIFACT_DIR ?? '../passalis-artifacts/step-08';
 const WIDTHS = [390, 768, 1280] as const;
 
 /** Long enough to clear the minimum time-to-submit guard in `guards.ts`. */
