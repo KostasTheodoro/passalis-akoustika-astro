@@ -178,6 +178,43 @@
       transform: scale(1);
     }
   }
+
+  /**
+   * The toast's countdown bar, and the icon that pops in beside it.
+   *
+   * The bar is the toast telling you how long you have left to read it, which is the thing a plain
+   * fading toast never does. It is driven by `animation-duration` set inline from the same constant
+   * that tells sonner when to dismiss, so the bar cannot finish early or late.
+   *
+   * `scaleX` on a `transform`, not `width`: it runs on the compositor and never triggers layout.
+   * `origin-left` is set in the component, and `animation-fill-mode: forwards` keeps the bar at zero
+   * rather than snapping back for the last frame before the toast leaves.
+   *
+   * The reduced-motion block below zeroes both, which is the intended behaviour: the toast still
+   * appears and still dismisses on time, it simply does not animate towards it.
+   */
+  --animate-toast-bar: toast-bar linear forwards;
+  --animate-toast-icon: toast-icon var(--duration-base) var(--ease-out);
+
+  @keyframes toast-bar {
+    from {
+      transform: scaleX(1);
+    }
+    to {
+      transform: scaleX(0);
+    }
+  }
+
+  @keyframes toast-icon {
+    from {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
 }
 
 /**
@@ -375,4 +412,19 @@ body {
     scroll-behavior: auto !important;
   }
   /* biome-ignore-end lint/complexity/noImportantStyles: a reduced-motion reset must win */
+}
+
+/**
+ * The toast's countdown bar pauses while the toast is being read.
+ *
+ * A toast that expires mid-sentence because somebody moved their mouse onto it is worse than no
+ * toast, and keyboard users hit the same problem when they tab to the close button. `:hover` covers
+ * the pointer and `:focus-within` covers the keyboard.
+ *
+ * It keys off sonner's own `[data-sonner-toast]` attribute because the pause has to apply to the
+ * bar inside whichever toast is being read, and only that one.
+ */
+[data-sonner-toast]:hover [data-toast-bar],
+[data-sonner-toast]:focus-within [data-toast-bar] {
+  animation-play-state: paused;
 }

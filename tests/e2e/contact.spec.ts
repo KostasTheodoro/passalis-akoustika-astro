@@ -362,3 +362,143 @@ test.describe('the privacy page', () => {
     await expect(page.locator('main')).not.toContainText('BUSINESS.');
   });
 });
+
+/**
+ * The behaviours added in STEP-08's corrections round.
+ *
+ * The first is the one that matters: an earlier version replaced the whole form with a panel once a
+ * submission finished, which meant a failure took the visitor's typing with it and left them
+ * pressing a button to get the form back.
+ */
+test.describe('the form survives its own failures', () => {
+  /** Fails the endpoint without touching it, so these do not consume the rate limiter's budget. */
+  async function failTheEndpoint(page: import('@playwright/test').Page) {
+    await page.route('**/api/contact', (route) =>
+      route.fulfill({
+        status: 500,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: false, reason: 'server' }),
+      }),
+    );
+  }
+
+  test('a failed submission keeps every value the visitor typed', async ({ page }) => {
+    await failTheEndpoint(page);
+    await page.goto(ROUTES.contact);
+    await fillValidly(page, 'kept');
+    await page.waitForTimeout(MINIMUM_FILL_TIME_MS);
+
+    await page.getByRole('button', { name: /Αποστολή|Γίνεται/ }).click();
+    await expect(page.getByText(CONTACT.status.errorTitle).first()).toBeVisible();
+
+    // The form is still here, and so is everything in it.
+    await expect(page.locator('form')).toBeVisible();
+    await expect(
+      page.getByLabel(CONTACT.form.fields.firstName.label, { exact: false }),
+    ).toHaveValue('Νίκος');
+    await expect(page.getByLabel('Email', { exact: false })).toHaveValue(/kept/);
+    await expect(page.getByLabel(CONTACT.form.fields.message.label, { exact: false })).toHaveValue(
+      /kept/,
+    );
+    await expect(page.getByRole('checkbox')).toBeChecked();
+  });
+
+  test('the button reports the failure and then returns to idle', async ({ page }) => {
+    await failTheEndpoint(page);
+    await page.goto(ROUTES.contact);
+    await fillValidly(page, 'phases');
+    await page.waitForTimeout(MINIMUM_FILL_TIME_MS);
+
+    const button = page.getByRole('button', { name: /Αποστολή|Γίνεται|δεν στάλθηκε/ });
+    await button.click();
+
+    // While it holds the result the label is an icon, so the accessible name is the outcome.
+    await expect(page.getByRole('button', { name: CONTACT.status.errorTitle })).toBeVisible();
+
+    // And it comes back, so the form can be sent again without reloading.
+    await expect(page.getByRole('button', { name: CONTACT.form.submit })).toBeVisible({
+      timeout: 4000,
+    });
+  });
+
+  test('the outcome stays on the page after the toast has gone', async ({ page }) => {
+    // DEC-016: the toast may never be the only notification. This is the line that outlives it.
+    await failTheEndpoint(page);
+    await page.goto(ROUTES.contact);
+    await fillValidly(page, 'inline');
+    await page.waitForTimeout(MINIMUM_FILL_TIME_MS);
+    await page.getByRole('button', { name: /Αποστολή|Γίνεται/ }).click();
+
+    const status = page.locator('[role="status"][aria-live="polite"]').first();
+    await expect(status).toContainText(CONTACT.status.errorTitle);
+  });
+});
+
+test.describe('the toast', () => {
+  test('carries an icon and a countdown bar that pauses when read', async ({ page }) => {
+    await page.route('**/api/contact', (route) =>
+      route.fulfill({
+        status: 500,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: false, reason: 'server' }),
+      }),
+    );
+
+    await page.goto(ROUTES.contact);
+    await fillValidly(page, 'toastbar');
+    await page.waitForTimeout(MINIMUM_FILL_TIME_MS);
+    await page.getByRole('button', { name: /Αποστολή|Γίνεται/ }).click();
+
+    const toast = page.locator('[data-sonner-toast]');
+    await expect(toast).toBeVisible({ timeout: 5000 });
+
+    const bar = toast.locator('[data-toast-bar]');
+    await expect(bar).toHaveCount(1);
+
+    // The bar's duration comes from the same constant that tells sonner when to dismiss, so it
+    // cannot run out early or hang around after the toast has gone.
+    const duration = await bar.evaluate((node) => getComputedStyle(node).animationDuration);
+    expect(Number.parseFloat(duration)).toBeGreaterThan(1);
+
+    // A toast that expires mid-sentence because somebody moved their mouse onto it is worse than
+    // no toast at all.
+    await toast.hover();
+    const paused = await bar.evaluate((node) => getComputedStyle(node).animationPlayState);
+    expect(paused, 'the countdown does not pause while the toast is being read').toBe('paused');
+  });
+});
+
+test.describe('field focus', () => {
+  test('every control draws a visible ring when focused', async ({ page }) => {
+    // The form is the only place on the site that replaces the shared ink outline, so the
+    // replacement has to be checked rather than assumed.
+    await page.goto(ROUTES.contact);
+    await hydrated(page);
+
+    const fields = [
+      CONTACT.form.fields.firstName.label,
+      CONTACT.form.fields.lastName.label,
+      CONTACT.form.fields.telephone.label,
+      CONTACT.form.fields.enquiryType.label,
+      CONTACT.form.fields.message.label,
+    ];
+
+    for (const label of [...fields, 'Email']) {
+      const field = page.getByLabel(label, { exact: false });
+      await field.focus();
+
+      const drawn = await field.evaluate((node) => {
+        const style = getComputedStyle(node);
+        return {
+          shadow: style.boxShadow,
+          outline: style.outlineStyle === 'none' ? '' : style.outlineWidth,
+        };
+      });
+
+      expect(
+        drawn.shadow !== 'none' || drawn.outline !== '',
+        `${label} shows nothing when focused`,
+      ).toBe(true);
+    }
+  });
+});

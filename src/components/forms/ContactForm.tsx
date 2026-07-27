@@ -1,8 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
-import { SubmitButton } from '@/components/forms/SubmitButton';
+import { type ButtonPhase, PHASE_HOLD_MS, SubmitButton } from '@/components/forms/SubmitButton';
 import { Checkbox } from '@/components/forms/ui/checkbox';
 import {
   Form,
@@ -16,7 +15,7 @@ import {
 import { Input } from '@/components/forms/ui/input';
 import { Label } from '@/components/forms/ui/label';
 import { Select } from '@/components/forms/ui/select';
-import { Toaster } from '@/components/forms/ui/sonner';
+import { showToast, Toaster } from '@/components/forms/ui/sonner';
 import { Textarea } from '@/components/forms/ui/textarea';
 import { CONTACT, ENQUIRY_TYPES, FIELD_LIMITS } from '@/data/contact';
 import type { ContactResponse } from '@/lib/forms/contact-response';
@@ -26,6 +25,7 @@ import {
   type ContactPayload,
   contactSchema,
 } from '@/lib/forms/contact-schema';
+import { cn } from '@/lib/utils';
 
 /**
  * The contact form, and the only React island on the site.
@@ -45,10 +45,32 @@ import {
  * thread, and rather than `client:visible` so somebody who starts typing before hydration cannot
  * have their input discarded when React attaches.
  */
+/**
+ * The last outcome, kept only so the inline status line has something to say.
+ *
+ * DEC-016 and `forms-and-email.md` both require the form's own status to carry the result, because
+ * a toast is transient, appears away from the control somebody was using, and may be gone before a
+ * screen reader reaches it. The toast is the flourish; this is the record.
+ */
 type Outcome =
-  | { kind: 'success'; delivery: 'sent' | 'skipped' }
+  | { kind: 'sent' }
+  | { kind: 'skipped' }
   | { kind: 'rate-limited' }
   | { kind: 'error' };
+
+/** What the inline line says, and how it reads, for each outcome. */
+const STATUS_LINE: Record<Outcome['kind'], { text: string; tone: 'success' | 'error' | 'info' }> = {
+  sent: { text: `${CONTACT.status.successTitle} ${CONTACT.status.successBody}`, tone: 'success' },
+  skipped: {
+    text: `${CONTACT.status.developmentTitle} ${CONTACT.status.developmentBody}`,
+    tone: 'info',
+  },
+  'rate-limited': {
+    text: `${CONTACT.status.rateLimitedTitle} ${CONTACT.status.rateLimitedBody}`,
+    tone: 'error',
+  },
+  error: { text: `${CONTACT.status.errorTitle} ${CONTACT.status.errorBody}`, tone: 'error' },
+};
 
 const EMPTY_FORM: ContactInput = {
   firstName: '',
@@ -70,10 +92,30 @@ export function ContactForm() {
    */
   const [renderedAt] = useState(() => Date.now());
   const [outcome, setOutcome] = useState<Outcome | null>(null);
+  const [phase, setPhase] = useState<ButtonPhase>('idle');
 
   const statusId = useId();
   const honeypotId = useId();
   const privacyId = useId();
+
+  /**
+   * Holds the button on its result colour, then releases it and raises the toast.
+   *
+   * The toast fires *after* the button returns to idle rather than at the same moment, so the two
+   * are read in sequence instead of competing. Cleared on unmount, because a timer that fires into
+   * an unmounted component sets state on nothing.
+   */
+  const holdTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(holdTimer.current), []);
+
+  function settle(next: ButtonPhase, then: () => void) {
+    setPhase(next);
+    clearTimeout(holdTimer.current);
+    holdTimer.current = setTimeout(() => {
+      setPhase('idle');
+      then();
+    }, PHASE_HOLD_MS);
+  }
 
   const form = useForm<ContactInput, unknown, ContactPayload>({
     resolver: zodResolver(contactSchema),
@@ -85,10 +127,17 @@ export function ContactForm() {
     reValidateMode: 'onChange',
   });
 
-  const { isSubmitting } = form.formState;
-
+  /**
+   * **Nothing here ever unmounts the form.**
+   *
+   * An earlier version replaced it with a panel once a submission finished, which meant a failure
+   * took the visitor's typing with it and left them pressing a button to get the form back. It also
+   * made the development no-send path, which is neither a success nor a failure, read as an error
+   * that had eaten the page. Now the button reports and the fields stay exactly where they were.
+   */
   async function onSubmit(values: ContactPayload) {
     setOutcome(null);
+    setPhase('submitting');
 
     try {
       const response = await fetch('/api/contact', {
@@ -99,19 +148,24 @@ export function ContactForm() {
 
       const body = (await response.json()) as ContactResponse;
 
-      if (body.ok) {
-        setOutcome({ kind: 'success', delivery: body.delivery });
-        form.reset({ ...EMPTY_FORM, renderedAt: Date.now() });
+      if (body.ok && body.delivery === 'sent') {
+        setOutcome({ kind: 'sent' });
+        settle('success', () => {
+          // Cleared only on a real send. A message that went nowhere must not vanish from the box.
+          form.reset({ ...EMPTY_FORM, renderedAt: Date.now() });
+          showToast('success', CONTACT.status.successTitle, CONTACT.status.successBody);
+        });
+        return;
+      }
 
-        // Secondary only. The panel that replaces the form is the real confirmation; this is a
-        // flourish on top of it, and DEC-016 is explicit that it must never be the sole signal.
-        if (body.delivery === 'sent') {
-          toast.success(CONTACT.status.successTitle, { description: CONTACT.status.successBody });
-        } else {
-          toast.warning(CONTACT.status.developmentTitle, {
-            description: CONTACT.status.developmentBody,
-          });
-        }
+      if (body.ok) {
+        // Accepted, built, and deliberately not sent, because no Resend key is configured. Amber
+        // rather than green: a tick for a message that went nowhere is how a broken contact form
+        // reaches production unnoticed.
+        setOutcome({ kind: 'skipped' });
+        settle('error', () => {
+          showToast('info', CONTACT.status.developmentTitle, CONTACT.status.developmentBody);
+        });
         return;
       }
 
@@ -122,40 +176,35 @@ export function ContactForm() {
           form.setError(field as ContactFieldName, { type: 'server', message });
         }
         form.setFocus(Object.keys(body.errors)[0] as ContactFieldName);
-        toast.error(CONTACT.status.invalid);
+        settle('error', () => showToast('error', CONTACT.status.invalid));
         return;
       }
 
       if (body.reason === 'rate-limited') {
         setOutcome({ kind: 'rate-limited' });
-        toast.error(CONTACT.status.rateLimitedTitle, {
-          description: CONTACT.status.rateLimitedBody,
-        });
+        settle('error', () =>
+          showToast('error', CONTACT.status.rateLimitedTitle, CONTACT.status.rateLimitedBody),
+        );
         return;
       }
 
       setOutcome({ kind: 'error' });
-      toast.error(CONTACT.status.errorTitle, { description: CONTACT.status.errorBody });
+      settle('error', () =>
+        showToast('error', CONTACT.status.errorTitle, CONTACT.status.errorBody),
+      );
     } catch {
       // A dropped connection or a non-JSON response. Nothing is logged: the only things to hand are
       // the visitor's own details.
       setOutcome({ kind: 'error' });
-      toast.error(CONTACT.status.errorTitle, { description: CONTACT.status.errorBody });
+      settle('error', () =>
+        showToast('error', CONTACT.status.errorTitle, CONTACT.status.errorBody),
+      );
     }
   }
 
-  /** Announced when the browser's own validation blocks the submit, so the failure is not silent. */
+  /** Raised when client validation blocks the submit, so the failure is not silent. */
   function onInvalid() {
-    toast.error(CONTACT.status.invalid);
-  }
-
-  if (outcome?.kind === 'success') {
-    return (
-      <>
-        <SuccessPanel delivery={outcome.delivery} onReset={() => setOutcome(null)} />
-        <Toaster />
-      </>
-    );
+    showToast('error', CONTACT.status.invalid);
   }
 
   const required = <span className="text-error"> *</span>;
@@ -400,110 +449,53 @@ export function ContactForm() {
           </div>
 
           {/*
-            The live region.
+            The live region, and the reason the toast is allowed to be a flourish.
 
-            `polite` rather than `assertive`, and outside the form's own flow, so a screen reader
-            finishes the sentence it is on before announcing the result. It is always in the DOM
-            and only its text changes: a region added at the same moment as its content is often
-            not announced at all.
+            DEC-016 and `forms-and-email.md` both require the form's own status to carry the result.
+            A toast is transient, appears away from the control somebody was using, and may be gone
+            before a screen reader reaches it. This line is not: it stays until the next submission.
+
+            `polite` rather than `assertive`, so a screen reader finishes the sentence it is on
+            before announcing. It is always in the DOM and only its text changes: a region added at
+            the same moment as its content is often not announced at all.
           */}
-          <p
-            id={statusId}
-            role="status"
-            aria-live="polite"
-            className="text-small font-bold text-ink-muted"
-          >
-            {isSubmitting ? CONTACT.form.submitting : null}
-          </p>
+          <div className="flex flex-col-reverse items-stretch gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <p
+              id={statusId}
+              role="status"
+              aria-live="polite"
+              className={cn(
+                'text-small font-bold',
+                outcome
+                  ? {
+                      success: 'text-success',
+                      error: 'text-error',
+                      info: 'text-warning',
+                    }[STATUS_LINE[outcome.kind].tone]
+                  : 'text-ink-muted',
+              )}
+            >
+              {phase === 'submitting'
+                ? CONTACT.form.submitting
+                : outcome
+                  ? STATUS_LINE[outcome.kind].text
+                  : null}
+            </p>
 
-          {outcome?.kind === 'rate-limited' ? (
-            <StatusPanel
-              tone="error"
-              title={CONTACT.status.rateLimitedTitle}
-              body={CONTACT.status.rateLimitedBody}
-            />
-          ) : null}
-
-          {outcome?.kind === 'error' ? (
-            <StatusPanel
-              tone="error"
-              title={CONTACT.status.errorTitle}
-              body={CONTACT.status.errorBody}
-            />
-          ) : null}
-
-          <div className="flex justify-end">
-            <SubmitButton pending={isSubmitting} pendingLabel={CONTACT.form.submitting}>
-              {CONTACT.form.submit}
-            </SubmitButton>
+            <div className="flex justify-end">
+              <SubmitButton
+                phase={phase}
+                idleLabel={CONTACT.form.submit}
+                pendingLabel={CONTACT.form.submitting}
+                successLabel={CONTACT.status.successTitle}
+                errorLabel={CONTACT.status.errorTitle}
+              />
+            </div>
           </div>
         </form>
       </Form>
 
       <Toaster />
     </>
-  );
-}
-
-/** Shared shell for the failure notices, so the two cannot drift apart visually. */
-function StatusPanel({
-  tone,
-  title,
-  body,
-}: {
-  tone: 'success' | 'error';
-  title: string;
-  body: string;
-}) {
-  const success = tone === 'success';
-
-  return (
-    <div
-      className={
-        success
-          ? 'rounded-card border-2 border-success bg-brand-50 p-card'
-          : 'rounded-card border-2 border-error bg-page p-card'
-      }
-    >
-      <p className={success ? 'font-bold text-success' : 'font-bold text-error'}>{title}</p>
-      <p className="mt-1 text-body text-ink-muted">{body}</p>
-    </div>
-  );
-}
-
-/**
- * Replaces the form once a message is accepted.
- *
- * `tabIndex={-1}` plus the `status` role is what makes this reachable and announced: the form that
- * held focus has just been unmounted, so without somewhere to send it, focus falls back to the
- * document and a keyboard user is returned silently to the top of the page.
- */
-function SuccessPanel({
-  delivery,
-  onReset,
-}: {
-  delivery: 'sent' | 'skipped';
-  onReset: () => void;
-}) {
-  const sent = delivery === 'sent';
-
-  return (
-    <div role="status" aria-live="polite" tabIndex={-1} className="flex flex-col gap-4">
-      <StatusPanel
-        tone={sent ? 'success' : 'error'}
-        title={sent ? CONTACT.status.successTitle : CONTACT.status.developmentTitle}
-        body={sent ? CONTACT.status.successBody : CONTACT.status.developmentBody}
-      />
-
-      <div className="flex justify-end">
-        <button
-          type="button"
-          onClick={onReset}
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-pill border-2 border-transparent px-6 font-bold text-brand-strong transition-colors duration-(--duration-fast) hover:text-brand-deep hover:underline"
-        >
-          Νέο μήνυμα
-        </button>
-      </div>
-    </div>
   );
 }
