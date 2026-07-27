@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {
   CONTACT_ERRORS,
   ENQUIRY_TYPE_VALUES,
+  type EnquiryTypeValue,
   FIELD_LIMITS,
   TELEPHONE_PATTERN,
 } from '@/data/contact';
@@ -78,7 +79,20 @@ export const contactSchema = z.strictObject({
     })
     .transform((value) => (value === '' ? undefined : value)),
 
-  enquiryType: z.enum(ENQUIRY_TYPE_VALUES, { error: CONTACT_ERRORS.enquiryType }),
+  /**
+   * The empty string is accepted as an *input* and then rejected, rather than being excluded from
+   * the type outright.
+   *
+   * That is not a loosening. The `<select>` genuinely starts with no choice made, so `''` is a real
+   * state of the control, and modelling it here is what lets the island's form values be exactly
+   * `z.input` of this schema with no cast between them. The `transform` is sound because the
+   * `refine` above it has already ruled the empty case out.
+   */
+  enquiryType: z
+    .literal('')
+    .or(z.enum(ENQUIRY_TYPE_VALUES))
+    .refine((value) => value !== '', { error: CONTACT_ERRORS.enquiryType })
+    .transform((value) => value as EnquiryTypeValue),
 
   /**
    * Three separate messages rather than one, because "too short" and "you have not written
@@ -100,8 +114,14 @@ export const contactSchema = z.strictObject({
       }),
     ),
 
-  /** Must be ticked. `true` literally, so a string `"true"` from a hand-built payload is rejected. */
-  privacy: z.literal(true, { error: CONTACT_ERRORS.privacy }),
+  /**
+   * Must be ticked. A boolean that has to be `true`, rather than the literal `true`, for the same
+   * reason as `enquiryType`: the checkbox starts unticked, so `false` is a real state of the
+   * control. A string `"true"` or a `1` from a hand-built payload still fails the type check.
+   */
+  privacy: z
+    .boolean({ error: CONTACT_ERRORS.privacy })
+    .refine((value) => value, { error: CONTACT_ERRORS.privacy }),
 
   /**
    * The honeypot, and the reason it is merely *accepted* here rather than required to be empty.
