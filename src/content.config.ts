@@ -7,9 +7,15 @@ import { z } from 'astro/zod';
 /**
  * Content collections for the site.
  *
- * Format rule: YAML for pure structured data, Markdown where the text is genuinely prose.
+ * Format rule: YAML for pure structured data, MDX where the text is genuinely prose.
  * The entry id is always the filename without its extension, and for `hearing-types` that id
  * is also the public URL segment (`/akoustika/{id}`).
+ *
+ * The prose globs accept `.md` as well as `.mdx`, deliberately. An mdx-only glob would mean a stray
+ * `.md` file is not a failing entry but an invisible one, surfacing as a missing page rather than
+ * an error. The permissive glob plus `content-integrity.test.ts`, which requires every file in a
+ * collection directory to be read and every prose body to be `.mdx`, fails loudly and by name
+ * instead.
  *
  * Images live in `src/assets/images/` and are referenced with `image()`, which hands the template
  * an `ImageMetadata` object — dimensions included, so nothing renders without a known aspect
@@ -78,9 +84,9 @@ const hearingModels = defineCollection({
     }),
 });
 
-/** Frequently asked questions. The answer is the Markdown body. */
+/** Frequently asked questions. The answer is the MDX body. */
 const faqs = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/faqs' }),
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/faqs' }),
   schema: z.object({
     question: z.string(),
     order: z.number().int().positive(),
@@ -103,9 +109,9 @@ const providers = defineCollection({
     }),
 });
 
-/** Long-form editorial pages. The prose is the Markdown body. */
+/** Long-form editorial pages. The prose is the MDX body. */
 const pages = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/pages' }),
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/pages' }),
   schema: ({ image }) =>
     z.object({
       /** Page heading. */

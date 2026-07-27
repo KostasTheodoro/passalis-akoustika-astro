@@ -1,3 +1,4 @@
+import mdx from '@astrojs/mdx';
 import react from '@astrojs/react';
 import vercel from '@astrojs/vercel';
 import tailwindcss from '@tailwindcss/vite';
@@ -20,7 +21,21 @@ export default defineConfig({
    * on demand and emits only the icons a page actually renders. Setting `include` would pull whole
    * collections into the build.
    */
-  integrations: [react(), icon()],
+  /**
+   * `mdx()` must be registered *before* anything that reads content, and it is a build-time
+   * integration only: it compiles the prose bodies and ships no runtime library, so it costs the
+   * browser nothing.
+   *
+   * Every prose body on the site is `.mdx` rather than `.md`. The reason is not that any of them
+   * needs a component today, it is that the privacy page has to print the shop's telephone and
+   * email, and in plain Markdown those would be hard-coded strings in a content file. `business.ts`
+   * exists precisely because the legacy site kept three copies of those details and they had
+   * drifted apart. MDX lets the page import the one source instead.
+   *
+   * MDX is not a free superset of Markdown: `{`, `}` and `<` are syntax. All sixteen bodies were
+   * checked for those characters before the rename and none contained any.
+   */
+  integrations: [mdx(), react(), icon()],
   adapter: vercel(),
   vite: {
     plugins: [tailwindcss()],
