@@ -73,12 +73,24 @@ function useFormField() {
   };
 }
 
+/**
+ * `flex flex-col`, not shadcn's `grid gap-2`, and the difference is visible.
+ *
+ * These items sit in a two-column grid for the name row, so grid stretches both cells to the height
+ * of the taller one. A stretched **grid** container with auto rows distributes the leftover height
+ * *into* its rows, which meant that the moment one field showed an error the label, the control and
+ * the message in the cell beside it all drifted apart, and the input appeared to slide upward.
+ *
+ * A flex column packs to the top and leaves the slack at the bottom, so an error message grows
+ * downward, pushes the fields under it down, and moves nothing that sits beside or above it. That is
+ * the behaviour asked for during STEP-08's review.
+ */
 function FormItem({ className, ...props }: React.ComponentProps<'div'>) {
   const id = React.useId();
 
   return (
     <FormItemContext.Provider value={{ id }}>
-      <div data-slot="form-item" className={cn('grid gap-2', className)} {...props} />
+      <div data-slot="form-item" className={cn('flex flex-col gap-2', className)} {...props} />
     </FormItemContext.Provider>
   );
 }

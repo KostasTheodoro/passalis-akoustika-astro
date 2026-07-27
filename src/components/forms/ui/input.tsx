@@ -40,20 +40,36 @@ export const FIELD_STATES = [
   'transition-[color,border-color,box-shadow] duration-(--duration-fast)',
   'placeholder:text-ink-muted',
   'hover:border-brand-strong',
-  // `outline-none` is safe here only because the ring immediately replaces it. Nothing on this site
-  // removes an outline without putting something at least as strong in its place.
+  // The ring, and nothing else. `outline-none` alone was not enough: `global.css` re-applied the
+  // site's ink outline afterwards and the fields wore both. The opt-out is the `data-custom-focus`
+  // attribute below, which that file keys off.
   'outline-none focus-visible:ring-2 focus-visible:ring-brand-strong focus-visible:border-brand-strong',
   'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-60',
   // Not colour alone: the control also carries `aria-invalid`, which is what a screen reader
   // announces, and the message beneath it says what is wrong in words.
-  'aria-invalid:border-error aria-invalid:border-2 aria-invalid:focus-visible:ring-error',
+  //
+  // A ring rather than a thicker border, deliberately. `border-2` on the invalid state grew the box
+  // by a pixel all round and nudged everything beside it; a ring is drawn as a shadow and takes no
+  // space at all, so marking a field wrong moves nothing.
+  'aria-invalid:border-error aria-invalid:ring-1 aria-invalid:ring-error',
+  'aria-invalid:focus-visible:ring-2 aria-invalid:focus-visible:ring-error',
 ].join(' ');
+
+/**
+ * Put on every control that uses `FIELD_STATES`.
+ *
+ * `global.css` turns its own focus outline off for anything carrying this, which is what lets the
+ * teal ring be the only focus treatment on the form. Spread rather than hard-coded so a control that
+ * takes the styles cannot forget the attribute that makes them work.
+ */
+export const FIELD_ATTRIBUTES = { 'data-custom-focus': '' } as const;
 
 function Input({ className, type = 'text', ...props }: React.ComponentProps<'input'>) {
   return (
     <input
       type={type}
       data-slot="input"
+      {...FIELD_ATTRIBUTES}
       className={cn(
         'flex h-11 w-full min-w-0 rounded-control px-3 py-1 text-body',
         FIELD_STATES,

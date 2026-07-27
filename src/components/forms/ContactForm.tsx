@@ -58,6 +58,36 @@ type Outcome =
   | { kind: 'rate-limited' }
   | { kind: 'error' };
 
+const STATUS_TONE: Record<'success' | 'error' | 'info', string> = {
+  success: 'text-success',
+  error: 'text-error',
+  info: 'text-warning',
+};
+
+/**
+ * The tick or the cross beside the status line.
+ *
+ * The same two glyphs the button and the toast use, so one submission produces one shape rather
+ * than three different ways of saying the same thing. `accessibility.md` also asks that state is
+ * never signalled by colour alone, and this is what carries that for the status line.
+ */
+function StatusIcon({ tone }: { tone: 'success' | 'error' | 'info' }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="mt-0.5 size-4 shrink-0"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {tone === 'success' ? <path d="M20 6 9 17l-5-5" /> : <path d="M18 6 6 18M6 6l12 12" />}
+    </svg>
+  );
+}
+
 /** What the inline line says, and how it reads, for each outcome. */
 const STATUS_LINE: Record<Outcome['kind'], { text: string; tone: 'success' | 'error' | 'info' }> = {
   sent: { text: `${CONTACT.status.successTitle} ${CONTACT.status.successBody}`, tone: 'success' },
@@ -120,10 +150,17 @@ export function ContactForm() {
   const form = useForm<ContactInput, unknown, ContactPayload>({
     resolver: zodResolver(contactSchema),
     defaultValues: { ...EMPTY_FORM, renderedAt },
-    // Errors appear when a field is left, not on every keystroke, and clear as soon as the value
-    // becomes valid. Validating while somebody is still typing their email marks it wrong before
-    // they have finished writing it.
-    mode: 'onBlur',
+    /**
+     * `onTouched`: a field is checked when it is first left, and on every keystroke after that.
+     *
+     * This was `onBlur`, which validated on leaving but never again until the next blur, so a field
+     * marked red stayed red while somebody was busy fixing it and only cleared once they moved on.
+     * Correcting a mistake should be acknowledged as it happens.
+     *
+     * It still does not mark a field wrong mid-word on the first pass: nothing is validated until
+     * you have finished with it once.
+     */
+    mode: 'onTouched',
     reValidateMode: 'onChange',
   });
 
@@ -459,39 +496,49 @@ export function ContactForm() {
             before announcing. It is always in the DOM and only its text changes: a region added at
             the same moment as its content is often not announced at all.
           */}
-          <div className="flex flex-col-reverse items-stretch gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <p
-              id={statusId}
-              role="status"
-              aria-live="polite"
-              className={cn(
-                'text-small font-bold',
-                outcome
-                  ? {
-                      success: 'text-success',
-                      error: 'text-error',
-                      info: 'text-warning',
-                    }[STATUS_LINE[outcome.kind].tone]
-                  : 'text-ink-muted',
-              )}
-            >
-              {phase === 'submitting'
-                ? CONTACT.form.submitting
-                : outcome
-                  ? STATUS_LINE[outcome.kind].text
-                  : null}
-            </p>
-
-            <div className="flex justify-end">
-              <SubmitButton
-                phase={phase}
-                idleLabel={CONTACT.form.submit}
-                pendingLabel={CONTACT.form.submitting}
-                successLabel={CONTACT.status.successTitle}
-                errorLabel={CONTACT.status.errorTitle}
-              />
-            </div>
+          <div className="flex justify-end">
+            <SubmitButton
+              phase={phase}
+              idleLabel={CONTACT.form.submit}
+              pendingLabel={CONTACT.form.submitting}
+              successLabel={CONTACT.status.successTitle}
+              errorLabel={CONTACT.status.errorTitle}
+            />
           </div>
+
+          {/*
+            The result, on its own line under the button.
+
+            It used to sit *beside* the button, which squashed the button into an odd shape whenever
+            the message was long. A full-width line below it has room for a sentence and does not
+            deform anything.
+
+            This is also what satisfies DEC-016. The toast may never be the only notification: it is
+            transient, appears away from the control somebody was using, and may be gone before a
+            screen reader reaches it. This line stays until the next submission.
+
+            `polite`, so a screen reader finishes its current sentence first, and always in the DOM
+            with only its text changing: a region added at the same moment as its content is often
+            not announced at all.
+          */}
+          <p
+            id={statusId}
+            role="status"
+            aria-live="polite"
+            className={cn(
+              'flex min-h-6 items-start gap-2 text-small font-bold',
+              outcome ? STATUS_TONE[STATUS_LINE[outcome.kind].tone] : 'text-ink-muted',
+            )}
+          >
+            {phase === 'submitting' ? CONTACT.form.submitting : null}
+
+            {phase !== 'submitting' && outcome ? (
+              <>
+                <StatusIcon tone={STATUS_LINE[outcome.kind].tone} />
+                <span>{STATUS_LINE[outcome.kind].text}</span>
+              </>
+            ) : null}
+          </p>
         </form>
       </Form>
 

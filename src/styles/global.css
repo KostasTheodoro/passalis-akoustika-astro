@@ -261,9 +261,14 @@ body {
  * The one exception to the rule above, and it is deliberate: **the contact form's fields draw a teal
  * ring instead of this ink outline.**
  *
- * They opt out in their own components, not here, by setting `outline-none` and a
- * `focus-visible:ring-2` — see `FIELD_STATES` in `src/components/forms/ui/input.tsx`, which is the
- * single place all of them read it from.
+ * **This rule is why it works.** A Tailwind `outline-none` utility on the component is not enough:
+ * it has the same specificity as the rule above, `@import "tailwindcss"` puts it earlier in the
+ * file, and the later rule therefore wins. The first attempt did exactly that and shipped fields
+ * wearing *both* treatments, a teal ring inside a dark outline. This turns the outline off from the
+ * same file that turned it on, after it, where source order settles the argument.
+ *
+ * Fields opt in by carrying `data-custom-focus`, which `FIELD_STATES` in
+ * `src/components/forms/ui/input.tsx` puts on all four controls.
  *
  * Two things a future reader should know before "fixing" the inconsistency:
  *
@@ -275,6 +280,9 @@ body {
  *
  * Nothing else on the site removes an outline, and nothing else should.
  */
+:where([data-custom-focus]):focus-visible {
+  outline: none;
+}
 
 /**
  * Greek typography: never uppercase Greek text. Uppercasing drops the tonos (ΑΚΟΥΣΤΙΚΆ becomes

@@ -502,3 +502,158 @@ test.describe('field focus', () => {
     }
   });
 });
+
+/**
+ * The four defects found by the maintainer looking at the page, which this suite had not caught.
+ *
+ * Each of these fails against the behaviour that shipped, which is the only thing that makes them
+ * worth having. They exist because "it renders and the tests are green" was true of all four.
+ */
+test.describe('how the fields behave while being used', () => {
+  test('a focused field draws the ring and nothing else', async ({ page }) => {
+    // The fields opted out of the site's ink outline with a Tailwind utility, and `global.css`
+    // re-applied it afterwards because the two have equal specificity and it comes later. Every
+    // field wore both: a teal ring inside a dark outline.
+    await page.goto(ROUTES.contact);
+    await hydrated(page);
+
+    for (const label of [CONTACT.form.fields.firstName.label, 'Email']) {
+      const field = page.getByLabel(label, { exact: false });
+      await field.focus();
+
+      const drawn = await field.evaluate((node) => {
+        const style = getComputedStyle(node);
+        return { outline: style.outlineStyle, width: style.outlineWidth, shadow: style.boxShadow };
+      });
+
+      expect(drawn.outline, `${label} still draws the site outline as well as the ring`).toBe(
+        'none',
+      );
+      expect(drawn.shadow, `${label} draws no ring`).not.toBe('none');
+    }
+  });
+
+  test('an error pushes the fields below it down and moves nothing above', async ({ page }) => {
+    // The grid stretched both cells of the name row to equal height and distributed the slack into
+    // their rows, so an error on one field slid the input beside it upward.
+    await page.goto(ROUTES.contact);
+    await hydrated(page);
+
+    const first = page.getByLabel(CONTACT.form.fields.firstName.label, { exact: false });
+    const second = page.getByLabel(CONTACT.form.fields.lastName.label, { exact: false });
+    const email = page.getByLabel('Email', { exact: false });
+
+    const before = {
+      first: await first.boundingBox(),
+      second: await second.boundingBox(),
+      email: await email.boundingBox(),
+    };
+
+    // Touch and leave the first field empty, which is what raises its error.
+    await first.click();
+    await second.click();
+    await expect(first).toHaveAttribute('aria-invalid', 'true');
+
+    const after = {
+      first: await first.boundingBox(),
+      second: await second.boundingBox(),
+      email: await email.boundingBox(),
+    };
+
+    // Neither input in the row may move at all: they are level with each other and with the error.
+    expect(Math.abs((after.first?.y ?? 0) - (before.first?.y ?? 0))).toBeLessThan(2);
+    expect(
+      Math.abs((after.second?.y ?? 0) - (before.second?.y ?? 0)),
+      'the field beside the error moved',
+    ).toBeLessThan(2);
+
+    // And the field below is pushed down, which is where the message went.
+    expect(after.email?.y ?? 0, 'the message did not make room below').toBeGreaterThan(
+      before.email?.y ?? 0,
+    );
+  });
+
+  test('typing clears an error without waiting for the field to be left', async ({ page }) => {
+    // `mode: 'onBlur'` validated on leaving and never again until the next blur, so a field stayed
+    // red for the whole time somebody was fixing it.
+    await page.goto(ROUTES.contact);
+    await hydrated(page);
+
+    const email = page.getByLabel('Email', { exact: false });
+    await email.fill('nope');
+    await email.blur();
+    await expect(email).toHaveAttribute('aria-invalid', 'true');
+
+    await email.click();
+    await email.fill('nikos@example.gr');
+
+    // No blur. The error should be gone the moment the value became valid.
+    await expect(email).not.toHaveAttribute('aria-invalid', 'true');
+  });
+
+  test('marking a field invalid does not change its size', async ({ page }) => {
+    // The invalid state used to go from a 1px border to 2px, which grew the box by a pixel all
+    // round and nudged its neighbours. It is a ring now, which is drawn as a shadow.
+    await page.goto(ROUTES.contact);
+    await hydrated(page);
+
+    const email = page.getByLabel('Email', { exact: false });
+    const before = await email.boundingBox();
+
+    await email.fill('nope');
+    await email.blur();
+    await expect(email).toHaveAttribute('aria-invalid', 'true');
+
+    const after = await email.boundingBox();
+    expect(Math.abs((after?.height ?? 0) - (before?.height ?? 0))).toBeLessThan(1);
+    expect(Math.abs((after?.width ?? 0) - (before?.width ?? 0))).toBeLessThan(1);
+  });
+});
+
+test.describe('where the result appears', () => {
+  test('the status line sits below the button, not beside it', async ({ page }) => {
+    // It used to share a row with the button, which squashed the button whenever the sentence was
+    // long enough to need the space.
+    await page.route('**/api/contact', (route) =>
+      route.fulfill({
+        status: 500,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: false, reason: 'server' }),
+      }),
+    );
+
+    await page.goto(ROUTES.contact);
+    await fillValidly(page, 'below');
+    await page.waitForTimeout(MINIMUM_FILL_TIME_MS);
+    await page.getByRole('button', { name: /Αποστολή|Γίνεται/ }).click();
+
+    const status = page.locator('[role="status"][aria-live="polite"]').first();
+    await expect(status).toContainText(CONTACT.status.errorTitle);
+
+    const button = page.getByRole('button', { name: CONTACT.form.submit });
+    const [statusBox, buttonBox] = [await status.boundingBox(), await button.boundingBox()];
+
+    expect(statusBox?.y ?? 0, 'the status line is not below the button').toBeGreaterThanOrEqual(
+      (buttonBox?.y ?? 0) + (buttonBox?.height ?? 0) - 2,
+    );
+  });
+
+  test('the status line carries an icon, so it is not colour alone', async ({ page }) => {
+    await page.route('**/api/contact', (route) =>
+      route.fulfill({
+        status: 500,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: false, reason: 'server' }),
+      }),
+    );
+
+    await page.goto(ROUTES.contact);
+    await fillValidly(page, 'icon');
+    await page.waitForTimeout(MINIMUM_FILL_TIME_MS);
+    await page.getByRole('button', { name: /Αποστολή|Γίνεται/ }).click();
+
+    const status = page.locator('[role="status"][aria-live="polite"]').first();
+    await expect(status).toContainText(CONTACT.status.errorTitle);
+    await expect(status.locator('svg')).toHaveCount(1);
+  });
+});

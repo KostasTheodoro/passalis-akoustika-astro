@@ -1,5 +1,6 @@
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
 import type * as React from 'react';
+import { FIELD_ATTRIBUTES } from '@/components/forms/ui/input';
 import { cn } from '@/lib/utils';
 
 /**
@@ -29,6 +30,7 @@ function Checkbox({ className, ...props }: React.ComponentProps<typeof CheckboxP
   return (
     <CheckboxPrimitive.Root
       data-slot="checkbox"
+      {...FIELD_ATTRIBUTES}
       className={cn(
         'peer size-5 shrink-0 rounded-control border-2 border-brand bg-surface shadow-sm',
         'grid place-content-center transition-[color,border-color,box-shadow] duration-(--duration-fast)',

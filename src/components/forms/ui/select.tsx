@@ -1,5 +1,5 @@
 import type * as React from 'react';
-import { FIELD_STATES } from '@/components/forms/ui/input';
+import { FIELD_ATTRIBUTES, FIELD_STATES } from '@/components/forms/ui/input';
 import { cn } from '@/lib/utils';
 
 /**
@@ -27,6 +27,7 @@ function Select({ className, children, ...props }: React.ComponentProps<'select'
     <div className="relative">
       <select
         data-slot="select"
+        {...FIELD_ATTRIBUTES}
         className={cn(
           'flex h-11 w-full appearance-none rounded-control py-1 pl-3 pr-10 text-body',
           FIELD_STATES,
