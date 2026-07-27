@@ -1,7 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import { Icon } from 'astro-icon/components';
-import blurredMap from '@/assets/images/map-marousi-blurred.webp';
+import blurredMap from '@/assets/images/map/marousi-blurred.webp';
 import { BUSINESS, fullAddress } from '@/data/business';
 import { CONTACT } from '@/data/contact';
 import { EXTERNAL_LINKS } from '@/data/external-links';
@@ -19,19 +19,19 @@ import { ICONS } from '@/data/icons';
  * So nothing is requested from Google until the button is pressed. Before that, this is a panel
  * drawn from the site's own tokens.
  *
- * **Why it is not a picture of a map.** A map tile is Google's, and the licensed way to serve a
- * static one is the Maps Static API, which needs an API key, a billing account and a new external
- * service. That was out of scope for STEP-08, so the placeholder is a designed panel carrying the
- * address rather than a screenshot. The maintainer decides at review whether to keep it or buy the
- * picture; swapping one for the other does not touch the loading mechanism.
+ * **The background is a real map, from OpenStreetMap rather than Google.** The first version of this
+ * was a flat teal panel, because a Google tile is Google's and the licensed way to serve a static
+ * one is the Maps Static API, which needs a key and a billing account. OSM needs neither, and its
+ * licence is satisfied by the attribution in the caption. The tiles are fetched once by
+ * `scripts/build-map-image.ts` and the result is committed, so nothing is fetched at build or run
+ * time from anybody.
  *
  * **The link out is not a fallback.** `accessibility.md` asks for a normal link to the map so the
  * embed is never the only route, and it is useful in its own right: on a phone it opens the Maps
  * app with directions, which is better than an iframe.
- */
-/**
- * No props. The section around it owns the heading and names itself with `aria-labelledby`, so
- * this component only has to render the panel.
+ *
+ * No props. The section around it owns the heading and names itself with `aria-labelledby`, so this
+ * component only has to render the panel.
  */
 ---
 
@@ -52,7 +52,8 @@ import { ICONS } from '@/data/icons';
 
       `eager`, unusually: it is the whole background of the panel, so lazy-loading it would show an
       empty box for a moment on the one route where somebody is looking for the shop's location.
-      It is 40 kB and blurred images compress well.
+      It is about 15 kB: heavy blurring leaves mostly low-frequency data, which is what image
+      codecs are best at.
     */}
     <Image
       src={blurredMap}

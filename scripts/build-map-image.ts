@@ -48,7 +48,7 @@ const COLUMNS = 3;
 const ROWS = 2;
 
 const TILE = 256;
-const OUTPUT = 'src/assets/images/map-marousi-blurred.webp';
+const OUTPUT = 'src/assets/images/map/marousi-blurred.webp';
 
 /** Web Mercator: longitude and latitude to fractional tile coordinates at a given zoom. */
 function tileX(longitude: number, zoom: number): number {

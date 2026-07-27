@@ -27,6 +27,12 @@ const BUDGETS: Record<string, number> = {
   hearing: 200 * KB,
   partners: 150 * KB,
   badges: 50 * KB,
+  /**
+   * The blurred map behind the contact page's panel. Tight on purpose: heavy blurring leaves mostly
+   * low-frequency data, so anything approaching this ceiling means the blur was weakened or the
+   * source was fetched at a resolution nobody sees. Both are worth catching.
+   */
+  map: 60 * KB,
 };
 
 /** Everything `public/` is allowed to contain. Anything else belongs in `src/assets/`. */
