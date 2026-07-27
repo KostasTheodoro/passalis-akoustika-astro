@@ -65,12 +65,12 @@ function readFaqs() {
   const directory = join(CONTENT_ROOT, 'faqs');
 
   return readdirSync(directory)
-    .filter((file) => extname(file) === '.md')
+    .filter((file) => extname(file) === '.mdx')
     .map((file) => {
       const path = join(directory, file);
       const source = readFileSync(path, 'utf8');
       return {
-        id: basename(file, '.md'),
+        id: basename(file, '.mdx'),
         question: field(source, 'question', path),
         order: Number(field(source, 'order', path)),
       };

@@ -123,6 +123,18 @@ describe('collection shape', () => {
     }
   });
 
+  test('every prose body is .mdx', () => {
+    // MDX is the site's one prose format, so a `.md` file is a half-converted entry rather than a
+    // choice. The glob in `content.config.ts` still accepts both on purpose: it means such a file
+    // renders, and then fails here by name, instead of silently not being a page at all.
+    for (const { name, entries } of collections) {
+      for (const entry of entries) {
+        if (!entry.body) continue;
+        expect(extname(entry.file), `${name}/${entry.id} is not .mdx`).toBe('.mdx');
+      }
+    }
+  });
+
   test('the migrated entry counts match the legacy site', () => {
     expect(hearingTypes).toHaveLength(4);
     expect(hearingModels).toHaveLength(13);
@@ -396,10 +408,10 @@ describe('image sources', () => {
 describe('long-form pages', () => {
   test('the EOPYY figures in frontmatter also appear in the prose', () => {
     const eopyy = pages.find((page) => page.id === 'eopyy');
-    expect(eopyy, 'src/content/pages/eopyy.md is missing').toBeDefined();
+    expect(eopyy, 'src/content/pages/eopyy.mdx is missing').toBeDefined();
 
     const subsidy = eopyy?.data.subsidy as Record<string, number> | undefined;
-    expect(subsidy, 'eopyy.md is missing its subsidy frontmatter').toBeDefined();
+    expect(subsidy, 'eopyy.mdx is missing its subsidy frontmatter').toBeDefined();
 
     const body = eopyy?.body ?? '';
     expect(body, 'the adult amount is not stated in the prose').toContain(
@@ -442,9 +454,9 @@ describe('long-form pages', () => {
     const lead = (about?.data.lead as string[] | undefined) ?? [];
     const squash = (text: string) => text.replace(/\s+/g, ' ').trim();
 
-    expect(lead.length, 'about.md has no lead paragraphs').toBeGreaterThanOrEqual(original.length);
+    expect(lead.length, 'about.mdx has no lead paragraphs').toBeGreaterThanOrEqual(original.length);
     for (const [index, paragraph] of original.entries()) {
-      expect(squash(lead[index] ?? ''), `about.md lead paragraph ${index + 1} was altered`).toBe(
+      expect(squash(lead[index] ?? ''), `about.mdx lead paragraph ${index + 1} was altered`).toBe(
         paragraph,
       );
     }
@@ -485,7 +497,7 @@ describe('long-form pages', () => {
       expect(faq, `the FAQ "${id}" is missing`).toBeDefined();
       expect(
         (faq?.body ?? '').replace(/\s+/g, ' '),
-        `the original answer in ${id}.md was altered`,
+        `the original answer in ${id}.mdx was altered`,
       ).toContain(sentence);
     }
   });

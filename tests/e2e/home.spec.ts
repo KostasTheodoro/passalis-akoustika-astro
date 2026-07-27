@@ -521,9 +521,9 @@ test.describe('things that answer the pointer', () => {
 });
 
 test('the EOPYY card shows the figure the content file holds', async ({ page }) => {
-  const source = readFileSync('src/content/pages/eopyy.md', 'utf8');
+  const source = readFileSync('src/content/pages/eopyy.mdx', 'utf8');
   const amount = source.match(/adultAmount:\s*(\d+)/)?.[1];
-  expect(amount, 'eopyy.md has no adultAmount').toBeTruthy();
+  expect(amount, 'eopyy.mdx has no adultAmount').toBeTruthy();
 
   await page.goto('/');
 

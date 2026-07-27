@@ -94,7 +94,7 @@ export async function getEopyySubsidy(): Promise<
 > {
   const { data } = await getPage('eopyy');
   if (!data.subsidy) {
-    throw new Error('src/content/pages/eopyy.md is missing its `subsidy` frontmatter.');
+    throw new Error('src/content/pages/eopyy.mdx is missing its `subsidy` frontmatter.');
   }
   return data.subsidy;
 }

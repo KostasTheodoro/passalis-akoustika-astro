@@ -57,7 +57,7 @@ const CONTACT_CTA: CallToAction = { label: 'Επικοινωνήστε μαζί 
 export const INFORMATIONAL = {
   about: {
     /**
-     * The heading, prose, images and `seo` all come from `src/content/pages/about.md`. Only the
+     * The heading, prose, images and `seo` all come from `src/content/pages/about.mdx`. Only the
      * closing band is a page decision.
      */
     contact: {
