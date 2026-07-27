@@ -109,7 +109,7 @@ describe('navigation', () => {
     }
   });
 
-  test.todo('the privacy page is reachable from the footer but not the header', () => {
+  test('the privacy page is reachable from the footer but not the header', () => {
     // `information-architecture.md` asks for privacy in the footer, and the contact form's
     // acknowledgement links to the same page. It is deliberately absent from the header: a privacy
     // notice is something a visitor goes looking for, not a destination competing with the

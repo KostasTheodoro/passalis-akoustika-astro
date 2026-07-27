@@ -1,0 +1,55 @@
+---
+import { render } from 'astro:content';
+import type { BreadcrumbItem } from '@/components/navigation/Breadcrumbs.astro';
+import Section from '@/components/ui/Section.astro';
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getPage } from '@/lib/content/collections';
+
+/**
+ * `/politiki-aporritou`.
+ *
+ * The one route on the site that is not a preserved URL: the live site has no privacy page at all,
+ * which is also why the contact form could not have asked for an acknowledgement before now.
+ *
+ * No closing contact band. Every other page ends with one, but this page's whole subject is what
+ * happens to somebody's details when they use the form, and finishing it with a button back to the
+ * form would read as a prompt rather than as information. The shop's telephone and email are in the
+ * prose itself, where a reader who wants to exercise a right will actually be looking.
+ *
+ * The prose reads its contact details from `BUSINESS` through MDX. That is the reason this page is
+ * `.mdx`: in plain Markdown the telephone and email would be hard-coded into a content file, and
+ * `business.ts` exists precisely because the legacy site kept three copies of them that had drifted
+ * apart.
+ */
+const page = await getPage('privacy');
+const { title, seo, lead } = page.data;
+const { Content } = await render(page);
+
+const breadcrumbs: BreadcrumbItem[] = [{ label: title }];
+---
+
+<BaseLayout title={seo.title} description={seo.description} breadcrumbs={breadcrumbs}>
+  <Section spacing="tight" labelledby="privacy-heading">
+    {/*
+      `measure` on the block rather than a narrow container, for the reason `sxetika-me-mas.astro`
+      records: a narrow container centres the column, which leaves the body text starting well to
+      the right of the heading above it.
+    */}
+    <div class="measure">
+      <SectionHeading id="privacy-heading" as="h1" size="title" title={title} align="start" />
+
+      {
+        lead.map((paragraph) => (
+          <p class="mt-5 text-body-lg text-ink-muted text-pretty">{paragraph}</p>
+        ))
+      }
+    </div>
+  </Section>
+
+  <Section spacing="tight">
+    <div class="prose measure">
+      <Content />
+    </div>
+  </Section>
+</BaseLayout>

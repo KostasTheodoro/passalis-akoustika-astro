@@ -1,0 +1,110 @@
+---
+import { Icon } from 'astro-icon/components';
+import { BUSINESS, fullAddress } from '@/data/business';
+import { CONTACT } from '@/data/contact';
+import { EXTERNAL_LINKS } from '@/data/external-links';
+import { ICONS } from '@/data/icons';
+
+/**
+ * The map, behind a button.
+ *
+ * **The problem this solves.** The live site embeds Google Maps directly, and STEP-00 measured what
+ * that costs: over a hundred third-party requests on page load and third-party cookies set before
+ * the visitor has done anything, which is why Lighthouse's `third-party-cookies` audit fails on
+ * `/epikoinonia` in production today. On a phone that is the heaviest thing on the page, and it
+ * loads whether or not anybody looks at it.
+ *
+ * So nothing is requested from Google until the button is pressed. Before that, this is a panel
+ * drawn from the site's own tokens.
+ *
+ * **Why it is not a picture of a map.** A map tile is Google's, and the licensed way to serve a
+ * static one is the Maps Static API, which needs an API key, a billing account and a new external
+ * service. That was out of scope for STEP-08, so the placeholder is a designed panel carrying the
+ * address rather than a screenshot. The maintainer decides at review whether to keep it or buy the
+ * picture; swapping one for the other does not touch the loading mechanism.
+ *
+ * **The link out is not a fallback.** `accessibility.md` asks for a normal link to the map so the
+ * embed is never the only route, and it is useful in its own right: on a phone it opens the Maps
+ * app with directions, which is better than an iframe.
+ */
+/**
+ * No props. The section around it owns the heading and names itself with `aria-labelledby`, so
+ * this component only has to render the panel.
+ */
+---
+
+<div
+  class="overflow-hidden rounded-card-lg border border-border bg-brand-50 shadow-md"
+  data-map-facade
+>
+  {/*
+    A fixed aspect ratio, matching the embed that replaces it, so nothing on the page moves when the
+    map loads. Cumulative layout shift is 0 on every other route and this is the one component that
+    could change that.
+  */}
+  <div class="relative flex aspect-16/10 flex-col items-center justify-center gap-4 p-card text-center sm:aspect-21/9">
+    <Icon name={ICONS.mapPin} class="size-10 text-brand" aria-hidden="true" />
+
+    <div>
+      <p class="font-bold text-ink">{BUSINESS.name}</p>
+      <p class="mt-1 text-body text-ink-muted">{fullAddress}</p>
+    </div>
+
+    <button
+      type="button"
+      data-map-load
+      class="inline-flex h-11 items-center justify-center gap-2 rounded-pill border-2 border-brand-strong bg-brand-strong px-6 font-bold text-white transition-[color,background-color,border-color,transform] duration-(--duration-fast) ease-out hover:bg-surface hover:text-brand-strong motion-safe:hover:scale-[1.03] motion-safe:active:scale-[0.98]"
+    >
+      <Icon name={ICONS.mapPin} class="size-5 shrink-0" aria-hidden="true" />
+      {CONTACT.map.load}
+    </button>
+
+    <p class="max-w-sm text-small text-ink-muted">{CONTACT.map.note}</p>
+  </div>
+</div>
+
+<p class="mt-4 text-small">
+  <a
+    href={EXTERNAL_LINKS.googleMaps.place}
+    target="_blank"
+    rel="noopener noreferrer"
+    class="rounded-control font-bold text-brand-deep underline underline-offset-2 transition-colors duration-(--duration-fast) hover:text-ink"
+  >
+    {CONTACT.map.externalLabel}
+    <span class="sr-only"> (ανοίγει σε νέα καρτέλα)</span>
+  </a>
+</p>
+
+{/*
+  Twelve lines of inline script rather than an island. There is one button and one swap, so React
+  would mean shipping a framework to do `replaceChildren`.
+
+  The iframe is built in JavaScript rather than sitting in the markup with a `data-src`, because a
+  `src` that exists in the HTML at all is a request the browser may start early. Nothing about
+  Google is in the document until this runs.
+*/}
+<script is:inline define:vars={{ embed: EXTERNAL_LINKS.googleMaps.embed, title: EXTERNAL_LINKS.googleMaps.embedTitle }}>
+  document.querySelectorAll('[data-map-facade]').forEach((facade) => {
+    const button = facade.querySelector('[data-map-load]');
+    if (!button) return;
+
+    button.addEventListener('click', () => {
+      const frame = document.createElement('iframe');
+      frame.src = embed;
+      frame.title = title;
+      frame.loading = 'lazy';
+      frame.referrerPolicy = 'no-referrer-when-downgrade';
+      frame.className = 'block h-full w-full border-0';
+      frame.setAttribute('allowfullscreen', '');
+
+      const box = facade.firstElementChild;
+      if (!box) return;
+
+      box.replaceChildren(frame);
+
+      // The button that was just replaced held focus. Without moving it, focus falls back to the
+      // document and a keyboard user is returned silently to the top of the page.
+      frame.focus();
+    });
+  });
+</script>

@@ -39,9 +39,17 @@ function normalizeMessage(value: string): string {
     .trim();
 }
 
+/**
+ * Every field sets its message on the **type** as well as on the length rule.
+ *
+ * Without the first, a missing field falls through to Zod's own default and the visitor is shown
+ * `Invalid input: expected string, received undefined` in English, on a Greek site. The custom
+ * message on `.min(1)` never fires in that case, because the value never gets as far as being a
+ * short string. `no server error message is in English` in the schema tests pins this shut.
+ */
 const name = (missing: string) =>
   z
-    .string()
+    .string({ error: missing })
     .trim()
     .min(1, { error: missing })
     .max(FIELD_LIMITS.name, { error: CONTACT_ERRORS.nameTooLong });
@@ -56,7 +64,7 @@ export const contactSchema = z.strictObject({
    * pattern over a megabyte of text somebody pasted.
    */
   email: z
-    .string()
+    .string({ error: CONTACT_ERRORS.email })
     .trim()
     .toLowerCase()
     .max(FIELD_LIMITS.email, { error: CONTACT_ERRORS.emailTooLong })
@@ -71,7 +79,7 @@ export const contactSchema = z.strictObject({
    * keystroke, which rewrote `+30 210 612 9896` under the visitor's cursor.
    */
   telephone: z
-    .string()
+    .string({ error: CONTACT_ERRORS.telephone })
     .optional()
     .transform((value) => value?.trim() ?? '')
     .refine((value) => value === '' || TELEPHONE_PATTERN.test(value), {
@@ -89,8 +97,7 @@ export const contactSchema = z.strictObject({
    * `refine` above it has already ruled the empty case out.
    */
   enquiryType: z
-    .literal('')
-    .or(z.enum(ENQUIRY_TYPE_VALUES))
+    .union([z.literal(''), z.enum(ENQUIRY_TYPE_VALUES)], { error: CONTACT_ERRORS.enquiryType })
     .refine((value) => value !== '', { error: CONTACT_ERRORS.enquiryType })
     .transform((value) => value as EnquiryTypeValue),
 
@@ -100,7 +107,7 @@ export const contactSchema = z.strictObject({
    * nothing. Length is measured after normalization, so twenty newlines are not a message.
    */
   message: z
-    .string()
+    .string({ error: CONTACT_ERRORS.message })
     .transform(normalizeMessage)
     .pipe(
       z.string().superRefine((value, ctx) => {

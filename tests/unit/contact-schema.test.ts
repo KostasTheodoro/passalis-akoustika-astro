@@ -179,6 +179,48 @@ describe('the legacy client/server mismatch cannot recur', () => {
   );
 });
 
+describe('every message a visitor could see is in Greek', () => {
+  // Found by posting an empty body at the running endpoint: the server answered with
+  // "Invalid input: expected string, received undefined" for five of the six fields. A custom
+  // message on `.min(1)` never fires for a *missing* value, because the type check rejects it
+  // first, so each field needed its message on the type as well.
+  //
+  // This is a Greek site. An English validation message is a defect, not a rough edge.
+  const GREEK = /[Ͱ-Ͽἀ-῿]/;
+
+  const brokenPayloads: Record<string, unknown>[] = [
+    {},
+    validPayload({ firstName: undefined, lastName: undefined }),
+    validPayload({ firstName: 5, lastName: [], email: {}, message: null }),
+    validPayload({ enquiryType: undefined }),
+    validPayload({ enquiryType: 'not-a-real-option' }),
+    validPayload({ privacy: undefined }),
+    validPayload({ privacy: 'yes' }),
+    validPayload({ telephone: 42 }),
+    validPayload({ email: 'no-at-sign' }),
+    validPayload({ message: 'λίγο' }),
+    validPayload({ firstName: 'α'.repeat(FIELD_LIMITS.name + 1) }),
+    validPayload({ message: 'α'.repeat(FIELD_LIMITS.messageMax + 1) }),
+  ];
+
+  test.each(brokenPayloads.map((p, index) => [index, p] as const))(
+    'payload %i produces only Greek messages',
+    (_index, broken) => {
+      const result = parseContact(broken);
+      expect(result.ok).toBe(false);
+      if (result.ok) return;
+
+      for (const [field, message] of Object.entries(result.errors)) {
+        expect(GREEK.test(message), `${field} reported a non-Greek message: "${message}"`).toBe(
+          true,
+        );
+        expect(message, `${field} leaked a Zod default`).not.toContain('Invalid input');
+        expect(message, `${field} leaked a Zod default`).not.toContain('expected');
+      }
+    },
+  );
+});
+
 describe('the honeypot stays invisible', () => {
   test('a filled honeypot produces no field error a bot could read', () => {
     // Rejecting it here would name the field in the response, which tells a bot exactly which

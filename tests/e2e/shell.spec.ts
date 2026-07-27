@@ -296,6 +296,37 @@ test.describe('layout holds at every supported width', () => {
 });
 
 /**
+ * Every link in the header and the footer must actually go somewhere.
+ *
+ * Added in STEP-08 after a real miss: the privacy page was added to `FOOTER_NAV` before the page
+ * existed, which put a 404 in the footer of every route on the site, and the whole suite stayed
+ * green. Nothing walked the navigation and checked what it returned.
+ *
+ * This is cheap insurance against the most embarrassing kind of breakage, and it is why it lives in
+ * `shell.spec.ts` rather than beside the privacy page: the risk belongs to the navigation, not to
+ * any one destination.
+ */
+test.describe('navigation goes where it says', () => {
+  test('every header and footer destination returns 200', async ({ page, request }) => {
+    await page.goto('/');
+
+    const hrefs = await page.evaluate(() =>
+      [...document.querySelectorAll('header a[href^="/"], footer a[href^="/"]')].map((link) =>
+        link.getAttribute('href'),
+      ),
+    );
+
+    const unique = [...new Set(hrefs.filter((href): href is string => Boolean(href)))];
+    expect(unique.length, 'no internal navigation links were found').toBeGreaterThan(5);
+
+    for (const href of unique) {
+      const response = await request.get(href);
+      expect(response.status(), `${href} is linked but returns ${response.status()}`).toBe(200);
+    }
+  });
+});
+
+/**
  * The shell's own cross-origin guard lives in `home.spec.ts`, which asserts the same thing about
  * the same route. It is not repeated here.
  */

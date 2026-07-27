@@ -595,6 +595,54 @@ describe('text quality', () => {
     }
   });
 
+  test('no visitor-facing copy uses a machine-written phrase', () => {
+    // The same maintainer instruction as the em dash rule, widened during STEP-08 while writing the
+    // privacy notice. A privacy page is the easiest thing on a site to fill with translated
+    // boilerplate, and boilerplate is what this catches.
+    //
+    // Every entry is a phrase that reads as filler in Greek: it announces that something is about
+    // to be said instead of saying it. None of them appears in the client's own copy, which is the
+    // test of whether a rule like this is safe to apply to a site that already has text on it.
+    const tells = [
+      'εν κατακλείδι',
+      'αξίζει να σημειωθεί',
+      'αξίζει να αναφερθεί',
+      'είναι σημαντικό να τονίσουμε',
+      'είναι σημαντικό να σημειωθεί',
+      'στον σημερινό ψηφιακό κόσμο',
+      'στη σημερινή εποχή',
+      'στο σημερινό τοπίο',
+      'δεν είναι απλώς',
+      'ας εμβαθύνουμε',
+      'σε αυτό το άρθρο θα',
+      'συμπερασματικά',
+      'με λίγα λόγια',
+      'κάνει τη διαφορά',
+      'μια νέα εποχή',
+      'ξεκλειδώνει',
+      'βουτιά στον κόσμο',
+    ];
+
+    const dataFiles = readdirSync('src/data')
+      .filter((file) => extname(file) === '.ts')
+      .map((file) => join('src/data', file));
+
+    function stripComments(source: string, file: string): string {
+      if (extname(file) === '.ts') {
+        return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+      }
+      return source.replace(/^\s*#.*$/gm, '');
+    }
+
+    for (const file of [...allFiles, ...dataFiles]) {
+      const copy = stripComments(readFileSync(file, 'utf8'), file).toLowerCase();
+
+      for (const tell of tells) {
+        expect(copy.includes(tell), `${file} contains the filler phrase "${tell}"`).toBe(false);
+      }
+    }
+  });
+
   test('no word mixes Latin and Greek letters', () => {
     // Catches mojibake like the legacy "kanaλους", and part-Greek abbreviations such as the
     // legacy "ΙΙC" (Greek Ι + Greek Ι + Latin C). Abbreviations spelled *entirely* in Greek

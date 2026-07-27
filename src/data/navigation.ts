@@ -51,12 +51,14 @@ export const PRIMARY_NAV: NavItem[] = [
  * group here for it. The partner links fold into `Η εταιρεία` rather than standing alone, which
  * also balances the two columns at five links and six.
  *
- * The privacy page joins the end of `Η εταιρεία` in the same commit that creates the page, not
- * before: `ROUTES.privacy` exists as soon as the constant is declared, so linking it early would
- * put a 404 in the footer of every page on the site.
+ * The privacy page sits at the end of `Η εταιρεία`. `information-architecture.md` asks for it in
+ * the footer and `component-specifications.md` repeats it.
  *
- * It will not go in `PRIMARY_NAV`. A privacy notice is something a visitor looks for when they want
- * it, not a destination competing with the catalogue in the header.
+ * It is deliberately not in `PRIMARY_NAV`. A privacy notice is something a visitor goes looking for
+ * when they want it, not a destination competing with the catalogue in the header. The footer is
+ * also the only way to reach it without first opening the contact form, which is why
+ * `tests/unit/data.test.ts` pins the link in place: dropping it would leave the page reachable only
+ * by the checkbox that asks you to agree to it.
  */
 export const FOOTER_NAV: { heading: string; links: NavLink[] }[] = [
   {
@@ -78,6 +80,7 @@ export const FOOTER_NAV: { heading: string; links: NavLink[] }[] = [
       { label: 'Σχετικά με εμάς', href: ROUTES.about },
       { label: 'Συχνές Ερωτήσεις', href: ROUTES.faq },
       { label: 'Επικοινωνία', href: ROUTES.contact },
+      { label: 'Πολιτική Απορρήτου', href: ROUTES.privacy },
     ],
   },
 ];

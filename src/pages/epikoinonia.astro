@@ -1,0 +1,66 @@
+---
+import { ContactForm } from '@/components/forms/ContactForm';
+import BusinessContactList from '@/components/layout/BusinessContactList.astro';
+import type { BreadcrumbItem } from '@/components/navigation/Breadcrumbs.astro';
+import MapFacade from '@/components/sections/MapFacade.astro';
+import Card from '@/components/ui/Card.astro';
+import Section from '@/components/ui/Section.astro';
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import { CONTACT } from '@/data/contact';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+/**
+ * `/epikoinonia`, the last route in the plan to exist.
+ *
+ * Every other page on the site closes with a band pointing here, and until this shipped all of them
+ * pointed at a 404.
+ *
+ * The shape is the live site's: the heading and the shop's details on the left, the form card on
+ * the right, the map below. What has changed is that the details are rendered from `BUSINESS`
+ * through the same component the home page uses, rather than written out again, and that the map
+ * does not load until somebody asks for it.
+ *
+ * **The details column is not decoration.** The form needs JavaScript to submit, so on the one page
+ * where that matters the telephone, email and address sit beside it as a working alternative. It is
+ * also why they come first in the source order: with no JavaScript, a visitor reads a way to reach
+ * the shop before they reach a form that will not send.
+ *
+ * `client:idle` rather than `client:load`, so hydration waits for a free main thread, and rather
+ * than `client:visible`, so somebody who starts typing before React attaches does not lose it.
+ */
+const breadcrumbs: BreadcrumbItem[] = [{ label: CONTACT.heading }];
+---
+
+<BaseLayout title={CONTACT.seo.title} description={CONTACT.seo.description} breadcrumbs={breadcrumbs}>
+  <Section spacing="tight" labelledby="contact-heading">
+    <div class="grid items-start gap-10 lg:grid-cols-2 lg:gap-14">
+      <div class="flex flex-col gap-6">
+        <SectionHeading
+          id="contact-heading"
+          as="h1"
+          size="title"
+          title={CONTACT.heading}
+          align="start"
+        />
+
+        <p class="text-body-lg text-ink-muted text-pretty">{CONTACT.intro}</p>
+
+        <BusinessContactList />
+      </div>
+
+      {/*
+        The form sits on a white card against the page grey, which is the treatment the live site
+        gives it and the one the closing bands on every other route already use.
+      */}
+      <Card padding="lg" class="shadow-md">
+        <h2 class="sr-only">{CONTACT.form.label}</h2>
+        <ContactForm client:idle />
+      </Card>
+    </div>
+  </Section>
+
+  <Section spacing="tight" width="medium" labelledby="map-heading">
+    <SectionHeading id="map-heading" title={CONTACT.map.heading} align="start" class="mb-6" />
+    <MapFacade />
+  </Section>
+</BaseLayout>

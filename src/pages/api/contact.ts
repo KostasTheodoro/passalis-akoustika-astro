@@ -8,7 +8,7 @@ import {
 import type { APIRoute } from 'astro';
 import { CONTACT_STATUS, type ContactResponse } from '@/lib/forms/contact-response';
 import { parseContact } from '@/lib/forms/contact-schema';
-import { checkPayload, checkRequest, hashIp } from '@/lib/forms/guards';
+import { checkPayload, checkRequest, clientIp, hashIp } from '@/lib/forms/guards';
 import { deliverContact } from '@/lib/forms/mailer';
 import { checkRateLimit } from '@/lib/forms/rate-limit';
 
@@ -37,7 +37,7 @@ function json(body: ContactResponse, status: number): Response {
   });
 }
 
-export const POST: APIRoute = async ({ request, clientAddress }) => {
+export const POST: APIRoute = async ({ request }) => {
   if (!checkRequest(request, PUBLIC_SITE_URL)) {
     return json({ ok: false, reason: 'server' }, CONTACT_STATUS.server);
   }
@@ -58,7 +58,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   }
 
   const payload = parsed.data;
-  const fingerprint = hashIp(clientAddress ?? null);
+  const fingerprint = hashIp(clientIp(request));
 
   const guard = checkPayload(payload);
   if (guard.action === 'drop') {

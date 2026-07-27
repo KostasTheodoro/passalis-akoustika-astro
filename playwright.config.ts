@@ -19,14 +19,19 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  // Tests run against the real build output via `astro preview`, not `astro dev`.
-  // For a static build with an adapter that has no preview entrypoint, Astro serves
-  // `dist/` from its own static preview server, and the CLI stays in the foreground.
-  // `astro dev` is deliberately avoided: Astro detects AI-agent environments and runs
-  // the dev server as a detached background process, which leaves the port held and
-  // the test runner watching a process that has already exited.
+  // Tests run against the real build output, served by `scripts/preview-server.ts`.
+  //
+  // This used to be `astro preview`. STEP-08 added `/api/contact`, which makes the build
+  // hybrid, and the Vercel adapter has no preview entrypoint: `astro preview` now exits
+  // with "does not support the preview command". The replacement serves the prerendered
+  // HTML from `dist/client` and hands everything else to the actual bundled function, so
+  // the endpoint is exercised as deployed rather than mocked.
+  //
+  // `astro dev` remains deliberately avoided: Astro detects AI-agent environments and runs
+  // the dev server as a detached background process, which leaves the port held and the
+  // test runner watching a process that has already exited.
   webServer: {
-    command: `bun run build && bun run preview --port ${PORT}`,
+    command: `bun run build && bun run scripts/preview-server.ts --port ${PORT}`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
