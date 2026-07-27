@@ -1,6 +1,6 @@
 import { BUSINESS, fullAddress } from '@/data/business';
 import { ENQUIRY_TYPE_LABELS } from '@/data/contact';
-import { escape, layout, row, textFooter } from '@/emails/shared';
+import { escapeHtml, layout, row, textFooter } from '@/emails/shared';
 import type { ContactPayload } from '@/lib/forms/contact-schema';
 
 /**
@@ -36,8 +36,8 @@ export function buildVisitorAcknowledgement(payload: ContactPayload): VisitorAck
 
   const html = layout(
     'Λάβαμε το μήνυμά σας',
-    `<p style="margin:0 0 12px">Γεια σας ${escape(payload.firstName)},</p>
-<p style="margin:0 0 12px">Λάβαμε το μήνυμά σας με θέμα <strong>${escape(enquiry)}</strong> και θα σας απαντήσουμε σε αυτό το email.</p>
+    `<p style="margin:0 0 12px">Γεια σας ${escapeHtml(payload.firstName)},</p>
+<p style="margin:0 0 12px">Λάβαμε το μήνυμά σας με θέμα <strong>${escapeHtml(enquiry)}</strong> και θα σας απαντήσουμε σε αυτό το email.</p>
 <p style="margin:0 0 20px">Αν προτιμάτε, μπορείτε να μας τηλεφωνήσετε ή να περάσετε από το κατάστημα.</p>
 <table style="border-collapse:collapse;margin:0 0 12px">${details}</table>
 <p style="margin:20px 0 0;font-size:13px;color:#6e6a68">Δεν χρειάζεται να απαντήσετε σε αυτό το μήνυμα.</p>`,

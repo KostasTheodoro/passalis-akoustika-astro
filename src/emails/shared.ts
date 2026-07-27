@@ -3,14 +3,14 @@ import { BUSINESS, fullAddress } from '@/data/business';
 /**
  * The pieces both email templates are built from.
  *
- * Everything a visitor typed passes through `escape` before it reaches HTML. That is not optional
+ * Everything a visitor typed passes through `escapeHtml` before it reaches HTML. That is not optional
  * politeness: the owner notification puts a stranger's free text into a document that opens in the
  * shop's own mail client, and the message body is the one field where somebody can write whatever
  * they like. Escaping happens here, once, rather than being remembered at each interpolation.
  */
 
 /** The five characters that can change the meaning of surrounding markup. */
-export function escape(value: string): string {
+export function escapeHtml(value: string): string {
   return value
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -38,7 +38,7 @@ export function headerSafe(value: string, limit = 120): string {
 export function paragraphs(text: string): string {
   return text
     .split(/\n{2,}/)
-    .map((block) => `<p style="margin:0 0 12px">${escape(block).replace(/\n/g, '<br />')}</p>`)
+    .map((block) => `<p style="margin:0 0 12px">${escapeHtml(block).replace(/\n/g, '<br />')}</p>`)
     .join('');
 }
 
@@ -60,16 +60,16 @@ export function layout(title: string, body: string): string {
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>${escape(title)}</title>
+<title>${escapeHtml(title)}</title>
 </head>
 <body style="margin:0;padding:24px;background:#f7f7f6;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.6;color:#464342">
 <div style="max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #e4e2e0;border-radius:16px;padding:24px">
-<h1 style="margin:0 0 16px;font-size:20px;line-height:1.3;color:#0e8083">${escape(title)}</h1>
+<h1 style="margin:0 0 16px;font-size:20px;line-height:1.3;color:#0e8083">${escapeHtml(title)}</h1>
 ${body}
 </div>
 <p style="max-width:600px;margin:16px auto 0;font-size:13px;line-height:1.5;color:#6e6a68">
-${escape(BUSINESS.name)} &middot; ${escape(fullAddress)}<br />
-${escape(BUSINESS.telephone.display)} &middot; ${escape(BUSINESS.email)}
+${escapeHtml(BUSINESS.name)} &middot; ${escapeHtml(fullAddress)}<br />
+${escapeHtml(BUSINESS.telephone.display)} &middot; ${escapeHtml(BUSINESS.email)}
 </p>
 </body>
 </html>`;
@@ -91,7 +91,7 @@ export function textFooter(): string {
 /** One labelled row, for the owner's notification. */
 export function row(label: string, value: string): string {
   return `<tr>
-<td style="padding:6px 12px 6px 0;vertical-align:top;font-weight:bold;white-space:nowrap;color:#464342">${escape(label)}</td>
-<td style="padding:6px 0;vertical-align:top;color:#464342">${escape(value)}</td>
+<td style="padding:6px 12px 6px 0;vertical-align:top;font-weight:bold;white-space:nowrap;color:#464342">${escapeHtml(label)}</td>
+<td style="padding:6px 0;vertical-align:top;color:#464342">${escapeHtml(value)}</td>
 </tr>`;
 }

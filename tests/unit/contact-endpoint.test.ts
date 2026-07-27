@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, test } from 'bun:test';
 import { BUSINESS } from '@/data/business';
 import { ENQUIRY_TYPE_LABELS } from '@/data/contact';
 import { buildOwnerNotification } from '@/emails/owner-notification';
-import { escape, headerSafe } from '@/emails/shared';
+import { escapeHtml, headerSafe } from '@/emails/shared';
 import { buildVisitorAcknowledgement } from '@/emails/visitor-acknowledgement';
 import type { ContactPayload } from '@/lib/forms/contact-schema';
 import { checkPayload, checkRequest, hashIp, resetSubmissionHistory } from '@/lib/forms/guards';
@@ -310,8 +310,8 @@ describe('hostile input cannot escape the template', () => {
     expect(headerSafe('α'.repeat(500), 40)).toHaveLength(40);
   });
 
-  test('escape covers the five characters that matter', () => {
-    expect(escape(`<>&"'`)).toBe('&lt;&gt;&amp;&quot;&#39;');
+  test('escapeHtml covers the five characters that matter', () => {
+    expect(escapeHtml(`<>&"'`)).toBe('&lt;&gt;&amp;&quot;&#39;');
   });
 });
 
