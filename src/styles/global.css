@@ -154,6 +154,30 @@
   --duration-fast: 150ms;
   --duration-base: 220ms;
   --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  /**
+   * The privacy checkbox's tick, and the only keyframe animation on the site.
+   *
+   * It has to be an animation rather than a transition: Radix mounts the indicator only once the
+   * box is checked, and a transition on an element that has just appeared has no previous value to
+   * run from. The reduced-motion block below still governs it, because that block zeroes
+   * `animation-duration` as well as `transition-duration`.
+   *
+   * Ticking the box is the one deliberate act the form asks for before it will send anything, so a
+   * mark that draws itself is feedback rather than decoration.
+   */
+  --animate-check: check var(--duration-fast) var(--ease-out);
+
+  @keyframes check {
+    from {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
 }
 
 /**
