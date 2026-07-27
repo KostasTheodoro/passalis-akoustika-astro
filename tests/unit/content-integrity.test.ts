@@ -449,6 +449,85 @@ describe('long-form pages', () => {
     expect(body, 'the documents section no longer hedges').toContain('μπορεί να αλλάξουν');
   });
 
+  /**
+   * The privacy notice.
+   *
+   * These were written during STEP-08's corrections round, and the first of them closes a gap
+   * between what the previous `result.md` *claimed* and what existed: it said a test enforced the
+   * interpolation of the shop's details, and no such test had been written.
+   *
+   * The rest pin the sections that make the notice a real Article 13 disclosure rather than a
+   * paragraph of goodwill. Each is here because leaving it out is a specific, nameable failure.
+   */
+  const privacy = () => pages.find((page) => page.id === 'privacy');
+
+  test('the privacy notice reads the shop details rather than restating them', () => {
+    const body = privacy()?.body ?? '';
+    expect(body.length, 'the privacy page is missing').toBeGreaterThan(0);
+
+    // The whole reason this page is `.mdx`: the legacy site kept three copies of these and they had
+    // drifted apart by the time anybody looked.
+    expect(body).toContain('{BUSINESS.telephone.display}');
+    expect(body).toContain('{BUSINESS.email}');
+
+    expect(body, 'the shop telephone is hard-coded').not.toContain('210 612 9896');
+    expect(body, 'the shop email is hard-coded').not.toContain('akoustika.passalis@gmail.com');
+    expect(body, 'the street is hard-coded').not.toContain('Δολιανής 74');
+  });
+
+  test('the privacy notice names its controller', () => {
+    // Article 13(1)(a). A notice that never says who is responsible fails at its first job.
+    expect(privacy()?.body ?? '').toContain('{BUSINESS.legalEntityName}');
+  });
+
+  test('the privacy notice discloses what is logged automatically', () => {
+    // The endpoint hashes and stores the visitor's IP for rate limiting, and Vercel logs it as
+    // host. The first version of this notice did not mention either, which made it a notice that
+    // described less than the code did.
+    const body = privacy()?.body ?? '';
+
+    expect(body, 'automatic logging is not disclosed').toContain('Τι καταγράφεται αυτόματα');
+    expect(body).toContain('IP');
+    expect(body, 'the host is not named').toContain('Vercel');
+  });
+
+  test('the privacy notice covers every disclosure Article 13 asks for', () => {
+    const body = privacy()?.body ?? '';
+
+    const required: Record<string, string> = {
+      'Υπεύθυνος επεξεργασίας': 'controller identity, Art. 13(1)(a)',
+      'Νομική βάση': 'legal basis, Art. 13(1)(c)',
+      'Ποιοι άλλοι τα βλέπουν': 'recipients, Art. 13(1)(e)',
+      'τυποποιημένες συμβατικές ρήτρες': 'third-country safeguards, Art. 13(1)(f)',
+      'Πόσο καιρό τα κρατάμε': 'retention, Art. 13(2)(a)',
+      'Τα δικαιώματά σας': 'rights, Art. 13(2)(b)',
+      'Αρχή Προστασίας Δεδομένων': 'the supervisory authority, Art. 13(2)(d)',
+      'Είστε υποχρεωμένοι': 'whether provision is obligatory, Art. 13(2)(e)',
+      'Αυτοματοποιημένες αποφάσεις': 'automated decisions, Art. 13(2)(f)',
+      Ασφάλεια: 'security measures',
+      Ανήλικοι: 'children',
+    };
+
+    for (const [heading, why] of Object.entries(required)) {
+      expect(body.includes(heading), `the notice is missing ${why}`).toBe(true);
+    }
+  });
+
+  test('the privacy notice tells people not to send medical detail', () => {
+    // This is a hearing-aid shop. A free-text message is an obvious place to describe a condition,
+    // which is an Article 9 special category, and asking for less is better than promising more.
+    const body = privacy()?.body ?? '';
+
+    expect(body).toContain('ιατρικά στοιχεία');
+    expect(body, 'Article 9 is not named').toContain('άρθρου 9');
+  });
+
+  test('the privacy notice states a retention period rather than a feeling', () => {
+    // "As long as necessary" is the phrasing that makes a notice look unserious. A reader should
+    // be able to work out when their message goes away.
+    expect(privacy()?.body ?? '').toContain('έξι μήνες');
+  });
+
   test("the about page's introduction survived the move into `lead`", () => {
     // STEP-07 moved these two paragraphs out of the Markdown body and into frontmatter so the
     // template could set them beside the photo grid. They are the client's words and the move was

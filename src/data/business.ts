@@ -11,6 +11,19 @@ export const BUSINESS = {
   legalName: 'Passalis Hearing Aids',
 
   /**
+   * The registered name of the business, as it appears on invoices and in ΓΕΜΗ.
+   *
+   * **This is a placeholder and must be replaced before production.** The privacy notice names it as
+   * the data controller, which is the first thing GDPR Article 13 asks a notice to say, and a
+   * trading name does not identify a legal person. The Google listing shows `ΠΑΣΣΑΛΗΣ Η. -
+   * ΑΚΟΥΣΤΙΚΑ ΒΑΡΗΚΟΪΑΣ`, but a listing name is not a registered name and guessing on a legal notice
+   * is worse than leaving this obvious.
+   *
+   * Changing it is one string. Nothing else has to move.
+   */
+  legalEntityName: 'Πασσαλής Ακουστικά',
+
+  /**
    * Canonical production URL, without a trailing slash. STEP-09 decides how preview
    * deployments override this via `PUBLIC_SITE_URL`.
    */
