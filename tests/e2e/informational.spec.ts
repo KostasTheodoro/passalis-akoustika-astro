@@ -417,6 +417,41 @@ test.describe('the contact band', () => {
    * The EOPYY page ends with the client's own call to action from its `cta` frontmatter. A second
    * band under it would be two of the same thing in a row.
    */
+  /**
+   * The prose interpolates these four figures out of the page's own `subsidy` frontmatter rather
+   * than restating them, so the unit test that used to compare prose against frontmatter has
+   * nothing left to compare. This is what replaces it: the numbers a visitor actually reads,
+   * checked against the one place they are written.
+   *
+   * They are external policy figures on a page about reimbursement. Rendering the wrong amount is
+   * a real harm to someone deciding whether they can afford a hearing aid, not a typo.
+   */
+  test('the EOPYY page renders the figures its frontmatter holds', async ({ page }) => {
+    const source = readFileSync('src/content/pages/eopyy.mdx', 'utf8');
+    const read = (field: string) => source.match(new RegExp(`${field}:\\s*(\\d+)`))?.[1];
+
+    const adult = read('adultAmount');
+    const child = read('childAmount');
+    const maxAge = read('childMaxAge');
+    const renewal = read('renewalYears');
+
+    expect(
+      adult && child && maxAge && renewal,
+      'eopyy.mdx is missing a subsidy figure',
+    ).toBeTruthy();
+
+    await page.goto(ROUTES.eopyy);
+    const prose = page.locator('main .prose');
+
+    await expect(prose).toContainText(`${adult}€`);
+    await expect(prose).toContainText(`${child}€`);
+    await expect(prose).toContainText(`${maxAge} ετών`);
+    await expect(prose).toContainText(`${renewal} έτη`);
+
+    // The interpolation must not have leaked its own source into the page.
+    await expect(prose).not.toContainText('frontmatter.');
+  });
+
   test('the EOPYY page uses the client CTA instead of a second band', async ({ page }) => {
     await page.goto(ROUTES.eopyy);
 

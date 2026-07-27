@@ -406,7 +406,14 @@ describe('image sources', () => {
 });
 
 describe('long-form pages', () => {
-  test('the EOPYY figures in frontmatter also appear in the prose', () => {
+  test('the EOPYY prose reads its figures from frontmatter rather than restating them', () => {
+    // This used to assert that the numbers written in the prose matched the numbers in
+    // frontmatter, which is a test standing guard over a duplication. Now the prose interpolates
+    // the frontmatter, so there is one source and nothing left to drift, and what is worth
+    // checking is that it stays that way.
+    //
+    // The rendered figures are covered separately, in the browser, on both pages that show them:
+    // `home.spec.ts` for the card and `informational.spec.ts` for this page.
     const eopyy = pages.find((page) => page.id === 'eopyy');
     expect(eopyy, 'src/content/pages/eopyy.mdx is missing').toBeDefined();
 
@@ -414,18 +421,21 @@ describe('long-form pages', () => {
     expect(subsidy, 'eopyy.mdx is missing its subsidy frontmatter').toBeDefined();
 
     const body = eopyy?.body ?? '';
-    expect(body, 'the adult amount is not stated in the prose').toContain(
-      `${subsidy?.adultAmount}€`,
-    );
-    expect(body, 'the child amount is not stated in the prose').toContain(
-      `${subsidy?.childAmount}€`,
-    );
-    expect(body, 'the child age limit is not stated in the prose').toContain(
-      `${subsidy?.childMaxAge} ετών`,
-    );
-    expect(body, 'the renewal period is not stated in the prose').toContain(
-      `${subsidy?.renewalYears} έτη`,
-    );
+
+    for (const field of ['adultAmount', 'childAmount', 'childMaxAge', 'renewalYears']) {
+      expect(body, `the prose does not interpolate subsidy.${field}`).toContain(
+        `{frontmatter.subsidy.${field}}`,
+      );
+    }
+
+    // A literal amount in the prose means someone has written a number back in beside the
+    // interpolation, which is the drift this arrangement exists to prevent.
+    for (const amount of [subsidy?.adultAmount, subsidy?.childAmount]) {
+      expect(
+        body,
+        `the prose hard-codes ${amount}€ instead of reading it from frontmatter`,
+      ).not.toContain(`${amount}€`);
+    }
   });
 
   test('the EOPYY page still explains the documents and the steps', () => {
