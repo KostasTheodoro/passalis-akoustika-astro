@@ -24,16 +24,34 @@ interface Entry {
   body: string;
 }
 
-function readCollection(collection: string, extension: '.yaml' | '.md'): Entry[] {
+/** Prose bodies. Both are accepted so a rename between them cannot quietly change what is read. */
+const BODY_EXTENSIONS = ['.md', '.mdx'];
+
+/**
+ * Reads a collection off disk.
+ *
+ * `kind` is the *sort* of file rather than a literal extension, and that distinction is
+ * load-bearing. This used to take an exact extension and filter on equality, which meant STEP-08's
+ * rename of the prose bodies from `.md` to `.mdx` would have made `readCollection('faqs', '.md')`
+ * return an empty array.
+ *
+ * `collection shape › every collection has entries` would have caught that, so the failure would
+ * have been loud rather than silent. What it would *not* have caught is a **partial** rename: move
+ * ten of the fourteen FAQ files and the collection is still non-empty, so every check below quietly
+ * runs over a subset. That is what the expected-count assertions further down close.
+ */
+function readCollection(collection: string, kind: 'yaml' | 'body'): Entry[] {
   const directory = join(CONTENT_ROOT, collection);
+  const wanted = kind === 'yaml' ? ['.yaml'] : BODY_EXTENSIONS;
 
   return readdirSync(directory)
-    .filter((file) => extname(file) === extension)
+    .filter((file) => wanted.includes(extname(file)))
     .map((file) => {
       const path = join(directory, file);
       const raw = readFileSync(path, 'utf8');
+      const extension = extname(file);
 
-      if (extension === '.yaml') {
+      if (kind === 'yaml') {
         return {
           id: basename(file, extension),
           file: path,
@@ -55,11 +73,11 @@ function readCollection(collection: string, extension: '.yaml' | '.md'): Entry[]
     });
 }
 
-const hearingTypes = readCollection('hearing-types', '.yaml');
-const hearingModels = readCollection('hearing-models', '.yaml');
-const providers = readCollection('providers', '.yaml');
-const faqs = readCollection('faqs', '.md');
-const pages = readCollection('pages', '.md');
+const hearingTypes = readCollection('hearing-types', 'yaml');
+const hearingModels = readCollection('hearing-models', 'yaml');
+const providers = readCollection('providers', 'yaml');
+const faqs = readCollection('faqs', 'body');
+const pages = readCollection('pages', 'body');
 
 /**
  * `globallyOrdered` marks the collections whose `order` is unique across the whole collection.
@@ -78,6 +96,30 @@ describe('collection shape', () => {
   test('every collection has entries', () => {
     for (const { name, entries } of collections) {
       expect(entries.length, `${name} is empty`).toBeGreaterThan(0);
+    }
+  });
+
+  test('every file on disk is actually read as an entry', () => {
+    // The guard above only proves a collection is not *empty*. This one proves nothing is being
+    // skipped: a file whose extension no reader recognises is not a failing entry, it is an
+    // invisible one, and it surfaces as a missing page rather than as an error.
+    //
+    // The same reasoning is why `content.config.ts` globs `**/*.{md,mdx}` rather than `**/*.mdx`.
+    // A permissive glob plus this assertion fails loudly and by name; a strict glob fails silently.
+    for (const { name, entries } of collections) {
+      const onDisk = readdirSync(join(CONTENT_ROOT, name)).filter((file) => !file.startsWith('.'));
+
+      const unread = onDisk.filter(
+        (file) =>
+          !entries.some(
+            (entry) => entry.file.endsWith(`/${file}`) || entry.file.endsWith(`\\${file}`),
+          ),
+      );
+
+      expect(unread, `${name} has files that no reader picks up: ${unread.join(', ')}`).toEqual([]);
+      expect(entries.length, `${name} entry count does not match its directory`).toBe(
+        onDisk.length,
+      );
     }
   });
 
