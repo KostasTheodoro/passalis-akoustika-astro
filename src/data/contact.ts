@@ -117,9 +117,16 @@ export const CONTACT = {
 
   heading: 'Επικοινωνία',
 
-  /** The live site's paragraph, unchanged. */
+  /**
+   * The live site's paragraph, with one word removed.
+   *
+   * Production says `Συμπληρώστε την παρακάτω φόρμα`. On this layout the form sits *beside* the
+   * text above 1024px and below it under that, so `παρακάτω` is wrong on half the screens it is
+   * read on. Maintainer instruction during STEP-08's review; recorded because DEC-008 preserves the
+   * client's copy by default and every departure has to be listed.
+   */
   intro:
-    'Η ομάδα μας είναι πάντα στη διάθεσή σας για να απαντήσει σε κάθε σας ερώτηση για τα προϊόντα και τις υπηρεσίες μας. Συμπληρώστε την παρακάτω φόρμα ή επικοινωνήστε μαζί μας μέσω τηλεφώνου ή email.',
+    'Η ομάδα μας είναι πάντα στη διάθεσή σας για να απαντήσει σε κάθε σας ερώτηση για τα προϊόντα και τις υπηρεσίες μας. Συμπληρώστε τη φόρμα ή επικοινωνήστε μαζί μας μέσω τηλεφώνου ή email.',
 
   form: {
     /** Names the form for assistive technology, since the page has no second form to confuse it. */

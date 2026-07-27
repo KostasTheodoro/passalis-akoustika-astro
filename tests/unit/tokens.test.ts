@@ -118,6 +118,37 @@ describe('contrast ratios', () => {
   });
 
   /**
+   * The contact form's fields draw a teal focus ring instead of the site-wide ink outline, which is
+   * the one place anything opts out of `global.css`'s single focus treatment. It was restored to
+   * match the live site on maintainer instruction during STEP-08's review.
+   *
+   * An exception like that is only defensible while it stays *at least as visible* as what it
+   * replaced is required to be, so the numbers are recomputed here rather than trusted.
+   *
+   * The live site uses the identity teal for this. We use `brand-strong`: the two read the same and
+   * one of them is measurably better, so the difference is recorded here as intent rather than
+   * being mistaken later for drift.
+   */
+  test('the form field focus ring is a valid focus indicator', () => {
+    // WCAG 2.2 SC 1.4.11: a focus indicator needs 3:1 against what sits next to it. The form card is
+    // `--color-surface`, and the ring is drawn against the field interior and the card, both white.
+    const ring = contrast(token('color-brand-strong'), token('color-surface'));
+    expect(ring, `the focus ring is ${ring.toFixed(2)}:1 on the form card`).toBeGreaterThanOrEqual(
+      AA_LARGE,
+    );
+
+    // The resting border is the identity teal and is a component boundary, so it has the same bar.
+    const border = contrast(token('color-brand'), token('color-surface'));
+    expect(
+      border,
+      `the resting field border is ${border.toFixed(2)}:1 on the form card`,
+    ).toBeGreaterThanOrEqual(AA_LARGE);
+
+    // And the ring must actually be the stronger of the two, or choosing it bought nothing.
+    expect(ring).toBeGreaterThan(border);
+  });
+
+  /**
    * `--color-brand-strong` is the exception, and this test is the record of it: it clears AA on
    * white and nowhere else. It is correct behind a white button face, in the footer, and on any
    * `bg-surface` card — and wrong for text sitting straight on `--color-page`. Anything that needs

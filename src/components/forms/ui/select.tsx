@@ -1,4 +1,5 @@
 import type * as React from 'react';
+import { FIELD_STATES } from '@/components/forms/ui/input';
 import { cn } from '@/lib/utils';
 
 /**
@@ -27,12 +28,8 @@ function Select({ className, children, ...props }: React.ComponentProps<'select'
       <select
         data-slot="select"
         className={cn(
-          'flex h-11 w-full appearance-none rounded-control border border-border-strong bg-surface',
-          'py-1 pl-3 pr-10 text-body text-ink shadow-sm outline-none',
-          'transition-colors duration-(--duration-fast)',
-          'hover:border-brand',
-          'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-60',
-          'aria-invalid:border-error aria-invalid:border-2',
+          'flex h-11 w-full appearance-none rounded-control py-1 pl-3 pr-10 text-body',
+          FIELD_STATES,
           // The placeholder option carries an empty value, so an untouched control is invalid and
           // reads as muted. Once something real is chosen it turns into ordinary body text.
           'invalid:text-ink-muted',

@@ -30,13 +30,16 @@ function Checkbox({ className, ...props }: React.ComponentProps<typeof CheckboxP
     <CheckboxPrimitive.Root
       data-slot="checkbox"
       className={cn(
-        'peer size-5 shrink-0 rounded-control border-2 border-border-strong bg-surface shadow-sm',
-        'grid place-content-center transition-colors duration-(--duration-fast)',
-        'hover:border-brand',
+        'peer size-5 shrink-0 rounded-control border-2 border-brand bg-surface shadow-sm',
+        'grid place-content-center transition-[color,border-color,box-shadow] duration-(--duration-fast)',
+        'hover:border-brand-strong',
+        // The same teal ring the text fields take, for the same reason: this sits inside the form
+        // card with them, and one control focusing differently from its neighbours looks broken.
+        'outline-none focus-visible:ring-2 focus-visible:ring-brand-strong',
         'data-[state=checked]:border-brand-strong data-[state=checked]:bg-brand-strong',
         'data-[state=checked]:text-white',
         'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-60',
-        'aria-invalid:border-error',
+        'aria-invalid:border-error aria-invalid:focus-visible:ring-error',
         className,
       )}
       {...props}

@@ -221,6 +221,25 @@ body {
 }
 
 /**
+ * The one exception to the rule above, and it is deliberate: **the contact form's fields draw a teal
+ * ring instead of this ink outline.**
+ *
+ * They opt out in their own components, not here, by setting `outline-none` and a
+ * `focus-visible:ring-2` — see `FIELD_STATES` in `src/components/forms/ui/input.tsx`, which is the
+ * single place all of them read it from.
+ *
+ * Two things a future reader should know before "fixing" the inconsistency:
+ *
+ * 1. **It is what the live site does**, restored on maintainer instruction during STEP-08's review.
+ *    Production draws a teal border at rest and a teal ring on focus. The ink outline is right for
+ *    the header and the footer, and reads as harsh and foreign inside a white form card.
+ * 2. **It is not weaker.** The ring is `--color-brand-strong`, which measures 4.74:1 on white
+ *    against the 3:1 that WCAG 1.4.11 asks of a focus indicator. `tokens.test.ts` recomputes it.
+ *
+ * Nothing else on the site removes an outline, and nothing else should.
+ */
+
+/**
  * Greek typography: never uppercase Greek text. Uppercasing drops the tonos (ΑΚΟΥΣΤΙΚΆ becomes
  * ΑΚΟΥΣΤΙΚΑ) and costs real legibility, so small letter-spaced bold sentence case does the job
  * that `text-transform: uppercase` does in an English design.
