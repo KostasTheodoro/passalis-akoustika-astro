@@ -12,16 +12,16 @@ import { FOOTER_NAV } from '@/data/navigation';
  *
  * The live site's footer is a single teal strip with a copyright line in English. This keeps that
  * strip — it is the one piece of the footer anyone would recognise — and puts a proper footer
- * above it: the logo and a one-line description, then the two navigation columns, then the
- * address and telephone on one line.
+ * above it: the logo, a one-line description and the shop's address and telephone in the first
+ * column, then the two navigation columns.
  *
  * **That last line has been removed and put back, deliberately, and the history matters.** It was a
  * full third column of opening hours, telephone, email and address until STEP-05, when the
  * maintainer removed it: the home page's closing band renders the same four values and repeating
  * them under every page was too much of the same thing.
  *
- * STEP-09 restored the address and telephone alone, on one line, for a reason the earlier decision
- * did not have in front of it. The `HearingAidStore` structured data emits the shop's name, address
+ * STEP-09 restored the address and telephone alone, beneath the logo, for a reason the earlier
+ * decision did not have in front of it. The `HearingAidStore` structured data emits the shop's name, address
  * and telephone on every route, and `specifications/seo.md` asks that structured data describe what
  * the page shows. Without this line, twelve of the fourteen routes showed neither below 1024px. For
  * local search a visible NAP is also worth more than the markup on its own.
@@ -42,6 +42,32 @@ const year = new Date().getFullYear();
         <p class="max-w-xs text-small text-ink-muted">
           Ακουστικά βαρηκοΐας, έλεγχος ακοής και υποστήριξη στο Μαρούσι.
         </p>
+
+        {/*
+          The address and telephone belong under the logo rather than in a band of their own: this
+          column is already the one that says who the business is, and the sentence above it names
+          the locality. As a full-width row they read as a separate section for no reason.
+        */}
+        <div class="flex flex-col items-start gap-2.5 text-small">
+          <a
+            href={EXTERNAL_LINKS.googleMaps.place}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 rounded-control text-ink transition-colors duration-(--duration-fast) hover:text-brand-strong"
+          >
+            <Icon name={ICONS.mapPin} class="size-4 shrink-0 text-brand" aria-hidden="true" />
+            <span>{fullAddress}</span>
+            <span class="sr-only">— άνοιγμα στους χάρτες Google</span>
+          </a>
+
+          <a
+            href={BUSINESS.telephone.href}
+            class="inline-flex items-center gap-2 whitespace-nowrap rounded-control text-ink transition-colors duration-(--duration-fast) hover:text-brand-strong"
+          >
+            <Icon name={ICONS.phone} class="size-4 shrink-0 text-brand" aria-hidden="true" />
+            {BUSINESS.telephone.display}
+          </a>
+        </div>
       </div>
 
       {
@@ -65,29 +91,6 @@ const year = new Date().getFullYear();
         ))
       }
 
-    </div>
-
-    <div
-      class="mt-10 flex flex-col gap-3 border-t border-border pt-6 text-small sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-8"
-    >
-      <a
-        href={EXTERNAL_LINKS.googleMaps.place}
-        target="_blank"
-        rel="noopener noreferrer"
-        class="inline-flex items-center gap-2 rounded-control text-ink transition-colors duration-(--duration-fast) hover:text-brand-strong"
-      >
-        <Icon name={ICONS.mapPin} class="size-4 shrink-0 text-brand" aria-hidden="true" />
-        <span>{fullAddress}</span>
-        <span class="sr-only">— άνοιγμα στους χάρτες Google</span>
-      </a>
-
-      <a
-        href={BUSINESS.telephone.href}
-        class="inline-flex items-center gap-2 whitespace-nowrap rounded-control text-ink transition-colors duration-(--duration-fast) hover:text-brand-strong"
-      >
-        <Icon name={ICONS.phone} class="size-4 shrink-0 text-brand" aria-hidden="true" />
-        {BUSINESS.telephone.display}
-      </a>
     </div>
   </Container>
 
