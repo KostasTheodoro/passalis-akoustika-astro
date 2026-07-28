@@ -145,6 +145,19 @@ describe('brand and public files', () => {
     expect(favicon).toContain('viewBox="0 0 512 512"');
   });
 
+  test('the favicon is a disc, matching the .ico the live site serves', () => {
+    // This shipped wrong once and was invisible in review. `favicon.ico` came over from the live
+    // site byte for byte and its frames are circular; the SVG was drawn separately as a square
+    // white tile. Because every modern browser prefers the SVG over the `.ico`, the square is what
+    // the tab showed on every page of the site.
+    const favicon = readFileSync(join(PUBLIC, 'favicon.svg'), 'utf8');
+
+    expect(favicon).toContain('<circle cx="256" cy="256" r="256"');
+    expect(favicon, 'a full-bleed rect is the square tile this replaced').not.toMatch(
+      /<rect[^>]*width="512"[^>]*height="512"/,
+    );
+  });
+
   test('public holds only the fixed-URL files', () => {
     const found = walk(PUBLIC)
       .map((file) => posix.join(...relative(PUBLIC, file).split(/[/\\]/)))
