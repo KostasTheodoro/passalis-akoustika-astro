@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { readdirSync, readFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
+import { THEME_COLOR } from '@/data/theme';
 import { cn } from '@/lib/utils';
 
 /**
@@ -231,6 +232,13 @@ describe('token discipline', () => {
         /^#[0-9a-f]{6}$/i,
       );
     }
+  });
+
+  test('the one hex outside the stylesheet still equals the token', () => {
+    // `<meta name="theme-color">` takes a colour value, not a `var()`, so the identity teal has to
+    // exist as a literal in TypeScript exactly once. `src/data/theme.ts` is that once, and this is
+    // what stops it drifting when the palette moves.
+    expect(THEME_COLOR.toLowerCase()).toBe(token('color-brand').toLowerCase());
   });
 
   test('no component hard-codes a colour', () => {

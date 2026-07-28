@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { BUSINESS, fullAddress } from '@/data/business';
 import { CATALOGUE } from '@/data/catalogue';
+import { CONTACT } from '@/data/contact';
 import { HOME } from '@/data/home';
 import { FOOTER_NAV, PRIMARY_NAV } from '@/data/navigation';
 import { ROUTES } from '@/data/routes';
@@ -34,6 +35,30 @@ describe('business details', () => {
     expect(fullAddress).toContain(BUSINESS.address.street);
     expect(fullAddress).toContain(BUSINESS.address.locality);
     expect(fullAddress).toContain(BUSINESS.address.postalCode);
+  });
+
+  test('the shop’s coordinates sit inside Attica', () => {
+    // Read off the business's own Google Maps place URL. A transposed pair or a lost minus sign
+    // would put the shop in the sea, and `LocalBusiness` markup would carry it to Google.
+    expect(BUSINESS.geo.latitude).toBeGreaterThan(37.8);
+    expect(BUSINESS.geo.latitude).toBeLessThan(38.3);
+    expect(BUSINESS.geo.longitude).toBeGreaterThan(23.5);
+    expect(BUSINESS.geo.longitude).toBeLessThan(24.1);
+  });
+
+  test('every locality in the service area is named in the contact page’s own copy', () => {
+    // `areaServed` in the `HearingAidStore` markup is built from `serviceAreaPlaces`.
+    // `specifications/seo.md` rules out claims the visible content does not support, so adding a
+    // locality to the list means adding it to the sentence a visitor actually reads.
+    for (const place of BUSINESS.serviceAreaPlaces) {
+      // Greek declines place names, so compare on the stem rather than the nominative form.
+      const stem = place.slice(0, -1);
+      expect(CONTACT.serviceArea, `${place} is claimed but never mentioned`).toContain(stem);
+    }
+  });
+
+  test('the service area leads with the shop’s own locality', () => {
+    expect(BUSINESS.serviceAreaPlaces[0]).toBe(BUSINESS.address.locality);
   });
 
   test('opening hours are well formed and open before they close', () => {
