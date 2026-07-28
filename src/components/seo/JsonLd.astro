@@ -1,0 +1,27 @@
+---
+import type { Schema } from '@/lib/seo/schema';
+
+/**
+ * One JSON-LD block.
+ *
+ * `set:html` is what puts the JSON inside the script element unescaped, which is required — HTML
+ * entity escaping would make it invalid JSON. That means this component is responsible for the one
+ * thing that could go wrong: a `<` in the data closing the script early. Nothing we emit contains
+ * one today, but the data is Greek prose from content files and a future FAQ answer could.
+ *
+ * The three replacements below are the standard mitigation. They are inside a JSON string literal,
+ * so `<` is the same character to any parser and the byte sequence `</script` can never appear.
+ */
+interface Props {
+  schema: Schema;
+}
+
+const { schema }: Props = Astro.props;
+
+const json = JSON.stringify(schema)
+  .replace(/</g, '\\u003c')
+  .replace(/>/g, '\\u003e')
+  .replace(/&/g, '\\u0026');
+---
+
+<script type="application/ld+json" is:inline set:html={json} />

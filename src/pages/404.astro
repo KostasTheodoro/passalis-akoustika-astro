@@ -20,8 +20,10 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
  * the two places a lost visitor most likely wanted.
  *
  * The four strings are here rather than in `src/data/`, because one page with four strings and no
- * second reader does not need a data file. STEP-09 owns this page's `noindex` and canonical, as it
- * does for every other route.
+ * second reader does not need a data file.
+ *
+ * `indexable={false}` gives it `noindex, follow` and no canonical at all. The live site's 404
+ * canonicalises to the homepage, which tells Google the two are the same page.
  */
 const NOT_FOUND = {
   title: 'Η σελίδα δεν βρέθηκε',
@@ -32,7 +34,7 @@ const NOT_FOUND = {
 } as const;
 ---
 
-<BaseLayout title={NOT_FOUND.title} description={NOT_FOUND.description}>
+<BaseLayout title={NOT_FOUND.title} description={NOT_FOUND.description} indexable={false}>
   <Section labelledby="not-found-heading">
     <SectionHeading
       id="not-found-heading"

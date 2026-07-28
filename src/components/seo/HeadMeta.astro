@@ -1,0 +1,72 @@
+---
+import { PUBLIC_GOOGLE_SITE_VERIFICATION } from 'astro:env/client';
+import { BUSINESS } from '@/data/business';
+import { THEME_COLOR } from '@/data/theme';
+import { absoluteUrl } from '@/lib/seo/urls';
+
+/**
+ * Everything in the document head that describes the page to something other than a browser.
+ *
+ * Canonicals are built from `BUSINESS.canonicalUrl` rather than `Astro.url`, deliberately. A
+ * preview deployment that canonicalised to itself would be asking Google to index the preview
+ * instead of production, and the site's identity should not depend on where a build happens to run.
+ */
+interface Props {
+  title: string;
+  description?: string;
+  /** The route's own path, e.g. `/akoustika/cic`. */
+  path: string;
+  /** `/404` opts out: it must never be indexed and has no canonical of its own. */
+  indexable?: boolean;
+}
+
+const { title, description, path, indexable = true }: Props = Astro.props;
+
+const canonical = absoluteUrl(path);
+
+/**
+ * The same 1200×630 image the live site has always used, carried over byte for byte. There is no
+ * per-page variant: one accurate picture of the shop beats eleven generated cards nobody checks.
+ */
+const socialImage = absoluteUrl('/og/default.jpg');
+---
+
+{/* The live site's 404 canonicalises to the homepage, which tells Google they are the same page. */}
+{indexable && <link rel="canonical" href={canonical} />}
+<meta name="robots" content={indexable ? 'index, follow' : 'noindex, follow'} />
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content={BUSINESS.name} />
+<meta property="og:locale" content={BUSINESS.locale} />
+<meta property="og:title" content={title} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={socialImage} />
+<meta property="og:image:type" content="image/jpeg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={BUSINESS.name} />
+{description && <meta property="og:description" content={description} />}
+
+{/* No `twitter:site` or `twitter:creator`: the business has no accounts to name. */}
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:image" content={socialImage} />
+{description && <meta name="twitter:description" content={description} />}
+
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content={THEME_COLOR} />
+
+{/*
+  Carried over from the live site's head, where it is the only verification tag present.
+
+  Search Console is verified some other way — DNS TXT, a file, or the Analytics method — and
+  nothing on record says which. `PUBLIC_GOOGLE_SITE_VERIFICATION` exists so that if the method
+  turns out not to survive the change of host, re-verifying at cutover is a dashboard entry rather
+  than a code change.
+*/}
+<meta name="msvalidate.01" content="7052D126EF24449A4DF24841FFCD2A38" />
+{
+  PUBLIC_GOOGLE_SITE_VERIFICATION && (
+    <meta name="google-site-verification" content={PUBLIC_GOOGLE_SITE_VERIFICATION} />
+  )
+}

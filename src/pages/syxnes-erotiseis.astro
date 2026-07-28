@@ -7,6 +7,7 @@ import SectionHeading from '@/components/ui/SectionHeading.astro';
 import { INFORMATIONAL } from '@/data/informational';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getFaqs } from '@/lib/content/collections';
+import { faqPage } from '@/lib/seo/schema';
 
 /**
  * `/syxnes-erotiseis`.
@@ -22,9 +23,29 @@ const faqs = await getFaqs();
 
 const breadcrumbs: BreadcrumbItem[] = [{ label: 'Συχνές Ερωτήσεις' }];
 const { seo, heading, contact } = INFORMATIONAL.faq;
+
+/**
+ * `FAQPage` from the same fourteen entries the accordion renders.
+ *
+ * `entry.body` is the raw MDX, so it goes through `toPlainText` — one answer now carries a link and
+ * the raw source and the visible sentence are no longer the same string. `tests/e2e/seo.spec.ts`
+ * compares every `acceptedAnswer` against the text the browser actually paints, so a body that
+ * grows syntax the stripper does not understand fails a test rather than shipping a wrong answer.
+ *
+ * The answers stay in the DOM when a panel is collapsed, which is what makes this truthful: the
+ * markup is not describing content a visitor cannot reach.
+ */
+const faqSchema = faqPage(
+  faqs.map((faq) => ({ question: faq.data.question, answer: faq.body ?? '' })),
+);
 ---
 
-<BaseLayout title={seo.title} description={seo.description} breadcrumbs={breadcrumbs}>
+<BaseLayout
+  title={seo.title}
+  description={seo.description}
+  breadcrumbs={breadcrumbs}
+  schemas={[faqSchema]}
+>
   <Section spacing="tight" width="narrow" labelledby="faq-heading">
     <SectionHeading id="faq-heading" as="h1" size="title" title={heading} />
 

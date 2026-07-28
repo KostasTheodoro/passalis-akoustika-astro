@@ -8,6 +8,7 @@ import Section from '@/components/ui/Section.astro';
 import SectionHeading from '@/components/ui/SectionHeading.astro';
 import { CONTACT } from '@/data/contact';
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import { contactPage } from '@/lib/seo/schema';
 
 /**
  * `/epikoinonia`, the last route in the plan to exist.
@@ -29,9 +30,19 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
  * than `client:visible`, so somebody who starts typing before React attaches does not lose it.
  */
 const breadcrumbs: BreadcrumbItem[] = [{ label: CONTACT.heading }];
+
+const schema = contactPage({
+  name: CONTACT.heading,
+  description: CONTACT.seo.description,
+});
 ---
 
-<BaseLayout title={CONTACT.seo.title} description={CONTACT.seo.description} breadcrumbs={breadcrumbs}>
+<BaseLayout
+  title={CONTACT.seo.title}
+  description={CONTACT.seo.description}
+  breadcrumbs={breadcrumbs}
+  schemas={[schema]}
+>
   <Section spacing="tight" labelledby="contact-heading">
     <div class="grid items-start gap-10 lg:grid-cols-2 lg:gap-14">
       <div class="flex flex-col gap-6">
@@ -46,6 +57,13 @@ const breadcrumbs: BreadcrumbItem[] = [{ label: CONTACT.heading }];
         <p class="text-body-lg text-ink-muted text-pretty">{CONTACT.intro}</p>
 
         <BusinessContactList />
+
+        {/*
+          The localities the `HearingAidStore` markup claims in `areaServed`, said in prose.
+          `specifications/seo.md` rules out structured data the visible content does not support,
+          and `tests/unit/data.test.ts` fails if the list and this sentence drift apart.
+        */}
+        <p class="text-small text-ink-muted text-pretty">{CONTACT.serviceArea}</p>
       </div>
 
       {/*

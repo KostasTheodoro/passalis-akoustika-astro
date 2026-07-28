@@ -24,8 +24,11 @@ export const BUSINESS = {
   legalEntityName: 'Πασσαλής Ακουστικά',
 
   /**
-   * Canonical production URL, without a trailing slash. STEP-09 decides how preview
-   * deployments override this via `PUBLIC_SITE_URL`.
+   * Canonical production URL, without a trailing slash.
+   *
+   * Every canonical, Open Graph URL and sitemap entry is built from this, on every build,
+   * previews included. `PUBLIC_SITE_URL` deliberately does not override it: a preview that
+   * canonicalised to itself would be asking Google to index the preview.
    */
   canonicalUrl: 'https://passalis-akoustika.gr',
   locale: 'el_GR',
@@ -34,7 +37,7 @@ export const BUSINESS = {
   /**
    * One telephone number in three forms. `display` and `href` are exactly what the live site
    * already shows and links to; `international` is never displayed and exists only because
-   * schema.org expects an international format (used from STEP-09).
+   * schema.org expects an international format, which is what `HearingAidStore` emits.
    */
   telephone: {
     display: '210 612 9896',
@@ -53,9 +56,20 @@ export const BUSINESS = {
   },
 
   /**
-   * From the business's Google listing. Nothing renders this yet — STEP-07/08 decide whether
-   * the footer or contact page shows it, and STEP-09 uses the machine form for
-   * `openingHoursSpecification`.
+   * The shop's own coordinates, read off the Google Maps *place* URL in `external-links.ts`
+   * (`!3d38.0483082!4d23.807228`), which is the business's own listing rather than a lookup.
+   *
+   * Note this is the marker, not the embed's centre: the iframe URL carries a slightly different
+   * longitude because it describes where the map is framed, not where the shop is.
+   */
+  geo: {
+    latitude: 38.0483082,
+    longitude: 23.807228,
+  },
+
+  /**
+   * From the business's Google listing. The display form is not rendered anywhere; the machine
+   * form becomes `openingHoursSpecification` in the `HearingAidStore` markup.
    */
   openingHours: {
     display: 'Δευτέρα – Παρασκευή, 09:00 – 17:00',
@@ -68,8 +82,19 @@ export const BUSINESS = {
     ],
   },
 
-  /** Not currently displayed anywhere; recorded for local SEO in STEP-09. */
+  /** The prose form, used in body copy. */
   serviceArea: 'Μαρούσι και βόρεια προάστια Αθηνών',
+
+  /**
+   * The same service area as discrete places, for `areaServed` in the `HearingAidStore` markup.
+   *
+   * Confirmed by the maintainer on 2026-07-28: *"service area is mainly Marousi and everything
+   * around that"*. Every locality here is also named in the contact page's visible copy, and
+   * `tests/unit/data.test.ts` asserts that, because structured data describing places the site
+   * never mentions is the kind of unverified claim `specifications/seo.md` rules out. Adding a
+   * name here means adding it to the sentence too.
+   */
+  serviceAreaPlaces: ['Μαρούσι', 'Κηφισιά', 'Χαλάνδρι', 'Μελίσσια', 'Βριλήσσια', 'Πεύκη'],
 } as const;
 
 /** Full address on one line, for structured data and single-line displays. */

@@ -21,7 +21,12 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
  */
 ---
 
-<BaseLayout title={HOME.seo.title} description={HOME.seo.description}>
+{/*
+  The one route that opts out of the title template. Its title *is* the site default and already
+  names the brand, so appending the suffix would say it twice — exactly what the live site does on
+  /synergates. `buildTitle` throws rather than allowing it, which is why this flag is explicit.
+*/}
+<BaseLayout title={HOME.seo.title} description={HOME.seo.description} brandInTitle={false}>
   <HomeHero />
   <HomeServices />
   <EopyyPromo />

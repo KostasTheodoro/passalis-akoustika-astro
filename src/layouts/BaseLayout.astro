@@ -1,10 +1,16 @@
 ---
 import { Font } from 'astro:assets';
+import Analytics from '@vercel/analytics/astro';
+import SpeedInsights from '@vercel/speed-insights/astro';
 import SiteFooter from '@/components/layout/SiteFooter.astro';
 import SkipLink from '@/components/layout/SkipLink.astro';
 import Breadcrumbs, { type BreadcrumbItem } from '@/components/navigation/Breadcrumbs.astro';
 import SiteHeader from '@/components/navigation/SiteHeader.astro';
+import HeadMeta from '@/components/seo/HeadMeta.astro';
+import JsonLd from '@/components/seo/JsonLd.astro';
 import Container from '@/components/ui/Container.astro';
+import { breadcrumbList, hearingAidStore, type Schema, webSite } from '@/lib/seo/schema';
+import { buildTitle } from '@/lib/seo/title';
 import '../styles/global.css';
 
 /**
@@ -14,17 +20,62 @@ import '../styles/global.css';
  * has nested `<main>` elements on seven routes because each page reached for the landmark
  * separately, and that is the defect this arrangement exists to prevent.
  *
- * `description` is accepted now so pages have somewhere to put it; STEP-09 owns the rest of the
- * document head, including titles, canonicals, social metadata and structured data.
+ * It also owns the whole document head. Pages pass a bare `title` with no brand in it and
+ * `buildTitle` appends the suffix once, here, which is the fix for the live site's `/synergates`
+ * title reading the site name twice.
  */
 interface Props {
+  /** Without the brand. `buildTitle` adds it, unless `brandInTitle` is false. */
   title: string;
   description?: string;
   /** Rendered above the page heading on nested routes. Home is added by the component. */
   breadcrumbs?: BreadcrumbItem[];
+  /**
+   * `false` on the home page alone, whose title is the site default and already names the brand.
+   * Exactly the arrangement the legacy `default`/`template` pair had.
+   */
+  brandInTitle?: boolean;
+  /** `/404` sets this false: no canonical, and `noindex`. */
+  indexable?: boolean;
+  /** Page-specific structured data. The business and website nodes are added on every route. */
+  schemas?: Schema[];
 }
 
-const { title, description, breadcrumbs }: Props = Astro.props;
+const {
+  title,
+  description,
+  breadcrumbs,
+  brandInTitle = true,
+  indexable = true,
+  schemas = [],
+}: Props = Astro.props;
+
+const documentTitle = buildTitle(title, { brand: brandInTitle });
+
+/**
+ * The business and the site on every route, then the trail where there is one, then whatever the
+ * page adds. The breadcrumb schema is built from the same array the component renders, through the
+ * same helper, so the markup cannot describe a journey the page does not draw.
+ */
+const structuredData: Schema[] = [
+  hearingAidStore(),
+  webSite(),
+  ...(breadcrumbs ? [breadcrumbList(breadcrumbs)] : []),
+  ...schemas,
+];
+
+/**
+ * Analytics is emitted on Vercel builds and nowhere else.
+ *
+ * Both scripts are served by the platform from `/_vercel/…`, so anywhere that is not a Vercel
+ * deployment they are two guaranteed 404s on every page load — visible in the console, counted
+ * against the page, and buying nothing, because there is no endpoint to report to either.
+ *
+ * Gating them here keeps that cost off local builds and off the browser suite, which is what lets
+ * the rest of the site keep asserting it ships zero external JavaScript. `VERCEL` is set by the
+ * platform on every deployment and by nothing else.
+ */
+const onVercel = Boolean(process.env.VERCEL);
 ---
 
 <!doctype html>
@@ -34,9 +85,12 @@ const { title, description, breadcrumbs }: Props = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     {/*
-      The ear mark from the logo, on the white ground the live site already uses. The wordmark is
-      unreadable at 16px, so it is not the icon. STEP-09 adds the web manifest that will reference
-      /icon-192.png and /icon-512.png.
+      The ear mark from the logo, in the disc the live site's own `.ico` has always used. The
+      wordmark is unreadable at 16px, so it is not the icon.
+
+      Order matters less than it looks: every modern browser prefers the SVG regardless of where it
+      sits, which is exactly how this went wrong before — the `.ico` was migrated correctly and
+      circular, the SVG was drawn square, and the square is what everyone saw.
     */}
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any" />
@@ -51,8 +105,17 @@ const { title, description, breadcrumbs }: Props = Astro.props;
       ]}
     />
 
-    <title>{title}</title>
+    <title>{documentTitle}</title>
     {description && <meta name="description" content={description} />}
+
+    <HeadMeta
+      title={documentTitle}
+      description={description}
+      path={Astro.url.pathname}
+      indexable={indexable}
+    />
+
+    {structuredData.map((schema) => <JsonLd schema={schema} />)}
   </head>
   <body class="flex min-h-dvh flex-col">
     <SkipLink />
@@ -71,5 +134,23 @@ const { title, description, breadcrumbs }: Props = Astro.props;
     </main>
 
     <SiteFooter />
+
+    {/*
+      Cookieless and collecting no personal data, which is what the privacy notice already says.
+      They report nothing until this project is the deployed one — Analytics is enabled on the live
+      site's separate Vercel project, not this one — but installing them now is what makes that
+      sentence true at cutover instead of false today.
+
+      Framework-agnostic Astro entry points, not React islands: this adds no hydration. See
+      `onVercel` above for why they are not emitted off-platform.
+    */}
+    {
+      onVercel && (
+        <>
+          <Analytics />
+          <SpeedInsights />
+        </>
+      )
+    }
   </body>
 </html>
