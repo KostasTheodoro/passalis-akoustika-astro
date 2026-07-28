@@ -254,21 +254,63 @@ test.describe('footer', () => {
   });
 
   /**
-   * The footer carried the opening hours, telephone, email and address until STEP-05, when the
-   * maintainer removed them: the home page's closing band renders the same four values, and
-   * repeating them under every page was too much of the same thing.
+   * **This assertion was inverted in STEP-09, and the reason is worth reading before changing it
+   * back.**
    *
-   * This is the guard on that decision. `home.spec.ts` asserts the same values are present in the
-   * band, so the site still shows each of them exactly once per page that needs them.
+   * The footer carried the opening hours, telephone, email and address as a column until STEP-05,
+   * when the maintainer removed them: the home page's closing band renders the same four values,
+   * and repeating them under every page was too much of the same thing. The original version of
+   * this test guarded that removal.
+   *
+   * STEP-09 restored the address and telephone — those two alone, on one line. The
+   * `HearingAidStore` structured data emits the shop's name, address and telephone on every route,
+   * and `specifications/seo.md` asks that markup describe what the page shows; without this line
+   * twelve of the fourteen routes showed neither below 1024px.
+   *
+   * The email and the opening hours stayed out, so the original decision is only half reversed and
+   * the assertions below still hold them out.
    */
-  test('no longer repeats the contact details the home page already carries', async ({ page }) => {
+  test('carries the address and telephone, and still not the email or hours', async ({ page }) => {
     await page.goto('/');
     const footer = page.locator('footer');
 
-    await expect(footer.locator(`a[href="${BUSINESS.telephone.href}"]`)).toHaveCount(0);
+    await expect(footer.locator(`a[href="${BUSINESS.telephone.href}"]`)).toHaveCount(1);
+    await expect(footer).toContainText(fullAddress);
+
     await expect(footer.locator(`a[href="mailto:${BUSINESS.email}"]`)).toHaveCount(0);
-    await expect(footer).not.toContainText(fullAddress);
     await expect(footer).not.toContainText(BUSINESS.openingHours.display);
+  });
+
+  test('the address and telephone are visible on every route, at every width', async ({ page }) => {
+    // The point of restoring them. `LocalBusiness` markup ships on all fourteen routes, so the
+    // details it describes have to be on the page a visitor is actually looking at.
+    for (const width of [390, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+
+      for (const route of ['/', '/akoustika/cic', '/syxnes-erotiseis', '/politiki-aporritou']) {
+        await page.goto(route);
+        const footer = page.locator('footer');
+
+        await expect(footer.locator(`a[href="${BUSINESS.telephone.href}"]`)).toBeVisible();
+        await expect(footer.getByText(fullAddress)).toBeVisible();
+      }
+    }
+  });
+
+  test('the footer contact icons are hidden from assistive technology', async ({ page }) => {
+    await page.goto('/');
+
+    // The text carries the meaning; an icon is never the only label. The brand logo is a labelled
+    // SVG and is deliberately not covered here — these are the two decorative icons on the line.
+    const links = [
+      page.locator(`footer a[href="${BUSINESS.telephone.href}"]`),
+      page.locator('footer a', { hasText: fullAddress }),
+    ];
+
+    for (const link of links) {
+      await expect(link.locator('svg')).toHaveAttribute('aria-hidden', 'true');
+      await expect(link).toHaveAccessibleName(/\S/);
+    }
   });
 
   test('every primary navigation destination is reachable from the footer', async ({ page }) => {

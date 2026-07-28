@@ -98,8 +98,8 @@ export const CONTACT_ERRORS = {
 export const CONTACT = {
   seo: {
     /**
-     * No brand suffix. STEP-09 owns the title template that appends it once, centrally, which is
-     * the fix for the legacy `/synergates` title that read the site name twice.
+     * No brand suffix. `buildTitle` appends it once, centrally, which is the fix for the legacy
+     * `/synergates` title that read the site name twice.
      */
     title: 'Επικοινωνία',
     /**
@@ -127,6 +127,17 @@ export const CONTACT = {
    */
   intro:
     'Η ομάδα μας είναι πάντα στη διάθεσή σας για να απαντήσει σε κάθε σας ερώτηση για τα προϊόντα και τις υπηρεσίες μας. Συμπληρώστε τη φόρμα ή επικοινωνήστε μαζί μας μέσω τηλεφώνου ή email.',
+
+  /**
+   * Added in STEP-09. The `HearingAidStore` markup lists these localities in `areaServed`, and
+   * `specifications/seo.md` rules out claims the visible content does not support, so the page has
+   * to say which places the shop actually serves. `data.test.ts` keeps the two in step.
+   *
+   * It is also the one sentence on the site that carries the βόρεια προάστια query family, which
+   * STEP-07 handed here.
+   */
+  serviceArea:
+    'Εξυπηρετούμε το Μαρούσι και τα γύρω βόρεια προάστια, από την Κηφισιά και το Χαλάνδρι μέχρι τα Μελίσσια, τα Βριλήσσια και την Πεύκη.',
 
   form: {
     /** Names the form for assistive technology, since the page has no second form to confuse it. */
