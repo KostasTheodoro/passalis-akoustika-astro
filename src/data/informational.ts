@@ -13,10 +13,10 @@ import { ROUTES, type RoutePath } from '@/data/routes';
  * the pages below it, so its copy is here rather than in a content file that nothing else would
  * ever read.
  *
- * Titles carry no brand suffix. STEP-02 stripped it from the category entries because the legacy
- * template appended the site name to titles that already contained it, which is the `/synergates`
- * double-suffix defect recorded in `content-migration-inventory.md`. STEP-09 owns the template that
- * puts it back, once, in one place.
+ * Titles carry no brand suffix. The legacy template appended the site name to titles that already
+ * contained it, which is the `/synergates` double-suffix defect recorded in
+ * `content-migration-inventory.md`. STEP-09's `buildTitle` puts it back once, centrally, and
+ * throws on any title that names the brand itself.
  *
  * **This file imports no images, and must not start.** `home.ts` imports its own, deliberately, so
  * that a renamed asset fails the build. The cost is that Playwright's transpiler is not Vite and
@@ -70,8 +70,8 @@ export const INFORMATIONAL = {
 
   faq: {
     seo: {
-      /** The legacy title without its `– Πασσαλής` suffix, which STEP-09's template re-applies. */
-      title: 'Συχνές Ερωτήσεις για Ακουστικά Βαρηκοΐας',
+      /** The legacy title without its `– Πασσαλής` suffix, which `buildTitle` re-applies. */
+      title: 'Συχνές Ερωτήσεις',
       description:
         'Απαντήσεις σε συχνές ερωτήσεις για ακουστικά βαρηκοΐας: λειτουργία, διάρκεια ζωής, δοκιμή, επιδότηση ΕΟΠΥΥ, εγγύηση, επισκευή και ραντεβού, από το κατάστημά μας στο Μαρούσι.',
       keywords: [
@@ -91,7 +91,7 @@ export const INFORMATIONAL = {
 
   partners: {
     seo: {
-      title: 'Συνεργάτες – ΕΟΠΥΥ & Πάροχοι Βοηθημάτων Ακοής',
+      title: 'Συνεργάτες: ΕΟΠΥΥ & Πάροχοι',
       description:
         'Ενημερωθείτε για την επιδότηση ΕΟΠΥΥ και δείτε τους επίσημους παρόχους ακουστικών βαρηκοΐας (Signia, Siemens, Rexton, A&M) στο Μαρούσι.',
       keywords: [
@@ -150,7 +150,7 @@ export const INFORMATIONAL = {
 
   providers: {
     seo: {
-      title: 'Πάροχοι Ακουστικών Βαρηκοΐας – Signia, Siemens, Rexton, A&M',
+      title: 'Πάροχοι: Signia, Siemens, Rexton',
       description:
         'Συνεργαζόμαστε με κορυφαίους οίκους: Signia, Siemens, Rexton, A&M. Καινοτομία, αξιοπιστία και υποστήριξη για κάθε ανάγκη ακοής.',
       keywords: ['Signia', 'Siemens', 'Rexton', 'A&M', 'πάροχοι ακουστικών βαρηκοΐας'],

@@ -8,11 +8,12 @@ import { ROUTES, type RoutePath } from '@/data/routes';
  * collections — the four category titles, their descriptions, their per-category SEO strings and
  * all thirteen model names and descriptions. Nothing is duplicated here.
  *
- * The listing's heading, title and meta description are the legacy site's, verbatim from
- * `akoustika/page.tsx`. `seo.title` deliberately carries no brand suffix: STEP-02 stripped it out
- * of the category entries because the legacy template appended the site name to titles that
- * already contained it, which is the `/synergates` double-suffix defect. STEP-09 owns the title
- * template that puts it back, once, in one place.
+ * The listing's heading and meta description are the legacy site's, verbatim from
+ * `akoustika/page.tsx`. `seo.title` carries no brand suffix and no trailing qualifier: STEP-09's
+ * `buildTitle` appends `| Πασσαλής Ακουστικά, Μαρούσι` once, centrally, and throws if a title
+ * already names the brand. That is the fix for the `/synergates` double-suffix defect, and it is
+ * also why the legacy's `– CIC, RIC, BTE, Επαναφορτιζόμενα` tail was dropped: with the suffix the
+ * whole title ran past what Google displays, and the locality is what got cut.
  */
 
 interface CallToAction {
@@ -23,7 +24,7 @@ interface CallToAction {
 export const CATALOGUE = {
   listing: {
     seo: {
-      title: 'Τύποι Ακουστικών Βαρηκοΐας – CIC, RIC, BTE, Επαναφορτιζόμενα',
+      title: 'Τύποι Ακουστικών Βαρηκοΐας',
       description:
         'Δείτε όλους τους τύπους ακουστικών βαρηκοΐας: CIC, RIC, BTE και Charge&Go. Βρείτε τη σωστή λύση για τις ανάγκες και τον τρόπο ζωής σας.',
       keywords: ['CIC', 'RIC', 'BTE', 'Charge&Go'],

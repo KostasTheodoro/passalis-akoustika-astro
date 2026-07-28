@@ -148,7 +148,7 @@ const pages = defineCollection({
         .optional(),
       /**
        * EOPYY reimbursement figures. Present on the EOPYY page only, and consumed by the home
-       * page card and (from STEP-09) structured data. The same numbers also appear in that
+       * page card and the EOPYY page's own prose. The same numbers also appear in that
        * page's prose; `tests/unit/content-integrity.test.ts` asserts the two cannot drift.
        */
       subsidy: z

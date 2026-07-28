@@ -3,6 +3,7 @@ import { basename, extname, join } from 'node:path';
 import { expect, test } from '@playwright/test';
 import { CATALOGUE } from '../../src/data/catalogue';
 import { hearingTypePath, ROUTES } from '../../src/data/routes';
+import { buildTitle } from '../../src/lib/seo/title';
 
 /**
  * `/akoustika` and the four category pages.
@@ -505,7 +506,10 @@ test.describe('metadata', () => {
     for (const category of categories) {
       await page.goto(category.path);
 
-      await expect(page).toHaveTitle(category.seo.title);
+      // `seo.title` is the base. STEP-09's template appends the brand and locality once, centrally,
+      // so the rendered title is the entry's string plus that suffix — never the string alone, and
+      // never the suffix twice.
+      await expect(page).toHaveTitle(buildTitle(category.seo.title));
       await expect(page.locator('meta[name="description"]')).toHaveAttribute(
         'content',
         category.seo.description,
