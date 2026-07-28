@@ -10,6 +10,22 @@ const sansation = 'src/assets/fonts/sansation';
 export default defineConfig({
   output: 'static',
   /**
+   * The production origin. Nothing in the head reads this — canonicals come from
+   * `BUSINESS.canonicalUrl`, which is the same string and is the source of truth the tests pin —
+   * but Astro needs it set for `Astro.site` to exist, and leaving it undefined is what makes
+   * `new URL(path, Astro.site)` throw.
+   *
+   * It is deliberately the apex host on every build, preview deployments included. A preview that
+   * canonicalised to itself would be asking Google to index the preview.
+   */
+  site: 'https://passalis-akoustika.gr',
+  /**
+   * The live site serves every URL without a trailing slash, and `/akoustika/` normalises to
+   * `/akoustika`. Matching it here keeps the twelve indexed URLs identical and stops the same page
+   * being reachable at two addresses.
+   */
+  trailingSlash: 'never',
+  /**
    * `astro-icon` resolves Iconify names to inline SVG at build time — no runtime library, no icon
    * font, no sprite request, and only the icons actually used reach the output.
    *
@@ -61,6 +77,19 @@ export default defineConfig({
         context: 'client',
         access: 'public',
         default: 'http://localhost:4321',
+      }),
+      /**
+       * Emits `<meta name="google-site-verification">` when set, and nothing when not.
+       *
+       * The live site has no such tag, so Search Console is verified by DNS TXT, an HTML file or
+       * the Analytics method — nothing on record says which. DNS TXT survives a change of host and
+       * the others do not, so this exists to make re-verification at cutover a dashboard entry
+       * rather than a code change. A verification token is public by definition.
+       */
+      PUBLIC_GOOGLE_SITE_VERIFICATION: envField.string({
+        context: 'client',
+        access: 'public',
+        optional: true,
       }),
       RESEND_API_KEY: envField.string({
         context: 'server',

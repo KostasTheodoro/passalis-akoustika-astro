@@ -1,7 +1,7 @@
 ---
 import { Icon } from 'astro-icon/components';
 import { ICONS } from '@/data/icons';
-import { ROUTES } from '@/data/routes';
+import { type BreadcrumbItem, breadcrumbTrail } from '@/lib/navigation/breadcrumbs';
 
 /**
  * The trail on nested routes.
@@ -10,14 +10,13 @@ import { ROUTES } from '@/data/routes';
  * a link — a link to where you already are is noise for everyone and a trap for a screen-reader
  * user, so it carries `aria-current="page"` instead.
  *
- * STEP-09 generates `BreadcrumbList` structured data from this same `items` array, so what is on
- * the page and what is in the markup cannot describe different journeys.
+ * `BaseLayout` builds `BreadcrumbList` structured data from the same `items` array through the same
+ * `breadcrumbTrail` helper, so what is on the page and what is in the markup cannot describe
+ * different journeys.
  */
-export interface BreadcrumbItem {
-  label: string;
-  /** Absent on the current page, which is always the last item. */
-  href?: string;
-}
+
+/** Re-exported so the ten pages that import the type from here keep working. */
+export type { BreadcrumbItem };
 
 interface Props {
   items: BreadcrumbItem[];
@@ -26,8 +25,7 @@ interface Props {
 
 const { items, class: className }: Props = Astro.props;
 
-/** Home is implicit on every trail, so callers pass only the part below it. */
-const trail: BreadcrumbItem[] = [{ label: 'Αρχική', href: ROUTES.home }, ...items];
+const trail = breadcrumbTrail(items);
 ---
 
 <nav aria-label="Διαδρομή πλοήγησης" class:list={className}>
